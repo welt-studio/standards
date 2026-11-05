@@ -6,7 +6,8 @@ O Ruff (`extend`) e o Pyright (`extends`) só leem arquivo local, e o Prettier e
 config de pacote, então o padrão chega ao projeto como cópia (e a config do projeto, quando há,
 herda dela). O hook roda da cópia deste repo que o pre-commit baixou no `rev` declarado: a versão do
 padrão fica só nesse `rev`. Como um formatter, reescreve a cópia quando ela diverge (ou não existe)
-e sai com 1; a segunda rodada passa. Python stdlib, sem dependências.
+e sai com 1; a segunda rodada passa. O `pyright-base` chega aqui pelo `check_pyright.py`, que depois
+confere o que contornaria a cópia. Python stdlib, sem dependências.
 
 Uso: `sync_base.py <ruff|pyright|prettier|jscpd> [pasta]`. A cópia vai na raiz do projeto, ou na
 `pasta` (relativa à raiz) quando a ferramenta roda de dentro dela, como o Prettier em `frontend/`.

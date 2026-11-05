@@ -7,13 +7,28 @@
 // O projeto não usa este arquivo daqui: o hook `pyright-base` (este repo, `.pre-commit-hooks.yaml`)
 // copia-o para `pyright-base.json` na raiz do projeto, e o `pyrightconfig.json` da raiz faz
 // `extends` dessa cópia. O projeto só declara fatos dele: caminhos (`include`, `exclude`,
-// `venvPath`/`venv`, `executionEnvironments`) e, em `strict`, as pastas de código da aplicação.
-// Regra, modo e exceção vêm daqui.
+// `venvPath`/`venv`, `executionEnvironments` com `root`/`extraPaths`). Regra, modo e exceção vêm
+// daqui, e o hook reprova o `pyrightconfig.json` que declare outra coisa.
 {
-  // Standard em tudo; o código da aplicação sobe para strict pela lista `strict` do projeto
-  // (decisão do PO, 2026-10-24): o strict cobra o contrato de cada função (parâmetro, retorno,
-  // tipo desconhecido); nos testes, o ruído das fixtures sem anotação não paga a fila.
-  "typeCheckingMode": "standard",
+  // Strict em tudo, testes incluídos: o strict cobra o contrato de cada função (parâmetro anotado).
+  // O Pyright não tem regra que exija o retorno anotado: quem o cobra é o `ANN` do Ruff, que não
+  // vale nos testes. O projeto não declara `strict` nem põe `# pyright: strict` num arquivo: no
+  // Pyright os dois religam toda regra do strict que esta base desliga (o hook reprova os dois).
+  "typeCheckingMode": "strict",
+  // Sem a família reportUnknown* (decisão do PO, 2026-11-05): boa parte das bibliotecas do
+  // ecossistema Python não tipa direito, e o `Unknown` que vem delas reprovava cada linha que as
+  // tocava, numa fila que não fecha. O Pyright não separa o `Unknown` da biblioteca do nosso: o
+  // `items = []` que recebe qualquer coisa também passa calado (aceito pelo PO). O contrato
+  // declarado continua cobrado: parâmetro sem anotação (`reportMissingParameterType`), genérico sem
+  // argumento (`reportMissingTypeArgument`) e, fora dos testes, retorno sem anotação (`ANN` do Ruff).
+  "reportUnknownMemberType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownParameterType": "none",
+  "reportUnknownLambdaType": "none",
+  // Acesso a privado é do Ruff (`SLF001`), que o cobra no código e o libera nos testes, onde
+  // conferir um `_helper` é o normal. Com o strict nos testes, as duas ferramentas discordariam.
+  "reportPrivateUsage": "none",
   // `# type: ignore` que não ignora nada reprova (como o RUF100 do Ruff). O código da regra entre
   // colchetes é cobrado pelo PGH003 do padrão Ruff.
   "reportUnnecessaryTypeIgnoreComment": "error",

@@ -25,7 +25,7 @@ repos:
         always_run: true
       - id: pyright-base
         name: pyright-base (padrão Pyright da Welt Studio)
-        entry: hooks/sync_base.py pyright
+        entry: hooks/check_pyright.py
         language: script
         pass_filenames: false
         always_run: true
@@ -76,7 +76,7 @@ repos:
         entry: uv run ruff format
         language: system
         types: [python]
-      # O projeto inteiro (`pass_filenames: false`): os scripts dos hooks estão em strict sem fila.
+      # O projeto inteiro (`pass_filenames: false`): o repo (hooks e testes) está em strict sem fila.
       - id: pyright
         name: Pyright
         entry: uv run pyright

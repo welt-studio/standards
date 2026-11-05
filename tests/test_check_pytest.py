@@ -2,12 +2,14 @@
 
 import copy
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 import check_pytest
 
-COMPLETE = {
+# `Any`: é o TOML lido, que o hook confere sem confiar no tipo; os testes o editam por chave.
+COMPLETE: dict[str, Any] = {
     "dependency-groups": {
         "dev": [
             "pytest==9.1.1",
@@ -50,7 +52,7 @@ BOUNDARY = COMPLETE_WARNINGS[1:]
 WITHOUT_PACKAGE = COMPLETE_WARNINGS[:-1]
 
 
-def without(path: tuple[str, ...]) -> dict:
+def without(path: tuple[str, ...]) -> dict[str, Any]:
     config = copy.deepcopy(COMPLETE)
     node = config
     for key in path[:-1]:

@@ -13,17 +13,14 @@ from pathlib import Path
 
 import pytest
 
+import check_pyright
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
 def common_ignores() -> list[str]:
     declared = json.loads((ROOT / "eslint" / "ignores.json").read_text(encoding="utf-8"))
     return [pattern for group in declared.values() for pattern in group]
-
-
-def without_line_comments(text: str) -> str:
-    """JSONC (o do Pyright) sem os comentários de linha inteira, que é o que o padrão usa."""
-    return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("//"))
 
 
 def gitignore_as_glob(pattern: str) -> str:
@@ -44,11 +41,6 @@ def ruff_ignores() -> list[str]:
     return tomllib.loads((ROOT / "ruff" / "base.toml").read_text(encoding="utf-8"))[
         "extend-exclude"
     ]
-
-
-def pyright_ignores() -> list[str]:
-    text = (ROOT / "pyright" / "base.json").read_text(encoding="utf-8")
-    return json.loads(without_line_comments(text))["ignore"]
 
 
 # O que é só de uma ferramenta, além da lista comum. O ESLint não aparece: ele importa a declaração.
@@ -78,7 +70,8 @@ TOOLS = {
     "jscpd/base.json": (lambda: jscpd_ignores("base.json"), []),
     "jscpd/semantic.json": (lambda: jscpd_ignores("semantic.json"), SEMANTIC_ONLY),
     "ruff/base.toml": (ruff_ignores, []),
-    "pyright/base.json": (pyright_ignores, []),
+    # A mesma leitura que o hook `pyright-base` faz da base (JSONC).
+    "pyright/base.json": (check_pyright.base_ignores, []),
 }
 
 

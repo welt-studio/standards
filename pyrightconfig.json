@@ -1,12 +1,10 @@
 {
   // O padrão Pyright deste repo é a cópia do próprio `pyright/base.json`, mantida pelo hook
-  // `pyright-base` como nos projetos. Aqui só fatos do repo: os scripts dos hooks são o código em
-  // strict; os testes ficam no standard.
+  // `pyright-base` como nos projetos. Aqui só fatos do repo.
   "extends": "./pyright-base.json",
   "include": ["hooks", "tests"],
   "venvPath": ".",
   "venv": ".venv",
   // Os scripts se importam pelo nome (o pre-commit executa o arquivo solto), e os testes também.
-  "executionEnvironments": [{ "root": ".", "extraPaths": ["hooks"] }],
-  "strict": ["hooks"]
+  "executionEnvironments": [{ "root": ".", "extraPaths": ["hooks"] }]
 }

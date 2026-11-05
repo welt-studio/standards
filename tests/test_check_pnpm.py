@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 import check_pnpm
+from parsed import Table
 
 WORKSPACE = """\
 packages:
@@ -17,7 +18,7 @@ strictDepBuilds: false # só avisa
 catalog:
   vitest: 5.0.5
 """
-PACKAGE = {
+PACKAGE: Table = {
     "packageManager": "pnpm@12.14.0",
     "devEngines": {"packageManager": {"name": "pnpm", "onFail": "error"}},
 }
@@ -70,7 +71,7 @@ def test_nested_key_is_not_top_level() -> None:
         {"devEngines": {"packageManager": {"name": "pnpm", "onFail": "warn"}}},
     ],
 )
-def test_package_manager_must_be_pnpm_with_error(package: dict) -> None:
+def test_package_manager_must_be_pnpm_with_error(package: Table) -> None:
     assert len(check_pnpm.package_problems(package)) == 1
 
 

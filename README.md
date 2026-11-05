@@ -13,7 +13,7 @@ as cópias que eles geram na raiz (`ruff-base.toml`, `pyright-base.json`, `.pret
 
 | Parte                                       | Onde                                                                                                                                    |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Scripts dos hooks (stdlib, sem dependência) | `hooks/`, em strict no Pyright; testes em `tests/`                                                                                      |
+| Scripts dos hooks (stdlib, sem dependência) | `hooks/`; testes em `tests/` (os dois em strict no Pyright)                                                                             |
 | Ferramentas do Python                       | `pyproject.toml` da raiz (grupo `dev`), só ambiente de desenvolvimento: `uv sync`                                                       |
 | Pacotes publicados                          | `eslint/`, `prettier/`, `tsconfig/`, `vitest/`, num workspace pnpm na raiz; o `package.json` da raiz é só o ambiente de desenvolvimento |
 
@@ -346,12 +346,18 @@ Conferir uma mudança no preset antes do merge (pelo pnpm: o `devEngines` deste 
 ## Pyright: `pyright/base.json` pelo hook `pyright-base`
 
 O mesmo esquema do Ruff: o `extends` do Pyright só lê arquivo local, e o hook mantém a cópia na raiz
-do projeto (o script `hooks/sync_base.py` é o mesmo dos dois hooks).
+do projeto (o `hooks/check_pyright.py` copia pelo mesmo `hooks/sync_base.py` do Ruff). Depois ele
+reprova o que contornaria a base: no `pyrightconfig.json`, qualquer chave além dos fatos do projeto
+(caminhos, ambiente, versão do Python, `executionEnvironments` com `root`/`extraPaths`) ou um
+`extends` que não seja a cópia; nos `.py` do git que o Pyright analisa (o `include`/`exclude` do
+projeto, fora o `ignore` da base), o comentário `# pyright: <modo ou regra>` e o `# type: ignore`
+antes de qualquer código, que silencia o arquivo inteiro. O `ignore` de uma linha (com as regras
+entre colchetes) passa. Pasta passada em `args` quando o `pyrightconfig.json` não está na raiz.
 
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/welt-studio/standards
-  rev: pyright-v1.1.1
+  rev: pyright-v2.0.0
   hooks:
     - id: pyright-base
 ```
@@ -363,18 +369,24 @@ do projeto (o script `hooks/sync_base.py` é o mesmo dos dois hooks).
   "include": ["backend"],
   "venvPath": "backend",
   "venv": ".venv",
-  // Código da aplicação em strict; o resto (testes) fica no standard da base.
-  "strict": ["backend/app"],
 }
 ```
 
-| Bloco                                | O que fixa                                                                                                                                                                                                                          |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `typeCheckingMode`                   | `standard` em tudo; o código da aplicação sobe para strict pela lista `strict` do projeto (o strict cobra o contrato de cada função; nos testes, o ruído das fixtures sem anotação não paga a fila)                                 |
-| `reportUnnecessaryTypeIgnoreComment` | `# type: ignore` que não ignora nada reprova; o código da regra é cobrado pelo `PGH003` do Ruff                                                                                                                                     |
-| `ignore`                             | os ignores comuns (migrations geradas, `vendor/`, minificados) não são acusados (como no Ruff, no Prettier e no jscpd); quem os usa continua conferido contra os tipos deles. O projeto não declara `ignore`, que substituiria este |
+| Bloco                                | O que fixa                                                                                                                                                                                                                                                         |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `typeCheckingMode`                   | `strict` em tudo, testes incluídos: o strict cobra o contrato de cada função (parâmetro anotado). O retorno anotado não é regra do Pyright: é o `ANN` do Ruff, que não vale nos testes                                                                             |
+| `reportUnknown*`                     | a família toda desligada (`Member`, `Argument`, `Variable`, `Parameter`, `Lambda`): o `Unknown` das bibliotecas mal tipadas reprovava cada linha que as tocava. O Pyright não separa o da biblioteca do nosso: `items = []` que recebe qualquer coisa também passa |
+| `reportPrivateUsage`                 | desligada: acesso a privado é do Ruff (`SLF001`), que o cobra no código e o libera nos testes                                                                                                                                                                      |
+| `reportUnnecessaryTypeIgnoreComment` | `# type: ignore` que não ignora nada reprova; o código da regra é cobrado pelo `PGH003` do Ruff                                                                                                                                                                    |
+| `ignore`                             | os ignores comuns (migrations geradas, `vendor/`, minificados) não são acusados (como no Ruff, no Prettier e no jscpd); quem os usa continua conferido contra os tipos deles. O projeto não declara `ignore`, que substituiria este                                |
 
-Nenhuma regra desligada: o projeto não declara `report*`. A versão do Pyright é o pin do
+O projeto não declara `strict` nem põe `# pyright: strict` num arquivo: no Pyright, os dois religam
+toda regra do strict (nas pastas da lista, ou no arquivo), inclusive as `reportUnknown*` que a base
+desliga; o hook reprova os dois. Projeto que vem da v1 apaga a lista; os testes passam a ser
+cobrados pelo strict (fixture sem anotação reprova no `reportMissingParameterType`, lib sem stubs no
+`reportMissingTypeStubs`).
+
+Nenhuma outra regra desligada: o projeto não declara `report*`. A versão do Pyright é o pin do
 `pyproject.toml` de cada projeto, que o Renovate sobe. O hook do projeto checa os arquivos do commit
 (a fatia que se commita); a CI checa o projeto inteiro e fica vermelha até a fila zerar, porque um
 contrato quebrado aparece em quem chama a função, fora do commit. Os arquivos do commit são o

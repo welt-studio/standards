@@ -8,10 +8,12 @@
   pass_filenames: false
   always_run: true
 
-# Mantém `pyright-base.json` na raiz do projeto igual ao `pyright/base.json` do `rev` declarado.
+# Mantém `pyright-base.json` na raiz do projeto igual ao `pyright/base.json` do `rev` declarado, e
+# reprova o que a contorna: regra no `pyrightconfig.json` (`strict`, `report*`, modo) e
+# `# pyright: <modo ou regra>` num `.py`.
 - id: pyright-base
   name: pyright-base (padrão Pyright da Welt Studio)
-  entry: hooks/sync_base.py pyright
+  entry: hooks/check_pyright.py
   language: script
   pass_filenames: false
   always_run: true
