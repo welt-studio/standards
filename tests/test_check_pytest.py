@@ -2,14 +2,15 @@
 
 import copy
 from pathlib import Path
-from typing import Any
 
 import pytest
 
 import check_pytest
+from parsed import Table, items, table
 
-# `Any`: é o TOML lido, que o hook confere sem confiar no tipo; os testes o editam por chave.
-COMPLETE: dict[str, Any] = {
+# O TOML lido tem o mesmo tipo que o hook recebe (`Table`); os testes o editam por caminho
+# (`edited`, `without`), que navega com os mesmos `table`/`items` do hook.
+COMPLETE: Table = {
     "dependency-groups": {
         "dev": [
             "pytest==9.1.1",
@@ -45,20 +46,47 @@ COMPLETE: dict[str, Any] = {
     },
 }
 
+OPTIONS = ("tool", "pytest", "ini_options")
+ADDOPTS = (*OPTIONS, "addopts")
+FILTERWARNINGS = (*OPTIONS, "filterwarnings")
+SOURCE = ("tool", "coverage", "run", "source")
 
-COMPLETE_WARNINGS: list[str] = COMPLETE["tool"]["pytest"]["ini_options"]["filterwarnings"]
+
+def node(config: Table, path: tuple[str, ...]) -> Table:
+    """A tabela em `path` dentro de `config` (a mesma, não uma cópia). Caminho que não existe é
+    erro do teste, não uma tabela vazia: a troca iria para um dict solto, e o teste passaria sem
+    conferir nada."""
+    for key in path:
+        value = config[key]
+        if not isinstance(value, dict):
+            message = f"{key!r} não é tabela em {path}"
+            raise TypeError(message)
+        config = table(value)
+    return config
+
+
+def edited(changes: dict[tuple[str, ...], object]) -> Table:
+    """Cópia do `COMPLETE` com cada caminho de `changes` trocado pelo valor."""
+    config = copy.deepcopy(COMPLETE)
+    for path, value in changes.items():
+        node(config, path[:-1])[path[-1]] = value
+    return config
+
+
+def without(path: tuple[str, ...]) -> Table:
+    config = copy.deepcopy(COMPLETE)
+    del node(config, path[:-1])[path[-1]]
+    return config
+
+
+COMPLETE_WARNINGS = [
+    entry
+    for entry in items(node(COMPLETE, OPTIONS).get("filterwarnings"))
+    if isinstance(entry, str)
+]
 # O que vem depois do `"error"`, e o mesmo sem a linha do pacote (a última).
 BOUNDARY = COMPLETE_WARNINGS[1:]
 WITHOUT_PACKAGE = COMPLETE_WARNINGS[:-1]
-
-
-def without(path: tuple[str, ...]) -> dict[str, Any]:
-    config = copy.deepcopy(COMPLETE)
-    node = config
-    for key in path[:-1]:
-        node = node[key]
-    del node[path[-1]]
-    return config
 
 
 def test_complete_config_passes() -> None:
@@ -66,32 +94,25 @@ def test_complete_config_passes() -> None:
 
 
 def test_addopts_as_list_passes() -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["pytest"]["ini_options"]["addopts"] = [
-        "--cov=app",
-        "--disable-socket",
-        "--allow-hosts=::1",
-    ]
+    config = edited({ADDOPTS: ["--cov=app", "--disable-socket", "--allow-hosts=::1"]})
     assert check_pytest.problems(config) == []
 
 
 @pytest.mark.parametrize("addopts", ["--disable-socket --allow-hosts=::1", "--cov-report=term"])
 def test_coverage_flag_is_required(addopts: str) -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["pytest"]["ini_options"]["addopts"] = addopts
-    found = check_pytest.problems(config)
+    found = check_pytest.problems(edited({ADDOPTS: addopts}))
     assert "[tool.pytest.ini_options] addopts com --cov (o fail_under só vale com ele)" in found
 
 
 @pytest.mark.parametrize(
     ("path", "expected"),
     [
-        (("tool", "pytest", "ini_options", "strict"), "strict = true"),
-        (("tool", "pytest", "ini_options", "filterwarnings"), "filterwarnings"),
-        (("tool", "pytest", "ini_options", "python_files"), "python_files"),
-        (("tool", "pytest", "ini_options", "timeout"), "timeout = 60"),
+        ((*OPTIONS, "strict"), "strict = true"),
+        (FILTERWARNINGS, "filterwarnings"),
+        ((*OPTIONS, "python_files"), "python_files"),
+        ((*OPTIONS, "timeout"), "timeout = 60"),
         (("tool", "coverage", "run", "branch"), "branch = true"),
-        (("tool", "coverage", "run", "source"), "source"),
+        (SOURCE, "source"),
         (("tool", "coverage", "report", "fail_under"), "fail_under = 80"),
     ],
 )
@@ -102,24 +123,18 @@ def test_each_missing_option_is_reported(path: tuple[str, ...], expected: str) -
 
 
 def test_warnings_not_starting_with_error_fail() -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["pytest"]["ini_options"]["filterwarnings"] = ["ignore", "error"]
-    assert check_pytest.problems(config) == [
+    assert check_pytest.problems(edited({FILTERWARNINGS: ["ignore", "error"]})) == [
         '[tool.pytest.ini_options] filterwarnings começando por "error"'
     ]
 
 
 def test_error_alone_passes() -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["pytest"]["ini_options"]["filterwarnings"] = ["error"]
-    assert check_pytest.problems(config) == []
+    assert check_pytest.problems(edited({FILTERWARNINGS: ["error"]})) == []
 
 
 def test_boundary_order_after_default_is_free() -> None:
-    config = copy.deepcopy(COMPLETE)
-    options = config["tool"]["pytest"]["ini_options"]
-    options["filterwarnings"] = options["filterwarnings"][:2] + options["filterwarnings"][:1:-1]
-    assert check_pytest.problems(config) == []
+    reordered = COMPLETE_WARNINGS[:2] + COMPLETE_WARNINGS[:1:-1]
+    assert check_pytest.problems(edited({FILTERWARNINGS: reordered})) == []
 
 
 @pytest.mark.parametrize(
@@ -127,12 +142,8 @@ def test_boundary_order_after_default_is_free() -> None:
     [(["app/core", "tools"], [r"app\.core", "tools"]), (["app.core"], [r"app\.core"])],
 )
 def test_boundary_has_one_filter_per_source(sources: list[str], packages: list[str]) -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["coverage"]["run"]["source"] = sources
-    config["tool"]["pytest"]["ini_options"]["filterwarnings"] = [
-        *WITHOUT_PACKAGE,
-        *(rf"error:::{package}(\.|$)" for package in packages),
-    ]
+    warnings = [*WITHOUT_PACKAGE, *(rf"error:::{package}(\.|$)" for package in packages)]
+    config = edited({SOURCE: sources, FILTERWARNINGS: warnings})
     assert check_pytest.problems(config) == []
 
 
@@ -154,17 +165,13 @@ def test_boundary_has_one_filter_per_source(sources: list[str], packages: list[s
     ],
 )
 def test_warnings_exceptions_fail(boundary: list[str]) -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["pytest"]["ini_options"]["filterwarnings"] = ["error", *boundary]
-    found = check_pytest.problems(config)
+    found = check_pytest.problems(edited({FILTERWARNINGS: ["error", *boundary]}))
     assert len(found) == 1
     assert found[0].startswith(check_pytest.BOUNDARY_PROBLEM)
 
 
 def test_boundary_needs_import_names_in_source() -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["coverage"]["run"]["source"] = ["."]
-    found = check_pytest.problems(config)
+    found = check_pytest.problems(edited({SOURCE: ["."]}))
     assert len(found) == 1
     assert found[0].startswith(check_pytest.PACKAGES_PROBLEM)
 
@@ -180,43 +187,30 @@ def test_boundary_needs_import_names_in_source() -> None:
     ],
 )
 def test_command_line_warning_filters_fail(flags: list[str]) -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["pytest"]["ini_options"]["addopts"] = [
-        "--cov",
-        "--disable-socket",
-        "--allow-hosts=::1",
-        *flags,
-    ]
+    config = edited({ADDOPTS: ["--cov", "--disable-socket", "--allow-hosts=::1", *flags]})
     assert check_pytest.problems(config) == [check_pytest.WARNINGS_FLAGS_PROBLEM]
 
 
 def test_network_flags_are_required() -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["pytest"]["ini_options"]["addopts"] = "-n 4 --cov"
-    found = check_pytest.problems(config)
+    found = check_pytest.problems(edited({ADDOPTS: "-n 4 --cov"}))
     assert len(found) == 2
     assert "--disable-socket" in found[0]
     assert "--allow-hosts" in found[1]
 
 
 def test_other_floor_or_timeout_fails() -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["coverage"]["report"]["fail_under"] = 70
-    config["tool"]["pytest"]["ini_options"]["timeout"] = 300
+    config = edited({("tool", "coverage", "report", "fail_under"): 70, (*OPTIONS, "timeout"): 300})
     assert len(check_pytest.problems(config)) == 2
 
 
 def test_omit_fails() -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["tool"]["coverage"]["run"]["omit"] = ["*/routes/*"]
-    found = check_pytest.problems(config)
+    found = check_pytest.problems(edited({("tool", "coverage", "run", "omit"): ["*/routes/*"]}))
     assert len(found) == 1
     assert "sem omit" in found[0]
 
 
 def test_missing_plugins_are_listed() -> None:
-    config = copy.deepcopy(COMPLETE)
-    config["dependency-groups"]["dev"] = ["pytest==9.1.1", "pytest-cov==7.1.0"]
+    config = edited({("dependency-groups", "dev"): ["pytest==9.1.1", "pytest-cov==7.1.0"]})
     found = check_pytest.problems(config)
     missing = "pytest-xdist, pytest-randomly, pytest-timeout, pytest-socket, time-machine"
     assert found == [f"[dependency-groups] dev com: {missing}"]

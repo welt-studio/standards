@@ -6,8 +6,9 @@ O Ruff (`extend`) e o Pyright (`extends`) só leem arquivo local, e o Prettier e
 config de pacote, então o padrão chega ao projeto como cópia (e a config do projeto, quando há,
 herda dela). O hook roda da cópia deste repo que o pre-commit baixou no `rev` declarado: a versão do
 padrão fica só nesse `rev`. Como um formatter, reescreve a cópia quando ela diverge (ou não existe)
-e sai com 1; a segunda rodada passa. O `pyright-base` chega aqui pelo `check_pyright.py`, que depois
-confere o que contornaria a cópia. Python stdlib, sem dependências.
+e sai com 1; a segunda rodada passa. O `ruff-base` e o `pyright-base` chegam aqui pelo
+`check_ruff.py` e pelo `check_pyright.py`, que depois conferem o que contornaria a cópia. Python
+stdlib, sem dependências.
 
 Uso: `sync_base.py <ruff|pyright|prettier|jscpd> [pasta]`. A cópia vai na raiz do projeto, ou na
 `pasta` (relativa à raiz) quando a ferramenta roda de dentro dela, como o Prettier em `frontend/`.
@@ -34,9 +35,20 @@ BASES: dict[str, tuple[tuple[str, str, str | None], ...]] = {
 }
 
 
+def hook_id(name: str) -> str:
+    """O id do hook de `name` no `.pre-commit-hooks.yaml` (`ruff` → `ruff-base`): a declaração que
+    as mensagens dos hooks usam."""
+    return f"{name}-base"
+
+
+def copy_name(name: str) -> str:
+    """O nome da (primeira) cópia de `name` no projeto (`ruff` → `ruff-base.toml`)."""
+    return BASES[name][0][1]
+
+
 def header(name: str, source: str, comment: str) -> str:
     lines = (
-        f"GERADO pelo hook `{name}-base` de github.com/welt-studio/standards ({source}).",
+        f"GERADO pelo hook `{hook_id(name)}` de github.com/welt-studio/standards ({source}).",
         "NÃO EDITE: o hook desfaz qualquer mudança. A versão do padrão é o `rev` desse hook no",
         ".pre-commit-config.yaml; regra nova entra no standards, para todos os projetos.",
     )
@@ -52,8 +64,9 @@ def sync(name: str, source: str, target: Path, comment: str | None) -> bool:
         return False
     target.write_text(expected, encoding="utf-8", newline="\n")
     action = "criado" if current is None else "restaurado"
+    hook = hook_id(name)
     sys.stdout.write(
-        f"{name}-base: {target} {action} a partir do padrão (standards). Adicione-o ao commit.\n"
+        f"{hook}: {target} {action} a partir do padrão (standards). Adicione-o ao commit.\n"
     )
     return True
 
@@ -67,7 +80,7 @@ def main(args: list[str]) -> int:
     # A pasta vem do `args` do hook no projeto: errada (digitada errado, ou movida), o hook diz qual
     # é em vez de cair num traceback do `write_text`.
     if not folder.is_dir():
-        sys.stderr.write(f"{name}-base: a pasta {folder} (args do hook) não existe\n")
+        sys.stderr.write(f"{hook_id(name)}: a pasta {folder} (args do hook) não existe\n")
         return 1
     # Todas as cópias são conferidas, mesmo depois da primeira que divergir.
     written = [

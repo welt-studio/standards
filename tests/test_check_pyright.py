@@ -1,11 +1,13 @@
 """Testes do hook `pyright-base` (`hooks/check_pyright.py`): `uv run pytest` na raiz deste repo."""
 
-import subprocess
 from pathlib import Path, PurePosixPath
 
 import pytest
 
 import check_pyright
+import repo
+from comments import source_comments
+from gitrepo import git, write
 from parsed import Table
 
 # Um `pyrightconfig.json` no padrão: só fatos do projeto, com comentário e vírgula sobrando (JSONC),
@@ -69,6 +71,12 @@ def test_extends_elsewhere_fails(extends: object) -> None:
     assert "extends" in found[0]
 
 
+def problems(source: str) -> list[tuple[int, str]]:
+    """Linha e motivo de cada comentário de `source` que o hook reprova."""
+    found = [(line, check_pyright.comment_problem(text)) for line, text in source_comments(source)]
+    return [(line, problem) for line, problem in found if problem]
+
+
 @pytest.mark.parametrize(
     "comment",
     [
@@ -79,39 +87,54 @@ def test_extends_elsewhere_fails(extends: object) -> None:
     ],
 )
 def test_pyright_file_comment_is_found_anywhere(comment: str) -> None:
-    assert check_pyright.file_comments(f"import os\n{comment}\nos.getcwd()\n") == [2]
+    found = problems(f"import os\n{comment}\nos.getcwd()\n")
+    assert [line for line, _ in found] == [2]
+    assert "de arquivo" in found[0][1]
 
 
 @pytest.mark.parametrize(
-    ("source", "line"),
+    "comment",
     [
-        ("# type: ignore[reportMissingParameterType]\ndef f(a): ...\n", 1),
-        ("#!/usr/bin/env python3\n# coding: utf-8\n\n#type:ignore\nx = 1\n", 4),
+        "# type: ignore",
+        "#type:ignore[reportCallIssue]",
+        "# type: ignore[reportMissingParameterType]",
+        "# noqa: E501  # type: ignore[reportCallIssue]",
     ],
 )
-def test_type_ignore_before_the_code_is_found(source: str, line: int) -> None:
-    assert check_pyright.file_comments(source) == [line]
+def test_every_type_ignore_fails(comment: str) -> None:
+    found = problems(f"x = f()  {comment}\n")
+    assert [line for line, _ in found] == [1]
+    assert "type: ignore" in found[0][1]
+
+
+@pytest.mark.parametrize(
+    "comment",
+    [
+        "# pyright: ignore",
+        "# pyright: ignore[reportCallIssue]",
+        "# pyright: ignore[reportMissingTypeStubs, reportCallIssue]",
+    ],
+)
+def test_pyright_ignore_other_than_the_stubs_marker_fails(comment: str) -> None:
+    found = problems(f"x = f()  {comment}\n")
+    assert len(found) == 1
+    assert "reportMissingTypeStubs" in found[0][1]
 
 
 @pytest.mark.parametrize(
     "source",
     [
-        "x = f()  # pyright: ignore\n",
-        "x = f()  # pyright: ignore[reportCallIssue]\n",
-        "x = f()  # type: ignore[reportCallIssue]\n",
-        '"""Doc."""\n# type: ignore[reportMissingParameterType]\n',
-        "import os\n# type: ignore[reportMissingParameterType]\n",
+        "import weasyprint  # pyright: ignore[reportMissingTypeStubs]  # sem stubs publicados\n",
+        "import weasyprint  # pyright: ignore[ reportMissingTypeStubs ]\n",
+        "x = 1  # noqa: E501\n",
+        "# Texto que cita `type: ignore` e `pyright: ignore` em crase.\n",
         'TEXT = "# pyright: strict"\n',
-        'TEXT = """\n# pyright: strict\n"""\n',
+        'TEXT = """\n# type: ignore\n"""\n',
         "# pyrightish: strict\n",
     ],
 )
-def test_line_ignores_late_type_ignore_and_strings_pass(source: str) -> None:
-    assert check_pyright.file_comments(source) == []
-
-
-def test_source_that_does_not_tokenize_is_left_to_the_other_tools() -> None:
-    assert check_pyright.file_comments('x = """sem fim\n') == []
+def test_stubs_marker_prose_and_strings_pass(source: str) -> None:
+    assert problems(source) == []
 
 
 @pytest.mark.parametrize(
@@ -137,15 +160,6 @@ def test_source_that_does_not_tokenize_is_left_to_the_other_tools() -> None:
 def test_only_what_pyright_analyzes_is_checked(path: str, config: Table, expected: bool) -> None:
     analyzed = check_pyright.analyzed(PurePosixPath(path), config, check_pyright.base_ignores())
     assert analyzed is expected
-
-
-def git(folder: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=folder, check=True, capture_output=True)  # noqa: S603, S607
-
-
-def write(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
 
 
 @pytest.fixture
@@ -174,6 +188,7 @@ def test_strict_list_and_file_comments_fail(
     )
     write(project / "backend" / "app.py", "# pyright: strict\nx = 1\n")
     write(project / "backend" / "service.py", "# type: ignore[reportPrivateUsage]\nx = 1\n")
+    write(project / "backend" / "client.pyi", "def get() -> int: ...  # type: ignore\n")
     write(project / "backend" / "vendor" / "lib.py", "# pyright: basic\n")
     write(project / "infra" / "deploy.py", "# pyright: basic\n")
     git(project, "add", ".")
@@ -182,8 +197,10 @@ def test_strict_list_and_file_comments_fail(
     assert "`strict` é regra" in err
     assert "backend/app.py:1:" in err
     assert "backend/service.py:1:" in err
-    assert "vendor" not in err
+    assert "backend/client.pyi:1:" in err
+    # Fora do `include` do Pyright e no `ignore` da base (terceiros), nada.
     assert "infra" not in err
+    assert "vendor" not in err
 
 
 def test_untracked_file_is_not_checked(project: Path) -> None:
@@ -232,7 +249,7 @@ def test_outside_git_fails(
 def test_without_git_fails(
     project: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(check_pyright.shutil, "which", lambda _name: None)
+    monkeypatch.setattr(repo.shutil, "which", lambda _name: None)
     assert check_pyright.main([]) == 1
     assert "git não encontrado" in capsys.readouterr().err
 

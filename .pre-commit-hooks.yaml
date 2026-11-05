@@ -1,16 +1,20 @@
 # Hooks que os projetos usam deste repo pelo pre-commit (`repo: https://github.com/welt-studio/standards`).
 
-# Mantém `ruff-base.toml` na raiz do projeto igual ao `ruff/base.toml` do `rev` declarado.
+# Mantém `ruff-base.toml` na raiz do projeto igual ao `ruff/base.toml` do `rev` declarado, e
+# reprova o que a contorna: config de Ruff versionada sem `extend` da cópia, com `select` próprio,
+# `exclude`/`include`, o `TID251` (`Any` e `cast`) ou o `PGH004` desligado, `banned-api` sem os
+# itens da base; e o `noqa` que desliga um dos dois num `.py`, `.pyi` ou `.ipynb`.
 - id: ruff-base
   name: ruff-base (padrão Ruff da Welt Studio)
-  entry: hooks/sync_base.py ruff
+  entry: hooks/check_ruff.py
   language: script
   pass_filenames: false
   always_run: true
 
 # Mantém `pyright-base.json` na raiz do projeto igual ao `pyright/base.json` do `rev` declarado, e
-# reprova o que a contorna: regra no `pyrightconfig.json` (`strict`, `report*`, modo) e
-# `# pyright: <modo ou regra>` num `.py`.
+# reprova o que a contorna: regra no `pyrightconfig.json` (`strict`, `report*`, modo),
+# `# pyright: <modo ou regra>` num `.py`/`.pyi`, `# type: ignore` e `# pyright: ignore` fora o
+# marcador de lib sem stubs.
 - id: pyright-base
   name: pyright-base (padrão Pyright da Welt Studio)
   entry: hooks/check_pyright.py

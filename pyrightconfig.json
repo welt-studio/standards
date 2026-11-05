@@ -5,6 +5,7 @@
   "include": ["hooks", "tests"],
   "venvPath": ".",
   "venv": ".venv",
-  // Os scripts se importam pelo nome (o pre-commit executa o arquivo solto), e os testes também.
-  "executionEnvironments": [{ "root": ".", "extraPaths": ["hooks"] }]
+  // Os scripts se importam pelo nome (o pre-commit executa o arquivo solto), e os testes também;
+  // os testes importam os ajudantes de `tests/` do mesmo jeito (o pytest põe a pasta no path).
+  "executionEnvironments": [{ "root": ".", "extraPaths": ["hooks", "tests"] }]
 }

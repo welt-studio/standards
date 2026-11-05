@@ -19,7 +19,7 @@ repos:
       # `.jscpd*.json`), regeradas dos arquivos deste repo. Não se editam: o hook desfaz.
       - id: ruff-base
         name: ruff-base (padrão Ruff da Welt Studio)
-        entry: hooks/sync_base.py ruff
+        entry: hooks/check_ruff.py
         language: script
         pass_filenames: false
         always_run: true

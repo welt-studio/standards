@@ -2,5 +2,5 @@
 # como nos projetos. Aqui só fatos do repo.
 extend = "ruff-base.toml"
 # Os scripts dos hooks se importam pelo nome (o pre-commit executa o arquivo solto): o código
-# próprio é o de `hooks/`.
-src = ["hooks"]
+# próprio é o de `hooks/`, e o dos ajudantes dos testes (`tests/gitrepo.py`).
+src = ["hooks", "tests"]

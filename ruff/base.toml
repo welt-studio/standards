@@ -74,8 +74,8 @@ select = [
     "TC",      # TYPE_CHECKING: import usado em runtime escondido lá (TC004) e afins
     "FAST",    # FastAPI (só dispara em código FastAPI)
     "DJ",      # Django (só dispara em código Django)
-    "TID251",  # APIs proibidas ([lint.flake8-tidy-imports.banned-api])
-    "PGH003",  # `# type: ignore` sem o código da regra (o Pyright cobra o que não ignora nada)
+    "TID251",  # APIs proibidas ([lint.flake8-tidy-imports.banned-api]), inclusive `Any` e `cast`
+    "PGH003",  # `# type: ignore` sem o código da regra (o hook `pyright-base` reprova qualquer um)
     "PGH004",  # noqa sem código
     "T10",     # `breakpoint()`/`pdb` esquecido
     "NPY",     # API depreciada do NumPy (só dispara em código NumPy)
@@ -155,6 +155,17 @@ extend-immutable-calls = [
 "__future__.annotations".msg = "Python >=3.14 já adia a avaliação das anotações (PEP 649)."
 # Relógio em teste tem uma lib só, a do padrão de testes (`pytest-base`).
 "freezegun".msg = "Use time-machine (padrão de testes da Welt Studio)."
+# Contornar o tipo em vez de tipar (decisão do PO, 2026-11-05): `Any` desliga a checagem de tudo que
+# o toca, e `cast` faz o checker acreditar sem conferir. Vale também nos testes. Dado dinâmico (JSON,
+# TOML, payload) é `object` (ou `dict[str, object]`) estreitado com `isinstance` ou validado; tipo de
+# lib de terceiros não se compensa no nosso código. O `_typeshed.Incomplete` é `Any` com outro nome.
+# O que furaria esta lista (o `noqa` com o código, o de arquivo, a config do projeto que a desligue
+# ou a redefina sem estes itens) é reprovado pelo hook `ruff-base`.
+"typing.Any".msg = "Use o tipo real, ou `object` estreitado com isinstance (padrão da Welt Studio)."
+"typing_extensions.Any".msg = "Use o tipo real, ou `object` estreitado com isinstance (padrão da Welt Studio)."
+"_typeshed.Incomplete".msg = "É `Any` com outro nome: use o tipo real, ou `object` estreitado."
+"typing.cast".msg = "Estreite com isinstance ou valide: o cast faz o checker acreditar sem conferir."
+"typing_extensions.cast".msg = "Estreite com isinstance ou valide: o cast faz o checker acreditar sem conferir."
 
 [lint.pep8-naming]
 # `@declared_attr` recebe a classe (`cls`): é como o SQLAlchemy declara coluna/relacionamento em

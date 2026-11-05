@@ -34,8 +34,12 @@
   // inteiro a cada suíte, então um tipo errado ali já falha no pytest. Com a regra no Pyright, cada
   // `def test_x(client, db)` reprovava (milhares por projeto) e as duas ferramentas discordavam.
   "reportMissingParameterType": "none",
-  // `# type: ignore` que não ignora nada reprova (como o RUF100 do Ruff). O código da regra entre
-  // colchetes é cobrado pelo PGH003 do padrão Ruff.
+  // Ignorar erro de tipo é contorno (decisão do PO, 2026-11-05): o `# type: ignore` não vale (o erro
+  // continua aparecendo), e o hook `pyright-base` reprova o comentário e todo `# pyright: ignore`
+  // fora o marcador de lib sem stubs publicados (`# pyright: ignore[reportMissingTypeStubs]` no
+  // import). Esse marcador sai sozinho: com um pacote de stubs instalado, ele não ignora nada e
+  // reprova aqui.
+  "enableTypeIgnoreComments": false,
   "reportUnnecessaryTypeIgnoreComment": "error",
   // Saída de gerador (migrations do Alembic/Django) e código de terceiros (transcrito ou copiado em
   // `vendor/`, ou minificado) seguem o gerador ou o original: o Pyright não acusa nada dentro deles,
