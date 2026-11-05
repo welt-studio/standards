@@ -22,6 +22,40 @@
   pass_filenames: false
   always_run: true
 
+# Ruff do projeto (a versão do `uv.lock` do pacote), de dentro do pacote (`uv run --directory`),
+# nos arquivos do commit: ele acha a config de cada arquivo como sempre (a de uma subpasta também) e
+# aplica as exclusões do padrão. Commit que muda uma config (`ruff-base.toml`; `ruff.toml`,
+# `.ruff.toml` ou o `[tool.ruff]` de um `pyproject.toml` do pacote) ou o `uv.lock` roda no pacote
+# inteiro: muda o resultado de todo arquivo. A pasta do pacote vai em `args` (obrigatória; ex.:
+# `args: [backend]`, ou `args: [.]`). O `ruff` vem antes do `ruff-format`: o `--fix` muda código que
+# o format reformata. O `files` casa com todo gatilho do `hooks/run_python_tool.py` (o teste
+# confere).
+- id: ruff
+  name: Ruff (lint, padrão da Welt Studio)
+  entry: hooks/run_python_tool.py ruff
+  language: script
+  require_serial: true
+  files: (\.(py|pyi|ipynb)|(^|/)(ruff-base\.toml|\.?ruff\.toml|pyproject\.toml|uv\.lock))$
+
+- id: ruff-format
+  name: Ruff (format, padrão da Welt Studio)
+  entry: hooks/run_python_tool.py ruff-format
+  language: script
+  require_serial: true
+  files: (\.(py|pyi|ipynb)|(^|/)(ruff-base\.toml|\.?ruff\.toml|pyproject\.toml|uv\.lock))$
+
+# Pyright do projeto (a versão do `uv.lock` do pacote, pelo `uv run --project`), da raiz, nos
+# arquivos do commit que o `pyrightconfig.json` analisa (o da raiz, ou o do pacote quando a raiz não
+# tem). Commit que muda o `pyrightconfig.json`, o `pyright-base.json` ou o `uv.lock` roda no projeto
+# inteiro. A pasta do pacote vai em `args` (obrigatória). Projeto sem fila do strict declara
+# `pass_filenames: false` e checa sempre o projeto inteiro.
+- id: pyright
+  name: Pyright (padrão da Welt Studio)
+  entry: hooks/run_python_tool.py pyright
+  language: script
+  require_serial: true
+  files: (\.pyi?|(^|/)(pyrightconfig\.json|pyright-base\.json|uv\.lock))$
+
 # Mantém `.prettierignore` igual ao `prettier/ignore` do `rev` declarado: na raiz, ou na pasta de
 # onde o Prettier roda, passada em `args` (ex.: `args: [frontend]`).
 - id: prettier-base

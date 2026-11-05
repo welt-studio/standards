@@ -30,6 +30,14 @@ def glob_regex(pattern: str) -> re.Pattern[str] | None:
     return re.compile("".join(parts))
 
 
+def inside(path: PurePosixPath, folder: PurePosixPath) -> PurePosixPath | None:
+    """`path` (relativo à raiz) relativo a `folder`; `None` quando está fora dela. A raiz (`.`)
+    contém tudo."""
+    if folder == PurePosixPath():
+        return path
+    return path.relative_to(folder) if path.is_relative_to(folder) else None
+
+
 def matches(path: PurePosixPath, pattern: str) -> bool:
     """`path` casa `pattern`, ele mesmo ou alguma pasta acima dele (como no `include`/`exclude`)."""
     regex = glob_regex(pattern)

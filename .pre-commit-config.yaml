@@ -63,25 +63,34 @@ repos:
         pass_filenames: false
         files: (\.py|pyproject\.toml|uv\.lock)$
 
-  # Python - Ruff e Pyright do venv da raiz (versões do `uv.lock`, a mesma que a CI roda).
+  # Python - Ruff e Pyright do venv da raiz (versões do `uv.lock`, a mesma que a CI roda), pelo
+  # script dos hooks publicados (`hooks/run_python_tool.py`), como os `*-base`: o pacote é a raiz
+  # (`args: [.]`), e o commit que muda uma config roda no repo inteiro. O `files` é o do
+  # `.pre-commit-hooks.yaml`.
   - repo: local
     hooks:
       - id: ruff
-        name: Ruff Linter
-        entry: uv run ruff check --fix
-        language: system
-        types: [python]
+        name: Ruff (lint, padrão da Welt Studio)
+        entry: hooks/run_python_tool.py ruff
+        language: script
+        require_serial: true
+        files: (\.(py|pyi|ipynb)|(^|/)(ruff-base\.toml|\.?ruff\.toml|pyproject\.toml|uv\.lock))$
+        args: [.]
       - id: ruff-format
-        name: Ruff Formatter
-        entry: uv run ruff format
-        language: system
-        types: [python]
+        name: Ruff (format, padrão da Welt Studio)
+        entry: hooks/run_python_tool.py ruff-format
+        language: script
+        require_serial: true
+        files: (\.(py|pyi|ipynb)|(^|/)(ruff-base\.toml|\.?ruff\.toml|pyproject\.toml|uv\.lock))$
+        args: [.]
       # O projeto inteiro (`pass_filenames: false`): o repo (hooks e testes) está em strict sem fila.
       - id: pyright
-        name: Pyright
-        entry: uv run pyright
-        language: system
-        types: [python]
+        name: Pyright (padrão da Welt Studio)
+        entry: hooks/run_python_tool.py pyright
+        language: script
+        require_serial: true
+        files: (\.pyi?|(^|/)(pyrightconfig\.json|pyright-base\.json|uv\.lock))$
+        args: [.]
         pass_filenames: false
 
   # JavaScript/TypeScript - Prettier, ESLint, tsc e Knip do workspace da raiz (versões do

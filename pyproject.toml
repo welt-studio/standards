@@ -34,7 +34,17 @@ exclude-newer = "7 days"
 # O deptry roda da raiz (`deptry .`) e só reconhece como código próprio o que está nela; os scripts
 # dos hooks moram em `hooks/` e se importam pelo nome (o mesmo fato do `src` do `ruff.toml` e do
 # `pythonpath` abaixo). Os que outro script importa entram aqui; esquecido, o deptry acusa DEP001.
-known_first_party = ["comments", "globs", "jsonc", "parsed", "pyproject", "repo", "sync_base"]
+known_first_party = [
+    "check_pyright",
+    "check_ruff",
+    "comments",
+    "globs",
+    "jsonc",
+    "parsed",
+    "pyproject",
+    "repo",
+    "sync_base",
+]
 
 [tool.pytest.ini_options]
 strict = true

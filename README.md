@@ -249,9 +249,13 @@ cópia, mantida por um hook de pre-commit deste repo (`hooks/check_ruff.py`, que
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/welt-studio/standards
-  rev: ruff-v2.0.0
+  rev: ruff-v2.1.0
   hooks:
     - id: ruff-base
+    - id: ruff
+      args: [backend] # a pasta do pacote Python (obrigatória; `.` quando é a raiz)
+    - id: ruff-format
+      args: [backend]
 ```
 
 O hook escreve `ruff-base.toml` na raiz do projeto, igual ao `ruff/base.toml` do `rev`. Se a cópia
@@ -266,15 +270,19 @@ extend = "../../ruff-base.toml" # caminho até a raiz do projeto
 known-first-party = ["app"]
 ```
 
-**O hook do Ruff passa `--config <pacote>/ruff.toml`.** Rodando da raiz com o arquivo pelo nome
-(como o pre-commit roda), o Ruff decide as exclusões (`extend-exclude` + `force-exclude`) com a
-config padrão dele, e não com a do pacote: migrations e `vendor/` seriam conferidos e corrigidos no
-commit. Com `--config`, a exclusão vale. Na CI, rodar de dentro do pacote também resolve.
+**Os hooks `ruff` e `ruff-format` também vêm daqui** (`hooks/run_python_tool.py`), não do projeto:
+uma declaração só do comando e do filtro, que muda para todos numa tag nova. Eles rodam o Ruff do
+projeto (a versão do `uv.lock` dele) nos `.py`, `.pyi` e `.ipynb` do commit que estão no pacote. O
+commit que muda uma config (`ruff-base.toml`; o `ruff.toml`, o `.ruff.toml` ou o `[tool.ruff]` de um
+`pyproject.toml` do pacote, inclusive de uma subpasta) ou o `uv.lock` (a versão do Ruff) roda no
+pacote inteiro: o arquivo está no commit, mas o efeito dele cai em todo arquivo, e sem isso a regra
+nova só aparecia na CI. O `pyproject.toml` sem `[tool.ruff]` (dependência que subiu) não dispara.
 
-```yaml
-- id: ruff
-  entry: uv run --project backend ruff check --fix --config backend/ruff.toml
-```
+**O hook roda de dentro do pacote** (`uv run --directory <pacote>`, com os caminhos relativos a ele),
+como a CI. Rodando da raiz com o arquivo pelo nome, o Ruff decide as exclusões (`extend-exclude` +
+`force-exclude`) com a config padrão dele, e não com a do pacote: migrations e `vendor/` seriam
+conferidos e corrigidos no commit. Passar `--config` resolveria as exclusões, mas faria o Ruff
+ignorar a config de uma subpasta (`tests/ruff.toml` com `extend` da do pacote).
 
 **O padrão é o mesmo em todos os projetos.** O `ruff.toml` do pacote só declara fatos do projeto:
 `known-first-party` e, em `extend-exclude` (que soma com o do base), código gerado fora das pastas
@@ -292,15 +300,16 @@ para todos, numa tag nova.
 | Exceções padrão                | testes (assert, número mágico, senha de fixture, fixture, tamanho); `@declared_attr` do SQLAlchemy como classmethod; os ignores comuns (migrations geradas, `vendor/`, minificados) ficam fora do lint e do format (`extend-exclude` + `force-exclude`), como no Prettier e no jscpd                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `[format]`                     | aspas duplas, espaço, `lf`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
-Os hooks `ruff` e `ruff-format` do projeto são locais (`uv run --project <pacote> ruff ...`), para
-a versão do Ruff morar só no `uv.lock`.
+A versão do Ruff mora só no `uv.lock` do projeto: os hooks daqui chamam o `uv run`, não instalam
+o Ruff.
 
 ### Publicar uma versão do padrão
 
-1. Mudar `ruff/base.toml`. O `required-version` só sobe quando o padrão passa a usar uma regra que
-   a versão mínima atual não conhece.
+1. Mudar `ruff/base.toml` (ou os hooks `ruff`/`ruff-format`). O `required-version` só sobe quando o
+   padrão passa a usar uma regra que a versão mínima atual não conhece.
 2. Commit e tag `ruff-vX.Y.Z` no mesmo commit, push da tag.
-3. O Renovate troca o `rev` do hook `ruff-base` em cada projeto, no PR mensal.
+3. O Renovate troca o `rev` dos hooks `ruff-base`, `ruff` e `ruff-format` em cada projeto, no PR
+   mensal.
 
 ### Subir o Ruff num projeto
 
@@ -384,10 +393,19 @@ cast nem ignore para compensar tipo de lib.
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/welt-studio/standards
-  rev: pyright-v3.0.0
+  rev: pyright-v3.1.0
   hooks:
     - id: pyright-base
+    - id: pyright
+      args: [backend] # a pasta do pacote Python (obrigatória; `.` quando é a raiz)
+      # pass_filenames: false # projeto sem fila do strict: o projeto inteiro em todo commit
 ```
+
+O hook `pyright` também vem daqui (`hooks/run_python_tool.py`): roda o Pyright do projeto
+(`uv run --project <pacote> pyright`, da raiz) nos `.py` e `.pyi` do commit que o
+`pyrightconfig.json` analisa: o da raiz, ou o do pacote quando a raiz não tem (o Pyright recebe
+`--project <pacote>`). O commit que muda o `pyrightconfig.json`, o `pyright-base.json` ou o `uv.lock`
+(a versão do Pyright, os stubs) roda no projeto inteiro.
 
 ```jsonc
 // pyrightconfig.json, na raiz do projeto: só fatos dele
@@ -421,7 +439,7 @@ Nenhuma outra regra desligada: o projeto não declara `report*`. A versão do Py
 contrato quebrado aparece em quem chama a função, fora do commit. Os arquivos do commit são o
 ponto de partida enquanto o projeto tem fila: checar tudo no commit reprovaria todo commit pelos
 erros que já existem. Projeto sem fila passa a checar o projeto inteiro também no hook
-(`pass_filenames: false`), como o próprio standards, que já está em zero.
+(`pass_filenames: false` no hook `pyright`), como o próprio standards, que já está em zero.
 
 **Projeto Django:** os stubs do Django são os do `django-types`, feitos para o Pyright. O
 `django-stubs` depende do plugin do mypy, e sem ele todo campo de model sai `Unknown`. Os stubs do

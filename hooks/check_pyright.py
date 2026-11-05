@@ -29,7 +29,7 @@ from pathlib import Path, PurePosixPath
 import jsonc
 import sync_base
 from comments import file_comments
-from globs import matches
+from globs import inside, matches
 from parsed import Table, items, table
 from repo import git_paths
 
@@ -145,12 +145,8 @@ def comment_problems(paths: list[str], folder: Path, config: Table) -> list[str]
     root = PurePosixPath(folder.as_posix())
     problems: list[str] = []
     for path in paths:
-        relative = PurePosixPath(path)
-        if root != PurePosixPath():
-            if not relative.is_relative_to(root):
-                continue
-            relative = relative.relative_to(root)
-        if not analyzed(relative, config, ignores):
+        relative = inside(PurePosixPath(path), root)
+        if relative is None or not analyzed(relative, config, ignores):
             continue
         for line, comment in file_comments(Path(path)):
             problem = comment_problem(comment)
@@ -166,18 +162,19 @@ def candidate_files() -> list[str] | None:
     return git_paths(HOOK, args, empty_ok=True)
 
 
-def load_config(path: Path) -> Table | None:
-    """O `pyrightconfig.json` em `path`; `None`, com o motivo no stderr, se falta ou é inválido."""
+def load_config(path: Path, hook: str = HOOK) -> Table | None:
+    """O `pyrightconfig.json` em `path`; `None`, com o motivo no stderr (em nome de `hook`, o que
+    falhou), se falta ou é inválido."""
     if not path.is_file():
-        sys.stderr.write(f'{HOOK}: {path} não existe (com `"extends": "./{BASE_COPY}"`)\n')
+        sys.stderr.write(f'{hook}: {path} não existe (com `"extends": "./{BASE_COPY}"`)\n')
         return None
     try:
         value = jsonc.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, UnicodeDecodeError) as error:
-        sys.stderr.write(f"{HOOK}: {path} não é JSON válido em UTF-8: {error}\n")
+        sys.stderr.write(f"{hook}: {path} não é JSON válido em UTF-8: {error}\n")
         return None
     if not isinstance(value, dict):
-        sys.stderr.write(f"{HOOK}: {path} não é um objeto JSON\n")
+        sys.stderr.write(f"{hook}: {path} não é um objeto JSON\n")
         return None
     return table(value)
 
