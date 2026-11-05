@@ -357,7 +357,7 @@ entre colchetes) passa. Pasta passada em `args` quando o `pyrightconfig.json` n�
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/welt-studio/standards
-  rev: pyright-v2.0.0
+  rev: pyright-v2.1.0
   hooks:
     - id: pyright-base
 ```
@@ -374,17 +374,18 @@ entre colchetes) passa. Pasta passada em `args` quando o `pyrightconfig.json` n�
 
 | Bloco                                | O que fixa                                                                                                                                                                                                                                                         |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `typeCheckingMode`                   | `strict` em tudo, testes incluídos: o strict cobra o contrato de cada função (parâmetro anotado). O retorno anotado não é regra do Pyright: é o `ANN` do Ruff, que não vale nos testes                                                                             |
+| `typeCheckingMode`                   | `strict` em tudo, testes incluídos. A anotação de parâmetro e de retorno é do `ANN` do Ruff, que não vale nos testes                                                                                                                                               |
 | `reportUnknown*`                     | a família toda desligada (`Member`, `Argument`, `Variable`, `Parameter`, `Lambda`): o `Unknown` das bibliotecas mal tipadas reprovava cada linha que as tocava. O Pyright não separa o da biblioteca do nosso: `items = []` que recebe qualquer coisa também passa |
 | `reportPrivateUsage`                 | desligada: acesso a privado é do Ruff (`SLF001`), que o cobra no código e o libera nos testes                                                                                                                                                                      |
+| `reportMissingParameterType`         | desligada: parâmetro sem anotação é do Ruff (`ANN001`-`ANN003`), que o cobra no código e o libera nos testes. A fixture do pytest é injetada pelo nome, e o teste roda inteiro a cada suíte: um tipo errado ali já falha no pytest                                 |
 | `reportUnnecessaryTypeIgnoreComment` | `# type: ignore` que não ignora nada reprova; o código da regra é cobrado pelo `PGH003` do Ruff                                                                                                                                                                    |
 | `ignore`                             | os ignores comuns (migrations geradas, `vendor/`, minificados) não são acusados (como no Ruff, no Prettier e no jscpd); quem os usa continua conferido contra os tipos deles. O projeto não declara `ignore`, que substituiria este                                |
 
 O projeto não declara `strict` nem põe `# pyright: strict` num arquivo: no Pyright, os dois religam
 toda regra do strict (nas pastas da lista, ou no arquivo), inclusive as `reportUnknown*` que a base
 desliga; o hook reprova os dois. Projeto que vem da v1 apaga a lista; os testes passam a ser
-cobrados pelo strict (fixture sem anotação reprova no `reportMissingParameterType`, lib sem stubs no
-`reportMissingTypeStubs`).
+cobrados pelo resto do strict (genérico sem argumento no `reportMissingTypeArgument`, a inferência
+estrita de `list`/`dict`/`set`, lib sem stubs no `reportMissingTypeStubs`).
 
 Nenhuma outra regra desligada: o projeto não declara `report*`. A versão do Pyright é o pin do
 `pyproject.toml` de cada projeto, que o Renovate sobe. O hook do projeto checa os arquivos do commit
