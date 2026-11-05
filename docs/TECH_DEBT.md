@@ -71,3 +71,18 @@
 - **Sugestão**: quando o pre-commit passar a avisar (ou o Renovate subir uma versão que avise),
   trocar os nomes no standards numa tag nova de cada hook e nos `.pre-commit-config.yaml` dos
   projetos, na mesma rodada.
+
+### [Hooks] Mensagens de erro dos hooks Python em português
+
+- [ ] **Severidade**: Baixa · `2026-11-05`
+- **Arquivos**: `hooks/check_pyright.py`, `hooks/check_pnpm.py`, `hooks/check_pytest.py`,
+  `hooks/sync_base.py`, `hooks/pyproject.py`
+- **Descrição**: o que os hooks escrevem no stderr/stdout (`não existe`, `não é JSON válido`, `é
+regra, e regra vem da base`, `restaurado a partir do padrão`…) está em português, e a regra é
+  mensagem de erro e log em inglês (comentário e docstring podem ficar em português). Achado no
+  review do `check_pyright.py`; traduzir só o hook novo deixaria o repo misturado, então ficou
+  registrado (decisão do PO, `2026-11-05`). Traduzir muda o que os projetos veem no terminal e as
+  asserções dos testes que conferem as mensagens.
+- **Sugestão**: traduzir as mensagens de todos os hooks numa mudança só, junto com os testes, e
+  publicar numa tag nova de cada hook afetado (`pyright-base`, `pnpm-base`, `pytest-base` e os
+  `*-base` do `sync_base.py`).
