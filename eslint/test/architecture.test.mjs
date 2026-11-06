@@ -54,6 +54,7 @@ const COVERED_RULES = new Set([
   "boundaries/no-unknown-files",
   "import-x/no-cycle",
   "max-lines",
+  "@typescript-eslint/only-throw-error",
 ]);
 
 // O que cada arquivo do fixture deve reprovar; arquivo fora daqui não reprova nenhuma das regras.
@@ -65,6 +66,7 @@ const EXPECTED = {
   "apps/web/src/lib/cycle-a.ts": ["import-x/no-cycle"],
   "apps/web/src/lib/cycle-b.ts": ["import-x/no-cycle"],
   "apps/web/src/routes/fat.ts": ["max-lines"],
+  "apps/web/src/lib/throw-response.ts": ["@typescript-eslint/only-throw-error"],
 };
 
 // Arquivo que o `.gitignore` do fixture ignora, criado depois do `git add` (versionado aqui, ele
@@ -87,6 +89,15 @@ before(() => {
   writeFileSync(join(project, GIT_IGNORED_FILE), "export const page = 1;\n");
   process.env.WELT_ESLINT_CONFIG = installPackage(
     join(project, "..", "node_modules", "@welt-studio", "eslint-config"),
+  );
+  // O `@tanstack/router-core` do caso do `throw redirect(...)`, como num projeto com o TanStack
+  // Router: a exceção do `only-throw-error` casa pelo pacote que declara o tipo, então precisa ser o
+  // pacote de verdade, não um stub.
+  mkdirSync(join(project, "..", "node_modules", "@tanstack"), { recursive: true });
+  symlinkSync(
+    join(PACKAGE, "node_modules", "@tanstack", "router-core"),
+    join(project, "..", "node_modules", "@tanstack", "router-core"),
+    "dir",
   );
   process.chdir(project);
 });

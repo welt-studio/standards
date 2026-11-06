@@ -1,6 +1,6 @@
 {
   "name": "@welt-studio/eslint-config",
-  "version": "4.4.1",
+  "version": "4.5.0",
   "description": "Configuração ESLint padrão da Welt Studio para frontends em TypeScript",
   "type": "module",
   "license": "UNLICENSED",
@@ -50,5 +50,8 @@
     "prettier": "^3.0.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.53.0"
+  },
+  "devDependencies": {
+    "@tanstack/router-core": "1.171.21"
   }
 }

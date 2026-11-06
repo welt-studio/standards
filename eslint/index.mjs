@@ -181,6 +181,14 @@ const typescriptRules = {
   "@typescript-eslint/no-loop-func": "error",
   "@typescript-eslint/no-useless-empty-export": "error",
   "@typescript-eslint/no-unnecessary-qualifier": "error",
+  // O TanStack Router redireciona com `throw redirect(...)` no `beforeLoad`/`loader`, e o `redirect`
+  // é um `Response`, não um `Error`. A exceção é só o tipo `Redirect`, pelo pacote que o declara
+  // (`@tanstack/router-core`; o `@tanstack/react-router` só o reexporta e não casa): qualquer outro
+  // `throw` que não seja `Error`, inclusive `new Response(...)`, continua reprovando.
+  "@typescript-eslint/only-throw-error": [
+    "error",
+    { allow: [{ from: "package", package: "@tanstack/router-core", name: "Redirect" }] },
+  ],
 };
 
 // Desligar regra é exceção: nunca o arquivo inteiro, nunca sem dizer quais regras, nunca sem motivo
