@@ -47,6 +47,15 @@ function installPackage(target) {
   return pathToFileURL(join(target, manifest.exports["."].default)).href;
 }
 
+/** Liga em `target` cada `devDependency` deste pacote, do `node_modules` dele. */
+function linkDevDependencies(target) {
+  const manifest = JSON.parse(readFileSync(join(PACKAGE, "package.json"), "utf8"));
+  for (const name of Object.keys(manifest.devDependencies)) {
+    mkdirSync(join(target, name, ".."), { recursive: true });
+    symlinkSync(join(PACKAGE, "node_modules", name), join(target, name), "dir");
+  }
+}
+
 // As regras que este teste cobre. As outras do padrão também rodam no fixture, mas não são o
 // assunto aqui.
 const COVERED_RULES = new Set([
@@ -54,7 +63,14 @@ const COVERED_RULES = new Set([
   "boundaries/no-unknown-files",
   "import-x/no-cycle",
   "max-lines",
+  "react-refresh/only-export-components",
   "@typescript-eslint/only-throw-error",
+  "@typescript-eslint/no-misused-promises",
+  "@typescript-eslint/no-floating-promises",
+  "@typescript-eslint/no-confusing-void-expression",
+  "@typescript-eslint/unbound-method",
+  "vitest/unbound-method",
+  "vitest/expect-expect",
 ]);
 
 // O que cada arquivo do fixture deve reprovar; arquivo fora daqui não reprova nenhuma das regras.
@@ -67,6 +83,12 @@ const EXPECTED = {
   "apps/web/src/lib/cycle-b.ts": ["import-x/no-cycle"],
   "apps/web/src/routes/fat.ts": ["max-lines"],
   "apps/web/src/lib/throw-response.ts": ["@typescript-eslint/only-throw-error"],
+  "apps/web/src/routes/goal.tsx": ["react-refresh/only-export-components"],
+  "apps/web/src/lib/async-foreach.ts": ["@typescript-eslint/no-misused-promises"],
+  "apps/web/src/lib/floating-fetch.ts": ["@typescript-eslint/no-floating-promises"],
+  "apps/web/src/lib/void-value.ts": ["@typescript-eslint/no-confusing-void-expression"],
+  "apps/web/src/lib/unbound.test.ts": ["vitest/unbound-method"],
+  "apps/web/src/lib/no-expect.test.ts": ["vitest/expect-expect"],
 };
 
 // Arquivo que o `.gitignore` do fixture ignora, criado depois do `git add` (versionado aqui, ele
@@ -90,15 +112,10 @@ before(() => {
   process.env.WELT_ESLINT_CONFIG = installPackage(
     join(project, "..", "node_modules", "@welt-studio", "eslint-config"),
   );
-  // O `@tanstack/router-core` do caso do `throw redirect(...)`, como num projeto com o TanStack
-  // Router: a exceção do `only-throw-error` casa pelo pacote que declara o tipo, então precisa ser o
-  // pacote de verdade, não um stub.
-  mkdirSync(join(project, "..", "node_modules", "@tanstack"), { recursive: true });
-  symlinkSync(
-    join(PACKAGE, "node_modules", "@tanstack", "router-core"),
-    join(project, "..", "node_modules", "@tanstack", "router-core"),
-    "dir",
-  );
+  // As libs dos casos do fixture (as `devDependencies` do pacote: TanStack, React), como num projeto
+  // que as instala. As exceções casam pelo pacote que declara o tipo, e as regras de promise e de
+  // atributo JSX dependem dos tipos de verdade: com stub, o caso passaria sem testar nada.
+  linkDevDependencies(join(project, "..", "node_modules"));
   process.chdir(project);
 });
 

@@ -1,6 +1,6 @@
 {
   "name": "@welt-studio/eslint-config",
-  "version": "4.5.0",
+  "version": "4.6.0",
   "description": "Configuração ESLint padrão da Welt Studio para frontends em TypeScript",
   "type": "module",
   "license": "UNLICENSED",
@@ -24,7 +24,7 @@
     "ignores.json"
   ],
   "scripts": {
-    "test": "node --test test/"
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@eslint-community/eslint-plugin-eslint-comments": "4.8.1",
@@ -52,6 +52,10 @@
     "typescript-eslint": "^8.53.0"
   },
   "devDependencies": {
-    "@tanstack/router-core": "1.171.21"
+    "@tanstack/query-core": "5.101.4",
+    "@tanstack/react-router": "1.170.25",
+    "@tanstack/router-core": "1.171.21",
+    "@types/react": "19.2.7",
+    "react": "19.3.1"
   }
 }

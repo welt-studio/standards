@@ -181,13 +181,46 @@ const typescriptRules = {
   "@typescript-eslint/no-loop-func": "error",
   "@typescript-eslint/no-useless-empty-export": "error",
   "@typescript-eslint/no-unnecessary-qualifier": "error",
-  // O TanStack Router redireciona com `throw redirect(...)` no `beforeLoad`/`loader`, e o `redirect`
-  // é um `Response`, não um `Error`. A exceção é só o tipo `Redirect`, pelo pacote que o declara
-  // (`@tanstack/router-core`; o `@tanstack/react-router` só o reexporta e não casa): qualquer outro
-  // `throw` que não seja `Error`, inclusive `new Response(...)`, continua reprovando.
+  // O TanStack Router desvia o carregamento com `throw redirect(...)` e `throw notFound()` no
+  // `beforeLoad`/`loader`: o `redirect` é um `Response` e o `notFound` um objeto, nenhum é `Error`. A
+  // exceção são só os dois tipos, pelo pacote que os declara (`@tanstack/router-core`; o
+  // `@tanstack/react-router` só os reexporta e não casa): qualquer outro `throw` que não seja `Error`,
+  // inclusive `new Response(...)`, continua reprovando.
   "@typescript-eslint/only-throw-error": [
     "error",
-    { allow: [{ from: "package", package: "@tanstack/router-core", name: "Redirect" }] },
+    {
+      allow: [
+        { from: "package", package: "@tanstack/router-core", name: ["Redirect", "NotFoundError"] },
+      ],
+    },
+  ],
+  // Promise em atributo JSX passa: o `onSubmit={form.handleSubmit(onValid)}` do react-hook-form (a
+  // forma documentada dele) devolve uma função async, e o React não espera o retorno de handler.
+  // Fora do JSX continua reprovando (`forEach(async ...)`, função async passada onde se espera void),
+  // e promise solta dentro do handler continua no `no-floating-promises`.
+  "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: { attributes: false } }],
+  // Sem `await` passa só o que o TanStack Query garante que não rejeita: `invalidateQueries`,
+  // `refetchQueries` e o `refetch` do `useQuery` pegam o erro da query (`.catch(noop)` no
+  // `query-core`) e o põem no estado dela, a não ser com `throwOnError: true` explícito. Qualquer
+  // outra promise solta continua reprovando.
+  "@typescript-eslint/no-floating-promises": [
+    "error",
+    {
+      allowForKnownSafeCalls: [
+        {
+          from: "package",
+          package: "@tanstack/query-core",
+          name: ["invalidateQueries", "refetchQueries", "refetch"],
+        },
+      ],
+    },
+  ],
+  // Arrow de uma linha que chama função `void` (`onClick={() => setOpen(true)}`, o `set(...)` do
+  // Zustand) passa quando quem a recebe espera `void`: o retorno não é usado por ninguém. Usar o
+  // resultado de uma expressão `void` em outro lugar continua reprovando.
+  "@typescript-eslint/no-confusing-void-expression": [
+    "error",
+    { ignoreVoidReturningFunctions: true },
   ],
 };
 
@@ -295,6 +328,19 @@ const untypedStandardRules = {
 // query certa do Testing Library; matcher do jest-dom no lugar de comparar booleano.
 const unitTestConfigs = [
   { ...vitest.configs.recommended, files: unitTestFiles },
+  {
+    name: "welt/unit-tests",
+    files: unitTestFiles,
+    rules: {
+      // `expect(fake.metodo).toHaveBeenCalled()` não chama o método solto: a versão do vitest da
+      // regra sabe disso (é a que o typescript-eslint indica para teste) e cobra o resto igual.
+      "@typescript-eslint/unbound-method": "off",
+      "vitest/unbound-method": "error",
+      // Teste que verifica por um helper (`expectCanvasSize(...)`) tem expectativa: o nome começa com
+      // `expect`.
+      "vitest/expect-expect": ["error", { assertFunctionNames: ["expect", "expect*", "assert"] }],
+    },
+  },
   { ...testingLibrary.configs["flat/react"], files: unitTestFiles },
   { ...jestDom.configs["flat/recommended"], files: unitTestFiles },
 ];
@@ -326,6 +372,29 @@ function frameworkConfigs(framework, files) {
       languageOptions: { globals: globals.browser },
     },
     { ...reactRefresh.configs.vite, files, ignores: toolConfigFiles },
+    {
+      name: "welt/react-refresh-routes",
+      files,
+      ignores: toolConfigFiles,
+      rules: {
+        // A rota por arquivo do TanStack Router (`export const Route = createFileRoute(...)({
+        // component })`, com o componente no mesmo arquivo) é a forma documentada: o `router-plugin`
+        // cuida do HMR dela. Com as fábricas como HOC, o `Route` conta como componente; outro export
+        // que não seja componente continua reprovando. As opções do preset `vite` ficam.
+        "react-refresh/only-export-components": [
+          "error",
+          {
+            ...reactRefresh.configs.vite.rules["react-refresh/only-export-components"][1],
+            extraHOCs: [
+              "createFileRoute",
+              "createLazyFileRoute",
+              "createRootRoute",
+              "createRootRouteWithContext",
+            ],
+          },
+        ],
+      },
+    },
   ];
 }
 

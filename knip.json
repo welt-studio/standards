@@ -1,4 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignore": ["eslint/test/fixture/**"]
+  "workspaces": {
+    "eslint": { "entry": ["test/fixture/apps/web/src/**/*.{ts,tsx}"] }
+  },
+  "ignoreIssues": {
+    "eslint/test/fixture/**": ["files", "exports", "types", "unlisted", "unresolved"]
+  }
 }
