@@ -171,6 +171,11 @@ extend-immutable-calls = [
 "typing.cast".msg = "Estreite com isinstance ou valide: o cast faz o checker acreditar sem conferir."
 "typing_extensions.cast".msg = "Estreite com isinstance ou valide: o cast faz o checker acreditar sem conferir."
 
+[lint.flake8-self]
+# O `_meta` dos modelos do Django é API pública documentada ("Model _meta API"), com o sublinhado só
+# para não colidir com nome de campo. Os outros membros privados continuam no SLF001.
+extend-ignore-names = ["_meta"]
+
 [lint.pep8-naming]
 # `@declared_attr` recebe a classe (`cls`): é como o SQLAlchemy declara coluna/relacionamento em
 # mixin. Sem isto, o N805 pediria `self`.
@@ -180,8 +185,10 @@ classmethod-decorators = ["sqlalchemy.orm.declared_attr"]
 # Testes: assert, número mágico, senha de fixture (S105/S106, decisão do PO em 2026-10-28), fixture
 # injetada e acesso a privado são o normal; tamanho não é defeito (como os testes no ESLint). O resto
 # do padrão vale. Um padrão só para as duas formas (pasta `tests/` e arquivo `test_*.py`), com a
-# alternativa `{...}` do glob: uma lista de exceções.
-"**/{tests/**/*,test_*}.py" = ["S101", "S105", "S106", "PLR2004", "SLF001", "ANN", "ARG001", "ARG002", "PLR0913", "PLR0915", "PLR0917", "C901"]
+# alternativa `{...}` do glob: uma lista de exceções. O N803 também: o dublê de uma lib recebe os
+# argumentos com o nome que ela usa (`Bucket=`, `Key=` do boto3), e o código do projeto continua
+# cobrado.
+"**/{tests/**/*,test_*}.py" = ["S101", "S105", "S106", "PLR2004", "SLF001", "ANN", "ARG001", "ARG002", "PLR0913", "PLR0915", "PLR0917", "C901", "N803"]
 
 [format]
 quote-style = "double"
