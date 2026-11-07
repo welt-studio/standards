@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # O uv do `[tool.uv] required-version` do pyproject; o ambiente ativado põe no PATH o Python do
-      # `.python-version`, o que o `default_language_version` do pre-commit pede.
+      # `.python-version`, o mesmo em que o `uv run pre-commit` (e os hooks) rodam.
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           version-file: pyproject.toml
@@ -47,7 +47,7 @@ jobs:
         run: pnpm audit
       - run: uv sync --locked
       - name: Hooks do padrão
-        run: uvx pre-commit@4.7.0 run --all-files --show-diff-on-failure
+        run: uv run pre-commit run --all-files --show-diff-on-failure
       # A cobertura e o relatório vêm do `addopts` do `pyproject.toml`.
       - name: Testes dos hooks (pytest, com cobertura)
         if: ${{ !cancelled() }}

@@ -104,3 +104,15 @@
   language: script
   pass_filenames: false
   always_run: true
+
+# Mantém o `.python-version` da pasta do pacote Python (obrigatória em `args`; ex.: `args: [backend]`,
+# ou `args: [.]`) igual ao `python/.python-version` do `rev` declarado: a versão do Python é uma só,
+# aqui. E reprova a segunda declaração dela: `default_language_version.python` no
+# `.pre-commit-config.yaml` (os hooks usam o Python do `uv run pre-commit`), `requires-python` do
+# `pyproject.toml` do pacote fora do `==<minor>.*` e `FROM python:` num Dockerfile versionado.
+- id: python-base
+  name: python-base (padrão Python da Welt Studio)
+  entry: hooks/check_python.py
+  language: script
+  pass_filenames: false
+  always_run: true

@@ -37,6 +37,47 @@
   Feito isso, sai do preset o terceiro padrão de arquivo e o terceiro `matchStrings` do uv, e o
   segundo `matchStrings` do pnpm.
 
+### [Python] Projetos ainda declaram o Python por conta própria (migração para o `python-base`)
+
+- [ ] **Severidade**: Média · `2026-11-07`
+- **Arquivos**: `renovate/default.json5`; nos projetos, `.pre-commit-config.yaml`, `.python-version`,
+  Dockerfiles, `pyproject.toml` e os workflows
+- **Descrição**: a versão do Python passou a morar só no `python/.python-version` deste repo
+  (decisão do PO, `2026-11-07`), com o hook `python-base`. Os projetos ainda não adotaram o hook.
+  Hoje cada um declara o Python em até 3 lugares (`.python-version`, `FROM python:3.14.8-*` e
+  `default_language_version`, que o comichub, o pg-studio, o shapeshifter-studio e o flowbit têm, e
+  o nebulai não), e nada trava que as cópias batam. Enquanto todos não migram, o preset continua
+  propondo o Python em cada projeto: sem isso, quem não migrou ficaria sem nenhuma subida.
+- **Sugestão**: em cada projeto (comichub, nebulai, pg-studio, shapeshifter-studio, flowbit e o
+  sexto, a confirmar), no repo dele e com o débito registrado lá:
+  1. ligar o `python-base` (`rev: python-v1.0.0`, `args: [<pasta do pacote>]`);
+  2. tirar o `default_language_version`;
+  3. pôr o `pre-commit` no grupo `dev`, trocar o `uvx pre-commit@…` por `uv run pre-commit` nos
+     workflows e no README, e avisar quem já tinha os ganchos para reinstalar
+     (`uv run pre-commit install`);
+  4. trocar o `FROM python:` pela imagem do uv com o Python gerenciado;
+  5. alinhar o `requires-python` em `==<minor>.*`.
+
+  No nebulai, ver se o `packages/desktop/src-tauri/payload/api/.python-version` é versionado: se
+  for, ele é uma segunda cópia.
+
+  Saída, quando todos migrarem: no preset, desligar o Python fora deste repo
+  (`{ matchDepNames: ["python"], matchRepositories: ["!welt-studio/standards"], enabled: false }`)
+  e tirar o gerenciador regex do `uvx`, se nenhum projeto o usar mais.
+
+### [uv] Versão do uv declarada duas vezes nos projetos (imagem Docker e `required-version`)
+
+- [ ] **Severidade**: Baixa · `2026-11-07`
+- **Arquivos**: nos projetos, o Dockerfile (`ghcr.io/astral-sh/uv:<versão>`) e o `pyproject.toml`
+  (`[tool.uv] required-version`)
+- **Descrição**: o `COPY --from=` e o `FROM` não leem o `pyproject.toml`, então a versão do uv
+  aparece nos dois lugares. O Renovate sobe os dois no mesmo PR (o regex do preset e o
+  `group:allNonMajor`), mas nada reprova a divergência que alguém escrever à mão. Esta é a segunda
+  metade do item 3 do comichub, que ficou fora do `python-base` e sem decisão.
+- **Sugestão**: decisão do PO entre (a) uma checagem no `python-base` ou num hook próprio que
+  compare a tag da imagem com o `required-version` e (b) aceitar as duas declarações, já que o
+  Renovate as sobe juntas.
+
 ## DX (Developer Experience)
 
 ### [ESLint] Resolver do TypeScript ignora os `tsconfig` quando o `cwd` do ESLint difere do processo
@@ -75,7 +116,7 @@
 ### [Hooks] Mensagens de erro dos hooks Python em português
 
 - [ ] **Severidade**: Baixa · `2026-11-05`
-- **Arquivos**: `hooks/check_pyright.py`, `hooks/check_pnpm.py`, `hooks/check_pytest.py`,
+- **Arquivos**: `hooks/check_pyright.py`, `hooks/check_pnpm.py`, `hooks/check_pytest.py`, `hooks/check_python.py`,
   `hooks/sync_base.py`, `hooks/pyproject.py`
 - **Descrição**: o que os hooks escrevem no stderr/stdout (`não existe`, `não é JSON válido`, `é
 regra, e regra vem da base`, `restaurado a partir do padrão`…) está em português, e a regra é

@@ -8,6 +8,9 @@ requires-python = "==3.14.*"
 
 [dependency-groups]
 dev = [
+    # O pre-commit roda no Python deste ambiente (`uv run pre-commit`), e os hooks herdam esse Python:
+    # sem `default_language_version`, a versão vem só do `.python-version` (hook `python-base`).
+    "pre-commit==4.7.0",
     "ruff==0.17.1",
     "pyright==1.1.414",
     # Dependência não usada ou não declarada (hook `deptry`)

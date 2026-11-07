@@ -1,5 +1,5 @@
 # Pre-commit do próprio standards: o repo segue o padrão que publica, com os mesmos hooks dos
-# projetos. Instalar: uvx pre-commit@4.7.0 install
+# projetos. Instalar: uv sync && uv run pre-commit install
 #
 # Os hooks `*-base` rodam os scripts deste working tree (`hooks/`), não uma tag: o padrão em edição
 # é o que vale para o próprio repo. Nos projetos, os mesmos hooks vêm do `rev` de cada um.
@@ -55,6 +55,14 @@ repos:
         language: script
         pass_filenames: false
         always_run: true
+      # O `.python-version` da raiz é cópia do `python/.python-version`, a única declaração do Python.
+      - id: python-base
+        name: python-base (padrão Python da Welt Studio)
+        entry: hooks/check_python.py
+        language: script
+        pass_filenames: false
+        always_run: true
+        args: [.]
       # Dependências Python do pacote da raiz (os scripts de `hooks/` e as ferramentas do grupo dev).
       - id: deptry
         name: deptry (dependências Python, padrão da Welt Studio)
@@ -229,9 +237,5 @@ repos:
         name: Check for merge conflicts
       - id: detect-private-key
         name: Detect private keys
-
-# O Python dos hooks acompanha o minor do `.python-version`.
-default_language_version:
-  python: python3.14
 
 fail_fast: false

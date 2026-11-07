@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Hooks `ruff-base`, `pyright-base`, `prettier-base` e `jscpd-base`: mantêm no projeto a cópia do
-padrão da tag.
+"""Hooks `ruff-base`, `pyright-base`, `prettier-base`, `jscpd-base` e `python-base`: mantêm no
+projeto a cópia do padrão da tag.
 
 O Ruff (`extend`) e o Pyright (`extends`) só leem arquivo local, e o Prettier e o jscpd não herdam
 config de pacote, então o padrão chega ao projeto como cópia (e a config do projeto, quando há,
 herda dela). O hook roda da cópia deste repo que o pre-commit baixou no `rev` declarado: a versão do
 padrão fica só nesse `rev`. Como um formatter, reescreve a cópia quando ela diverge (ou não existe)
-e sai com 1; a segunda rodada passa. O `ruff-base` e o `pyright-base` chegam aqui pelo
-`check_ruff.py` e pelo `check_pyright.py`, que depois conferem o que contornaria a cópia. Python
-stdlib, sem dependências.
+e sai com 1; a segunda rodada passa. O `ruff-base`, o `pyright-base` e o `python-base` chegam aqui
+pelo `check_ruff.py`, pelo `check_pyright.py` e pelo `check_python.py`, que depois conferem o que
+contornaria a cópia. Python stdlib, sem dependências.
 
-Uso: `sync_base.py <ruff|pyright|prettier|jscpd> [pasta]`. A cópia vai na raiz do projeto, ou na
-`pasta` (relativa à raiz) quando a ferramenta roda de dentro dela, como o Prettier em `frontend/`.
+Uso: `sync_base.py <ruff|pyright|prettier|jscpd|python> [pasta]`. A cópia vai na raiz do projeto,
+ou na `pasta` (relativa à raiz) quando a ferramenta roda de dentro dela, como o Prettier em
+`frontend/`.
 """
 
 import sys
@@ -32,6 +33,9 @@ BASES: dict[str, tuple[tuple[str, str, str | None], ...]] = {
         ("jscpd/base.json", ".jscpd.json", None),
         ("jscpd/semantic.json", ".jscpd-semantic.json", None),
     ),
+    # O `.python-version` vai na pasta do pacote Python, onde o uv o procura. Sem cabeçalho: não é
+    # garantido que cada leitor do arquivo pule comentário.
+    "python": (("python/.python-version", ".python-version", None),),
 }
 
 

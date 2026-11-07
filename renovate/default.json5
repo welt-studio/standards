@@ -45,7 +45,8 @@
   // teste nenhum, e no nebulai o PR só roda Ruff nos arquivos alterados, Knip e audit. Todo PR
   // espera a aprovação do PO. Quando a CI cobrir isso, religar com `automerge: true` numa regra
   // para patch, minor e lockfile; o merge fica com o próprio Renovate, só com os checks verdes
-  // (sem proteção de branch, o merge nativo do GitHub não seria garantia).
+  // (sem proteção de branch, o merge nativo do GitHub não seria garantia). A regra cobre também o
+  // `rev` do `python-base`: patch do Python é minor da tag `python-v*`, e muda a imagem Docker.
   platformAutomerge: false,
 
   packageRules: [
@@ -116,6 +117,14 @@
       matchPackageNames: ["welt-studio/standards"],
       matchCurrentValue: "/^deptry-v/",
       versioning: "regex:^deptry-v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
+    },
+    {
+      // A tag segue o Python: minor do Python é major da tag, então o PR dos projetos sai separado,
+      // como o do `python/.python-version` aqui (regra "Minor do Python").
+      description: "E o hook `python-base` só as `python-v*`.",
+      matchPackageNames: ["welt-studio/standards"],
+      matchCurrentValue: "/^python-v/",
+      versioning: "regex:^python-v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$",
     },
     {
       // Exceção: a v2.0.0 (2024) roda em Node 20, que o GitHub está tirando dos runners, e a migração

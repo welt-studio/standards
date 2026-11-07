@@ -19,7 +19,7 @@ as cópias que eles geram na raiz (`ruff-base.toml`, `pyright-base.json`, `.pret
 
 ```sh
 uv sync && pnpm install
-uvx pre-commit@4.7.0 install   # os três ganchos vêm do `default_install_hook_types`
+uv run pre-commit install      # os três ganchos vêm do `default_install_hook_types`
 uv run pytest                  # testes dos hooks, com a cobertura e o piso (`--cov` no `addopts`)
 pnpm test                      # testes dos pacotes (ESLint, Prettier, tsconfig, Vitest)
 ```
@@ -35,7 +35,7 @@ O `.pre-commit-config.yaml` deste repo é a referência para o dos projetos. Al�
 padrão (seções abaixo), todo projeto tem:
 
 ```yaml
-# Os três ganchos num `uvx pre-commit@4.7.0 install` só, sem flag. A lista substitui o padrão do
+# Os três ganchos num `uv run pre-commit install` só, sem flag. A lista substitui o padrão do
 # pre-commit: sem o `commit-msg`, o conventional-pre-commit nunca é instalado.
 default_install_hook_types: [pre-commit, commit-msg, pre-push]
 # Sem isto, todo hook vale para todos os ganchos instalados e os do commit rodam de novo na mensagem
@@ -82,10 +82,18 @@ repos:
   (ligado pelo `:enablePreCommit` do preset) lê essa forma e atualiza o SHA e o comentário juntos.
 - **Testes no `pre-push`**: pytest (com `--cov` no `addopts`, ver "Testes (pytest)") e vitest
   (`vitest run --coverage`). O commit fica rápido; o push não sobe teste vermelho.
-- **CI**: `uvx pre-commit@4.7.0 run --all-files --show-diff-on-failure` (todo hook do commit no repo
+- **CI**: `uv run pre-commit run --all-files --show-diff-on-failure` (todo hook do commit no repo
   inteiro) e os testes com cobertura (`uv run pytest`, `pnpm run test:coverage`), como o
-  `.github/workflows/test.yml` deste repo. A versão do pre-commit no `uvx` dos workflows, do
-  `.pre-commit-config.yaml` e do README sobe pelo Renovate, todas no mesmo PR.
+  `.github/workflows/test.yml` deste repo.
+- **pre-commit no grupo `dev`** do pacote Python (`uv add --dev pre-commit`), rodado por
+  `uv run pre-commit` (num monorepo, `uv run --project <pacote> pre-commit`). A versão dele é a do
+  `uv.lock`, e o pre-commit roda no Python do `.python-version`. Os hooks `language: python` (o
+  conventional-pre-commit e os básicos) herdam esse Python. Por isso não existe
+  `default_language_version`: seria uma segunda declaração do Python, e o hook `python-base` a
+  reprova (ver "Python").
+  Quem instalou os ganchos pelo `uvx pre-commit install` reinstala com `uv run pre-commit install`:
+  o gancho do git guarda o Python de quem o instalou (`INSTALL_PYTHON` em `.git/hooks/pre-commit`),
+  e o antigo é o do ambiente do uvx, não o do `.python-version`.
 
 ## ESLint: `@welt-studio/eslint-config`
 
@@ -228,6 +236,37 @@ entra no `ignores.json` e em cada cópia, numa tag de cada pacote.
    push e PR, inclusive nos do Renovate que sobem os plugins.
 3. Commit e tag `eslint-vX.Y.Z` no mesmo commit, push da tag.
 4. O Renovate abre em cada projeto o PR que troca a tag, com o lockfile; revisar e fazer o merge.
+
+## Python: `python/.python-version` pelo hook `python-base`
+
+A versão do Python da casa é uma só: o `python/.python-version` deste repo. O hook `python-base`
+mantém o `.python-version` da pasta do pacote Python igual a ele, como o `ruff-base` faz com o
+`ruff-base.toml`, e desfaz edição local. O `.python-version` da raiz deste repo é a mesma cópia.
+
+```yaml
+- repo: https://github.com/welt-studio/standards
+  rev: python-v1.0.0
+  hooks:
+    - id: python-base
+      args: [backend] # a pasta do pacote Python (obrigatória; `.` na raiz)
+```
+
+O hook também reprova cada segunda declaração do Python:
+
+| Onde                                            | Por quê                                                                                               |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `default_language_version.python` no pre-commit | os hooks já usam o Python do `uv run pre-commit`; a linha seria uma cópia que nem o Renovate atualiza |
+| `requires-python` diferente de `==<minor>.*`    | o uv recusaria o Python da cópia, ou resolveria o lock para outro. Depois de trocar, `uv lock`        |
+| `FROM python:` num Dockerfile versionado        | a imagem parte do uv (`ghcr.io/astral-sh/uv`), e o `uv sync` instala o Python do `.python-version`    |
+
+**Como sobe.** O Renovate propõe o Python novo só aqui, no `python/.python-version` (a regra
+"Minor do Python" do preset vale: minor é decisão do PO). Mergeado, sai uma tag `python-v*`, e o
+Renovate abre em cada projeto o PR que sobe o `rev` do `python-base`. O hook reescreve o
+`.python-version`, e a CI do projeto testa no Python novo. A tag segue o Python: patch do Python
+(3.14.8 → 3.14.9) é minor da tag, e minor do Python (3.14 → 3.15) é major da tag. Assim, o PR dos
+projetos sai separado ("cada major no seu") e passa pela decisão do PO, que é o caso do `torch`.
+Esse PR ainda espera aprovação, como todos. O merge automático dele volta com o dos outros, quando
+a CI dos projetos montar a imagem Docker no PR.
 
 ## Ruff: `ruff/base.toml` pelo hook `ruff-base`
 
@@ -519,7 +558,7 @@ Projeto em que o Prettier roda de dentro de uma pasta passa a pasta em `args`:
 O hook do Prettier é o mesmo em todo projeto: `pnpm exec prettier --write --ignore-unknown`, nos
 arquivos do commit; na CI, o TS/JS fora do formato reprova pelo `prettier/prettier` do ESLint. O
 projeto inteiro se formata pelo mesmo hook, nunca por `prettier .` direto:
-`uvx pre-commit@4.7.0 run prettier --all-files`. O hook só recebe arquivo versionado e respeita o
+`uv run pre-commit run prettier --all-files`. O hook só recebe arquivo versionado e respeita o
 `exclude` dele; o `prettier .` lê só o `.gitignore` da pasta de onde roda (não os de subpastas) e
 entraria em `dist/`, artefatos e pastas ignoradas mais abaixo.
 
