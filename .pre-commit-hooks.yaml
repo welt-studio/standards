@@ -98,6 +98,7 @@
 
 # Confere a política de scripts de instalação do pnpm (`strictDepBuilds: false`, sem `allowBuilds`,
 # npm recusado pelo `devEngines`): na raiz, ou na pasta do `pnpm-workspace.yaml` passada em `args`.
+# E a tag da imagem `ghcr.io/pnpm/pnpm` dos Dockerfiles versionados contra o `packageManager`.
 - id: pnpm-base
   name: pnpm-base (scripts de instalação, padrão da Welt Studio)
   entry: hooks/check_pnpm.py
@@ -109,7 +110,8 @@
 # ou `args: [.]`) igual ao `python/.python-version` do `rev` declarado: a versão do Python é uma só,
 # aqui. E reprova a segunda declaração dela: `default_language_version.python` no
 # `.pre-commit-config.yaml` (os hooks usam o Python do `uv run pre-commit`), `requires-python` do
-# `pyproject.toml` do pacote fora do `==<minor>.*` e `FROM python:` num Dockerfile versionado.
+# `pyproject.toml` do pacote fora do `==<minor>.*` e a imagem do Python num Dockerfile versionado.
+# Confere também a tag da imagem `ghcr.io/astral-sh/uv` contra o `[tool.uv] required-version`.
 - id: python-base
   name: python-base (padrão Python da Welt Studio)
   entry: hooks/check_python.py

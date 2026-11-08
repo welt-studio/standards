@@ -58,6 +58,15 @@
       automerge: false,
     },
     {
+      // O Python mora só no `python/.python-version` deste repo. Nos projetos, o `.python-version` é
+      // a cópia do hook `python-base` (que desfaz outra versão), e a versão nova chega pelo `rev`
+      // dele (regra `python-v*`). Proposto lá, o PR ficaria vermelho e levaria junto o agrupado.
+      description: "Python só se propõe no standards; nos projetos ele vem do `rev` do `python-base`.",
+      matchDepNames: ["python"],
+      matchRepositories: ["!welt-studio/standards"],
+      enabled: false,
+    },
+    {
       description: "Major de Node e pnpm vêm juntos em todos os lugares do projeto, para revisão.",
       matchDepNames: ["node", "pnpm"],
       matchUpdateTypes: ["major"],
@@ -175,34 +184,24 @@
   // Versões que os gerenciadores do Renovate não leem sozinhos.
   customManagers: [
     {
-      // `scripts/*.mjs` existe só pelo `UV_VERSION` do instalador do nebulai (débito no TECH_DEBT
-      // dele: o script deve ler o `required-version`). Corrigido lá, esse padrão e o terceiro
-      // `matchStrings` saem daqui.
-      description: "uv: `[tool.uv] required-version`, imagem do GHCR e a constante do instalador do nebulai.",
+      // As duas sobem no mesmo PR; o hook `python-base` reprova a tag que divergir do
+      // `required-version`.
+      description: "uv: `[tool.uv] required-version` e a imagem do GHCR.",
       customType: "regex",
-      managerFilePatterns: [
-        "/(^|/)pyproject\\.toml$/",
-        "/(^|/)[^/]*Dockerfile[^/]*$/",
-        "/(^|/)scripts/[^/]+\\.m?js$/",
-      ],
+      managerFilePatterns: ["/(^|/)pyproject\\.toml$/", "/(^|/)[^/]*Dockerfile[^/]*$/"],
       matchStrings: [
         'required-version\\s*=\\s*"==(?<currentValue>\\d+\\.\\d+\\.\\d+)"',
         "ghcr\\.io/astral-sh/uv:(?<currentValue>\\d+\\.\\d+\\.\\d+)",
-        'UV_VERSION\\s*=\\s*"(?<currentValue>\\d+\\.\\d+\\.\\d+)"',
       ],
       depNameTemplate: "uv",
       datasourceTemplate: "pypi",
     },
     {
-      // O `ARG PNPM_VERSION` é só do comichub (débito no TECH_DEBT dele: `FROM` direto, como os
-      // outros). Corrigido lá, o segundo `matchStrings` sai daqui.
-      description: "pnpm nas imagens do GHCR e no `ARG PNPM_VERSION` dos Dockerfiles.",
+      // A tag sobe junto do `packageManager`; o hook `pnpm-base` reprova a que divergir.
+      description: "pnpm nas imagens do GHCR dos Dockerfiles.",
       customType: "regex",
       managerFilePatterns: ["/(^|/)[^/]*Dockerfile[^/]*$/"],
-      matchStrings: [
-        "ghcr\\.io/pnpm/pnpm:(?<currentValue>\\d+\\.\\d+\\.\\d+)",
-        "ARG PNPM_VERSION=(?<currentValue>\\d+\\.\\d+\\.\\d+)",
-      ],
+      matchStrings: ["ghcr\\.io/pnpm/pnpm:(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
       depNameTemplate: "pnpm",
       datasourceTemplate: "npm",
     },

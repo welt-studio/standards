@@ -12,7 +12,10 @@ deste repo no `rev` declarado. Depois, o hook reprova a segunda declaração do 
   uv recusa o Python da cópia (ou resolve o lock para outro);
 - a imagem do Python num Dockerfile versionado (fora gerado e terceiros): a oficial (`python`, de
   qualquer registro) e a do uv com Python embutido (`uv:<versão>-python3.14-…`). A imagem parte do
-  uv sem Python, e o `uv sync` instala o da cópia.
+  uv sem Python, e o `uv sync` instala o da cópia;
+- a tag da imagem do uv (`ghcr.io/astral-sh/uv`) diferente do `[tool.uv] required-version` do
+  pacote (`==<versão>`, a declaração), por variável ou sem tag: o `uv sync` recusaria o uv da
+  imagem.
 
 Python stdlib, sem dependências.
 
@@ -21,21 +24,19 @@ Uso: `check_python.py <pasta>`, com a pasta (relativa à raiz) do pacote Python 
 
 import re
 import sys
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 
+import dockerfiles
 import pyproject
 import sync_base
-from check_ruff import common_ignores, ignored
-from parsed import table
-from repo import git_paths
+from parsed import Table, table
 
 TOOL = "python"
 HOOK = sync_base.hook_id(TOOL)
 PRE_COMMIT_CONFIG = Path(".pre-commit-config.yaml")
-DOCKERFILES = ("*Dockerfile*", "*.dockerfile")
-# O nome do Dockerfile, dos que o pathspec lista (que também pega `docs/Dockerfile.md`).
-DOCKERFILE_NAME = re.compile(r"Dockerfile(\.[^/]+)?|[^/]+\.[Dd]ockerfile")
-DOCKERFILE_DOCS = (".md", ".txt", ".rst")
+UV_IMAGE = "ghcr.io/astral-sh/uv"
+# O `required-version` exato, a única forma que dá uma versão para a tag da imagem.
+EXACT_VERSION = re.compile(r"==(?P<version>\d+\.\d+\.\d+)")
 # A chave de topo e o `python` dentro dela, em bloco ou na forma `{python: ...}`.
 LANGUAGE_VERSION_KEY = re.compile(r"^default_language_version\s*:(?P<inline>.*)$")
 PYTHON_KEY = re.compile(r"(^\s+|[{,]\s*)['\"]?python['\"]?\s*:")
@@ -88,30 +89,30 @@ def requires_python_problem(value: object, expected: str, path: Path) -> str | N
     )
 
 
-def is_dockerfile(path: str, ignores: list[str]) -> bool:
-    """Dockerfile do projeto: pelo nome, fora gerado e terceiros, e no working tree (apagado e ainda
-    no índice do git, ou um submódulo com o nome, não há o que ler)."""
-    name = PurePosixPath(path).name
-    return (
-        DOCKERFILE_NAME.fullmatch(name) is not None
-        and not name.endswith(DOCKERFILE_DOCS)
-        and not ignored(path, ignores)
-        and Path(path).is_file()
-    )
+def python_image_problems(paths: list[str]) -> list[str]:
+    return [
+        f"{path}:{number}: a imagem declara o Python de novo; parta da imagem do uv sem Python e "
+        "deixe o `uv sync` instalar o do `.python-version`"
+        for path in paths
+        for number, line in dockerfiles.lines(path)
+        if PYTHON_IMAGE.match(line)
+    ]
 
 
-def dockerfile_problems(paths: list[str]) -> list[str]:
-    problems: list[str] = []
-    ignores = common_ignores()
-    for path in (path for path in paths if is_dockerfile(path, ignores)):
-        text = Path(path).read_text(encoding="utf-8", errors="replace")
-        for number, line in enumerate(text.splitlines(), start=1):
-            if PYTHON_IMAGE.match(line):
-                problems.append(
-                    f"{path}:{number}: a imagem declara o Python de novo; parta da imagem do uv "
-                    "sem Python e deixe o `uv sync` instalar o do `.python-version`"
-                )
-    return problems
+def uv_image_problems(paths: list[str], config: Table, config_path: Path) -> list[str]:
+    """A tag da imagem do uv contra o `required-version` do pacote, quando a imagem é usada."""
+    if not any(UV_IMAGE in line for path in paths for _, line in dockerfiles.lines(path)):
+        return []
+    required = table(table(config.get("tool")).get("uv")).get("required-version")
+    match = EXACT_VERSION.fullmatch(required) if isinstance(required, str) else None
+    if match is None:
+        message = (
+            f"{config_path}: `[tool.uv] required-version` precisa ser `==<versão>` exata: os "
+            f"Dockerfiles usam a `{UV_IMAGE}`, e a tag dela é a cópia dessa versão"
+        )
+        return [message]
+    source = f"`required-version` de {config_path}"
+    return dockerfiles.tag_problems(paths, UV_IMAGE, match["version"], source)
 
 
 def main(args: list[str]) -> int:
@@ -132,30 +133,25 @@ def main(args: list[str]) -> int:
         )
     # Uma falha de leitura (`pyproject.toml`, git) já foi ao stderr; as outras conferências seguem,
     # para tudo aparecer numa rodada só.
-    unreadable = False
     config_path = folder / "pyproject.toml"
     config = pyproject.load(config_path, HOOK)
-    if config is None:
-        unreadable = True
-    else:
+    paths = dockerfiles.dockerfile_paths(HOOK)
+    if config is not None:
         expected = f"=={minor(standard_version())}.*"
         problem = requires_python_problem(
             table(config.get("project")).get("requires-python"), expected, config_path
         )
         if problem:
             found.append(problem)
-    dockerfiles = git_paths(HOOK, ["ls-files", "-z", "--", *DOCKERFILES])
-    if dockerfiles is None:
-        unreadable = True
-    else:
-        found += dockerfile_problems(dockerfiles)
-    if unreadable and not found:
-        return 1
+    if paths is not None:
+        found += python_image_problems(paths)
+        if config is not None:
+            found += uv_image_problems(paths, config, config_path)
+    unreadable = config is None or paths is None
     if found:
         sys.stderr.write(f"{HOOK}: fora do padrão Python da Welt Studio:\n")
         sys.stderr.writelines(f"  - {item}\n" for item in found)
-        return 1
-    return synced
+    return 1 if found or unreadable else synced
 
 
 if __name__ == "__main__":

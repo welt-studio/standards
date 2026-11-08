@@ -41,6 +41,7 @@ known_first_party = [
     "check_pyright",
     "check_ruff",
     "comments",
+    "dockerfiles",
     "globs",
     "jsonc",
     "parsed",

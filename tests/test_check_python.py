@@ -9,8 +9,12 @@ from gitrepo import git, write
 
 VERSION = check_python.standard_version()
 REQUIRES = f"=={check_python.minor(VERSION)}.*"
-PYPROJECT = f'[project]\nname = "api"\nrequires-python = "{REQUIRES}"\n'
-DOCKERFILE = "FROM ghcr.io/astral-sh/uv:0.13.1-bookworm-slim\nRUN uv sync --locked\n"
+UV = "0.13.1"
+PYPROJECT = (
+    f'[project]\nname = "api"\nrequires-python = "{REQUIRES}"\n'
+    f'\n[tool.uv]\nrequired-version = "=={UV}"\n'
+)
+DOCKERFILE = f"FROM ghcr.io/astral-sh/uv:{UV}-trixie-slim\nRUN uv sync --locked\n"
 
 
 @pytest.fixture
@@ -162,6 +166,59 @@ def test_every_problem_shows_with_an_unreadable_pyproject(
     assert "não é TOML válido" in err
     assert "default_language_version.python" in err
     assert "api/Dockerfile:1:" in err
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "FROM ghcr.io/astral-sh/uv:0.13.1",
+        "FROM ghcr.io/astral-sh/uv:0.13.1-trixie-slim@sha256:abc AS base",
+        "COPY --from=ghcr.io/astral-sh/uv:0.13.1 /uv /usr/local/bin/uv",
+        "# FROM ghcr.io/astral-sh/uv:0.1.0",
+    ],
+)
+def test_uv_image_on_the_required_version_passes(project: Path, line: str) -> None:
+    write(project / "api/Dockerfile", f"{line}\nRUN uv sync --locked\n")
+    assert check_python.main(["api"]) == 0
+
+
+@pytest.mark.parametrize(
+    ("line", "found"),
+    [
+        ("FROM ghcr.io/astral-sh/uv:0.13.2-trixie-slim", "diverge"),
+        ("FROM ghcr.io/astral-sh/uv:0.13.10", "diverge"),
+        ("COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /bin/uv", "por variável"),
+        ("FROM ghcr.io/astral-sh/uv AS base", "sem tag"),
+    ],
+)
+def test_uv_image_off_the_required_version_fails(
+    project: Path, line: str, found: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    write(project / "api/Dockerfile", f"{line}\nRUN uv sync --locked\n")
+    assert check_python.main(["api"]) == 1
+    err = capsys.readouterr().err
+    assert "api/Dockerfile:1:" in err
+    assert found in err
+
+
+@pytest.mark.parametrize("uv", ["", '\n[tool.uv]\nrequired-version = ">=0.13"\n'])
+def test_uv_image_without_an_exact_required_version_fails(
+    project: Path, uv: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    write(
+        project / "api/pyproject.toml",
+        f'[project]\nname = "api"\nrequires-python = "{REQUIRES}"\n{uv}',
+    )
+    assert check_python.main(["api"]) == 1
+    assert "`==<versão>` exata" in capsys.readouterr().err
+
+
+def test_without_the_uv_image_the_required_version_is_free(project: Path) -> None:
+    write(project / "api/Dockerfile", "FROM debian:trixie-slim\n")
+    write(
+        project / "api/pyproject.toml", f'[project]\nname = "api"\nrequires-python = "{REQUIRES}"\n'
+    )
+    assert check_python.main(["api"]) == 0
 
 
 def test_missing_folder_fails(project: Path, capsys: pytest.CaptureFixture[str]) -> None:

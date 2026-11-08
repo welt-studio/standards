@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 import check_pnpm
+from gitrepo import git, write
 from parsed import Table
 
 WORKSPACE = """\
@@ -99,3 +100,70 @@ def test_main_reports_invalid_json(tmp_path: Path, capsys: pytest.CaptureFixture
     (tmp_path / "package.json").write_text('{"devEngines": }', encoding="utf-8")
     assert check_pnpm.main([str(tmp_path)]) == 1
     assert "não é JSON válido" in capsys.readouterr().err
+
+
+@pytest.fixture
+def project(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Projeto no padrão: o workspace em `web/`, com o Dockerfile na versão do `packageManager`."""
+    write(tmp_path / "web/pnpm-workspace.yaml", WORKSPACE)
+    write(tmp_path / "web/package.json", json.dumps(PACKAGE))
+    write(tmp_path / "web/Dockerfile", "FROM ghcr.io/pnpm/pnpm:12.14.0 AS deps\nRUN pnpm i\n")
+    git(tmp_path, "init", "-q")
+    git(tmp_path, "add", ".")
+    monkeypatch.chdir(tmp_path)
+    return tmp_path
+
+
+def test_pnpm_image_on_the_package_manager_passes(project: Path) -> None:
+    assert check_pnpm.main(["web"]) == 0
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "FROM ghcr.io/pnpm/pnpm:12.14.0-alpine",
+        "COPY --from=ghcr.io/pnpm/pnpm:12.14.0@sha256:abc /pnpm /usr/local/bin/pnpm",
+        "FROM node:24-slim",
+    ],
+)
+def test_other_forms_pass(project: Path, line: str) -> None:
+    write(project / "web/Dockerfile", f"{line}\n")
+    assert check_pnpm.main(["web"]) == 0
+
+
+@pytest.mark.parametrize(
+    ("line", "found"),
+    [
+        ("FROM ghcr.io/pnpm/pnpm:12.13.0", "diverge"),
+        ("FROM ghcr.io/pnpm/pnpm:${PNPM_VERSION}", "por variável"),
+        ("FROM ghcr.io/pnpm/pnpm AS deps", "sem tag"),
+    ],
+)
+def test_pnpm_image_off_the_package_manager_fails(
+    project: Path, line: str, found: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    write(project / "web/Dockerfile", f"{line}\n")
+    assert check_pnpm.main(["web"]) == 1
+    err = capsys.readouterr().err
+    assert "web/Dockerfile:1:" in err
+    assert found in err
+
+
+@pytest.mark.parametrize("manager", [None, "pnpm@latest", "npm@11.0.0"])
+def test_pnpm_image_without_a_pinned_package_manager_fails(
+    project: Path, manager: str | None, capsys: pytest.CaptureFixture[str]
+) -> None:
+    package = {key: value for key, value in PACKAGE.items() if key != "packageManager"}
+    if manager is not None:
+        package["packageManager"] = manager
+    write(project / "web/package.json", json.dumps(package))
+    assert check_pnpm.main(["web"]) == 1
+    assert "`pnpm@<versão>`" in capsys.readouterr().err
+
+
+def test_package_manager_with_corepack_hash_passes(project: Path) -> None:
+    write(
+        project / "web/package.json",
+        json.dumps({**PACKAGE, "packageManager": "pnpm@12.14.0+sha512.ab"}),
+    )
+    assert check_pnpm.main(["web"]) == 0

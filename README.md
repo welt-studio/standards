@@ -253,11 +253,12 @@ mantém o `.python-version` da pasta do pacote Python igual a ele, como o `ruff-
 
 O hook também reprova cada segunda declaração do Python:
 
-| Onde                                            | Por quê                                                                                               |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `default_language_version.python` no pre-commit | os hooks já usam o Python do `uv run pre-commit`; a linha seria uma cópia que nem o Renovate atualiza |
-| `requires-python` diferente de `==<minor>.*`    | o uv recusaria o Python da cópia, ou resolveria o lock para outro. Depois de trocar, `uv lock`        |
-| `FROM python:` num Dockerfile versionado        | a imagem parte do uv (`ghcr.io/astral-sh/uv`), e o `uv sync` instala o Python do `.python-version`    |
+| Onde                                                     | Por quê                                                                                               |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `default_language_version.python` no pre-commit          | os hooks já usam o Python do `uv run pre-commit`; a linha seria uma cópia que nem o Renovate atualiza |
+| `requires-python` diferente de `==<minor>.*`             | o uv recusaria o Python da cópia, ou resolveria o lock para outro. Depois de trocar, `uv lock`        |
+| `FROM python:` num Dockerfile versionado                 | a imagem parte do uv (`ghcr.io/astral-sh/uv`), e o `uv sync` instala o Python do `.python-version`    |
+| tag do `ghcr.io/astral-sh/uv` fora do `required-version` | o `uv sync` recusaria o uv da imagem. Tag por variável ou sem tag também reprova                      |
 
 **Como sobe.** O Renovate propõe o Python novo só aqui, no `python/.python-version` (a regra
 "Minor do Python" do preset vale: minor é decisão do PO). Mergeado, sai uma tag `python-v*`, e o
@@ -395,10 +396,10 @@ eles não leem: o `[tool.uv] required-version`, as imagens `ghcr.io/astral-sh/uv
 `pnpm install --lockfile-only --ignore-scripts` no PR, o único comando que o runner permite
 (`allowedCommands`), que recalcula o lockfile sem rodar código de pacote.
 
-Duas regras ainda existem só por um projeto, cada uma com o débito que a tira no TECH_DEBT dele: o
-`ARG PNPM_VERSION` (comichub, que deve usar o `FROM` direto como os outros) e o `UV_VERSION` do
-instalador do nebulai (que deve ler o `required-version`). Regra nova no preset vale para todos;
-versão escrita num lugar que só um projeto usa se corrige no projeto, não aqui.
+Regra nova no preset vale para todos; versão escrita num lugar que só um projeto usa se corrige no
+projeto, não aqui. As tags das imagens do uv e do pnpm são cópias que o Renovate sobe junto da
+declaração (`required-version`, `packageManager`), e os hooks `python-base` e `pnpm-base` reprovam a
+que divergir.
 
 Conferir uma mudança no preset antes do merge (pelo pnpm: o `devEngines` deste repo recusa o `npx`):
 `pnpm dlx --package renovate@44.176.0 renovate-config-validator --no-global renovate/default.json5`.
@@ -617,9 +618,11 @@ strictDepBuilds: false
 
 O hook `pnpm-base` (`hooks/check_pnpm.py`) trava a política: reprova o commit se faltar o
 `strictDepBuilds: false` ou o `devEngines.packageManager`, ou se voltar `allowBuilds`,
-`onlyBuiltDependencies`, `dangerouslyAllowAllBuilds` ou `ignoreScripts`. Use o pnpm do
-`packageManager`: versões antigas do pnpm 12 reescrevem o `pnpm-workspace.yaml` a cada instalação
-com um `allowBuilds` de placeholders, que o hook então acusa.
+`onlyBuiltDependencies`, `dangerouslyAllowAllBuilds` ou `ignoreScripts`. Também reprova a tag da
+imagem `ghcr.io/pnpm/pnpm` num Dockerfile versionado que divirja do `packageManager`
+(`pnpm@<versão>`), por variável ou sem tag: o Renovate sobe as duas juntas, e o hook pega a escrita à
+mão. Use o pnpm do `packageManager`: versões antigas do pnpm 12 reescrevem o `pnpm-workspace.yaml`
+a cada instalação com um `allowBuilds` de placeholders, que o hook então acusa.
 
 ```yaml
 # .pre-commit-config.yaml
