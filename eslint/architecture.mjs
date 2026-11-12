@@ -69,6 +69,53 @@ const architectureRules = {
 // busca, loader e guarda. O limite trava a tela de voltar para a rota (decisão do PO, 2026-10-27).
 const ROUTE_MAX_LINES = 60;
 
+// CSS só pelo `main.tsx` (decisão do PO, 2026-11-12). O nosso entra pelo `./index.css`, a porta do
+// CSS global, que puxa os outros por `@import`. O de pacote (as fontes do `@fontsource`) entra por
+// `import` no `main.tsx`, antes do `./index.css`, como a documentação do Fontsource e do Vite mostra:
+// por `@import` no CSS, o Knip não vê a dependência, porque só lê CSS pelo plugin do Tailwind. O ESLint
+// não lê o CSS, mas lê o `import` de CSS do TS, e é por ele que a regra é travada.
+const CSS_IMPORT = "\\.css$";
+const cssOutsideMainRules = {
+  "no-restricted-imports": [
+    "error",
+    {
+      patterns: [
+        {
+          regex: CSS_IMPORT,
+          message:
+            "CSS entra só pelo `main.tsx`: o nosso por `@import` no `src/index.css`, o de pacote por `import` no `main.tsx`.",
+        },
+      ],
+    },
+  ],
+};
+const cssInMainRules = {
+  "no-restricted-imports": [
+    "error",
+    {
+      patterns: [
+        {
+          // Relativo ou por alias, e não o `./index.css`: o nosso CSS entra por `@import` nele.
+          regex: "^(?!\\./index\\.css$)(\\.|@/).*\\.css$",
+          message:
+            "O nosso CSS entra por `@import` no `src/index.css`; o `main.tsx` só importa o `./index.css` e o CSS de pacote.",
+        },
+      ],
+    },
+  ],
+  // O `./index.css` por último: o CSS de pacote vem antes, e o nosso, carregado depois, prevalece na
+  // cascata. Depois dele, nenhum import só de efeito (CSS de pacote também entra assim).
+  "no-restricted-syntax": [
+    "error",
+    {
+      selector:
+        "ImportDeclaration[source.value='./index.css'] ~ ImportDeclaration[specifiers.length=0]",
+      message:
+        "O `./index.css` é o último import de CSS do `main.tsx`: o CSS de pacote vem antes dele.",
+    },
+  ],
+};
+
 // O boundaries resolve os imports pelo `import/resolver` legado (do `eslint-module-utils`), não pelo
 // `resolver-next` do import-x: sem o resolver do TypeScript, import por alias (`@/features/...`) não
 // resolve e passa sem ser conferido. O resolver vai pelo caminho absoluto, uma das formas documentadas
@@ -105,5 +152,12 @@ export function architectureConfigs(framework, files, resolverOptions) {
         "max-lines": ["error", { max: ROUTE_MAX_LINES, skipBlankLines: true, skipComments: true }],
       },
     },
+    {
+      name: "welt/css-outside-main",
+      files: inSrc(""),
+      ignores: ["**/src/main.tsx"],
+      rules: cssOutsideMainRules,
+    },
+    { name: "welt/css-in-main", files: inSrc("main.tsx"), rules: cssInMainRules },
   ];
 }

@@ -1,6 +1,6 @@
 {
   "name": "@welt-studio/eslint-config",
-  "version": "4.6.0",
+  "version": "4.7.0",
   "description": "Configuração ESLint padrão da Welt Studio para frontends em TypeScript",
   "type": "module",
   "license": "UNLICENSED",

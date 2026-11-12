@@ -63,6 +63,8 @@ const COVERED_RULES = new Set([
   "boundaries/no-unknown-files",
   "import-x/no-cycle",
   "max-lines",
+  "no-restricted-imports",
+  "no-restricted-syntax",
   "react-refresh/only-export-components",
   "@typescript-eslint/only-throw-error",
   "@typescript-eslint/no-misused-promises",
@@ -82,6 +84,7 @@ const EXPECTED = {
   "apps/web/src/lib/cycle-a.ts": ["import-x/no-cycle"],
   "apps/web/src/lib/cycle-b.ts": ["import-x/no-cycle"],
   "apps/web/src/routes/fat.ts": ["max-lines"],
+  "apps/web/src/lib/import-css.ts": ["no-restricted-imports"],
   "apps/web/src/lib/throw-response.ts": ["@typescript-eslint/only-throw-error"],
   "apps/web/src/routes/goal.tsx": ["react-refresh/only-export-components"],
   "apps/web/src/lib/async-foreach.ts": ["@typescript-eslint/no-misused-promises"],
@@ -152,6 +155,31 @@ test("o fixture reprova só o que a arquitetura e os imports proíbem", async ()
       .filter(([, rules]) => rules.length > 0),
   );
   assert.deepEqual(found, EXPECTED);
+});
+
+// O `main.tsx` só tem um por app: os casos que reprovam nele são textos lintados no lugar dele.
+const MAIN = join("apps", "web", "src", "main.tsx");
+const MAIN_CASES = [
+  ['import "./theme.css";\nimport "./index.css";\n', ["no-restricted-imports"]],
+  ['import "@/styles/theme.css";\nimport "./index.css";\n', ["no-restricted-imports"]],
+  ['import "./index.css";\nimport "@fontsource/inter/400.css";\n', ["no-restricted-syntax"]],
+  ['import "./index.css";\nimport "@fontsource/inter";\n', ["no-restricted-syntax"]],
+  ['import "@fontsource/inter";\nimport "@fontsource/inter/700.css";\nimport "./index.css";\n', []],
+];
+
+test("o main.tsx só importa CSS de pacote e, por último, o ./index.css", async () => {
+  const eslint = new ESLint();
+  for (const [code, expected] of MAIN_CASES) {
+    const [result] = await eslint.lintText(code, { filePath: join(project, MAIN) });
+    const rules = [
+      ...new Set(
+        result.messages
+          .map((message) => message.ruleId)
+          .filter((ruleId) => COVERED_RULES.has(ruleId)),
+      ),
+    ].sort();
+    assert.deepEqual(rules, expected, code);
+  }
 });
 
 test("o que o git ignora fica fora do lint", async () => {

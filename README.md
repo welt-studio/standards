@@ -169,8 +169,8 @@ e as rotas são as rotas por arquivo do TanStack Router, finas como no
 
 ```
 src/
-  main.tsx                 # monta o app; importa o index.css
-  index.css                # o CSS global (tema, fontes): uma porta de entrada, que importa os outros
+  main.tsx                 # monta o app; importa o CSS de pacote (fontes) e, por último, o index.css
+  index.css                # o nosso CSS global (tema): uma porta de entrada, que importa os outros
   entry-server.tsx         # só com prerender SSR (`vite build --ssr`)
   vite-env.d.ts
   app/                     # providers, instância do router, layout global, error boundary
@@ -194,10 +194,29 @@ src/
 - **Pasta ou arquivo de `src/` fora da lista reprova** (`boundaries/no-unknown-files`): a estrutura
   é a mesma em todos os apps. Na raiz de `src/` só ficam os arquivos de entrada da tabela e o
   `index.css`; `App.tsx` e `router.tsx` moram em `app/`.
-- **CSS global:** um `src/index.css`, importado pelo `main.tsx`, como no bulletproof. Ele é parte da
-  entrada, não de uma camada; `assets/` é para arquivo estático (imagem, fonte). Tema e fontes em
-  arquivos separados entram pelo `index.css`. O ESLint não lê CSS, então esta regra fica escrita, sem
-  trava.
+- **CSS só pelo `main.tsx`** (decisão do PO, 2026-11-12). O nosso CSS tem uma porta, o
+  `src/index.css`, como no bulletproof: tema e outros arquivos nossos entram nele por `@import`. Ele
+  é parte da entrada, não de uma camada; `assets/` é para arquivo estático (imagem, fonte). O CSS de
+  pacote (as fontes do `@fontsource`) entra por `import` no `main.tsx`, antes do `./index.css`, como
+  a documentação do Fontsource e do Vite mostra. Por `@import` no CSS, o Knip não vê a dependência e
+  a acusa como sem uso, porque ele só lê CSS pelo plugin do Tailwind.
+
+  ```tsx
+  // src/main.tsx
+  import "@fontsource/inter/400.css";
+  import "./index.css";
+  ```
+
+  O ESLint não lê o CSS, mas lê o `import` de CSS do TS, e é por ele que a regra é travada:
+  - `import` de `.css` fora do `main.tsx` reprova (`no-restricted-imports`);
+  - no `main.tsx`, CSS relativo ou por `@/` que não seja o `./index.css` reprova
+    (`no-restricted-imports`);
+  - import só de efeito depois do `./index.css` reprova (`no-restricted-syntax`): o CSS de pacote vem
+    antes, e o nosso prevalece na cascata.
+
+  Fica de fora o pacote importado sem a extensão (`import "@fontsource/inter"`) num arquivo que não
+  é o `main.tsx`. Pelo nome, não dá para saber se ele é CSS.
+
 - **Rota fina:** arquivo em `src/routes/` tem no máximo 60 linhas. Ele só declara o `createFileRoute`
   (parâmetros, busca com zod, loader, guarda) e o componente vem da feature.
 - **Teste fica ao lado do código** e importa da própria feature e de `testing/`.
