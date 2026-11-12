@@ -19,6 +19,8 @@ def git_paths(hook: str, args: list[str], *, empty_ok: bool = False) -> list[str
     )
     accepted = (0, 1) if empty_ok else (0,)
     if result.returncode not in accepted or result.stderr:
-        sys.stderr.write(f"{hook}: git {args[0]} falhou: {result.stderr.strip()}\n")
+        # O subcomando, não a opção global que vem antes dele (`-c chave=valor`).
+        command = next(arg for arg in args if not arg.startswith("-") and "=" not in arg)
+        sys.stderr.write(f"{hook}: git {command} falhou: {result.stderr.strip()}\n")
         return None
     return [path for path in result.stdout.split("\0") if path]

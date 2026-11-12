@@ -36,6 +36,7 @@ import { architectureConfigs } from "./architecture.mjs";
 import { testFiles, toolConfigFiles, unitTestFiles } from "./files.mjs";
 import { i18nConfigs } from "./i18n.mjs";
 import versionedIgnores from "./ignores.json" with { type: "json" };
+import { securityConfigs } from "./security.mjs";
 
 // Tamanho e complexidade. Valores medidos nos projetos: abaixo deles a regra vira ruído.
 const complexityRules = {
@@ -499,6 +500,7 @@ export function weltConfig({
       },
     },
     { ...js.configs.recommended, files: formatted },
+    ...securityConfigs(formatted),
     { ...commentConfigs.recommended, files: formatted },
     importsConfig(formatted, resolverOptions),
     ...scoped(tseslint.configs.strictTypeChecked),

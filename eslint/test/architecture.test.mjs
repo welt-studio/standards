@@ -71,6 +71,9 @@ const COVERED_RULES = new Set([
   "@typescript-eslint/unbound-method",
   "vitest/unbound-method",
   "vitest/expect-expect",
+  "no-unsanitized/property",
+  "no-unsanitized/method",
+  "no-restricted-properties",
 ]);
 
 // O que cada arquivo do fixture deve reprovar; arquivo fora daqui não reprova nenhuma das regras.
@@ -89,6 +92,8 @@ const EXPECTED = {
   "apps/web/src/lib/void-value.ts": ["@typescript-eslint/no-confusing-void-expression"],
   "apps/web/src/lib/unbound.test.ts": ["vitest/unbound-method"],
   "apps/web/src/lib/no-expect.test.ts": ["vitest/expect-expect"],
+  "apps/web/src/lib/inject-html.ts": ["no-unsanitized/method", "no-unsanitized/property"],
+  "apps/web/src/lib/weak-random.ts": ["no-restricted-properties"],
 };
 
 // Arquivo que o `.gitignore` do fixture ignora, criado depois do `git add` (versionado aqui, ele

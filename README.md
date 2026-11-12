@@ -76,8 +76,10 @@ repos:
 - **Básicos** (`pre-commit-hooks`): espaço no fim de linha, fim de arquivo, `check-yaml`/`json`/`toml`,
   arquivo grande, marcador de conflito, chave privada, fim de linha `lf` (`mixed-line-ending
 --fix=lf`, como o Ruff e o Prettier) e dois arquivos que só diferem na caixa
-  (`check-case-conflict`, que quebra o checkout no macOS e no Windows). Mais o gitleaks e o
-  conventional-pre-commit (`stages: [commit-msg]`).
+  (`check-case-conflict`, que quebra o checkout no macOS e no Windows). Mais o gitleaks, o zizmor
+  (`zizmorcore/zizmor-pre-commit`: workflow do Actions sem `permissions`, cache poisoning, injeção
+  de template, token persistido no checkout; roda só quando o commit toca um workflow, uma action
+  ou a config do pre-commit, sem rede) e o conventional-pre-commit (`stages: [commit-msg]`).
 - **SHA com `# frozen: vX.Y.Z`** nos repos de terceiros. O gerenciador `pre-commit` do Renovate
   (ligado pelo `:enablePreCommit` do preset) lê essa forma e atualiza o SHA e o comentário juntos.
 - **Testes no `pre-push`**: pytest (com `--cov` no `addopts`, ver "Testes (pytest)") e vitest
@@ -94,6 +96,56 @@ repos:
   Quem instalou os ganchos pelo `uvx pre-commit install` reinstala com `uv run pre-commit install`:
   o gancho do git guarda o Python de quem o instalou (`INSTALL_PYTHON` em `.git/hooks/pre-commit`),
   e o antigo é o do ambiente do uvx, não o do `.python-version`.
+
+## Segurança
+
+Cada falha que o CodeQL do GitHub acusou nos projetos tem uma trava mecânica no commit ou na CI. A
+CI fica vermelha até zerar o que a trava acusa (decisão do PO, 2026-11-11), como no Pyright e no
+`tsc`.
+
+| Trava                                          | O que pega                                                                                                                 | Onde                             |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Família `S` do Ruff                            | as regras do Bandit, linha a linha: senha no código, `subprocess` com shell, `random` em segredo (`S311`)                  | pre-commit (`ruff`)              |
+| `eslint-plugin-no-unsanitized` e `Math.random` | HTML montado com texto sem sanitizar (`innerHTML` e afins) e valor previsível no front (ver "ESLint")                      | pre-commit (`eslint`)            |
+| zizmor                                         | fluxo do Actions sem `permissions`, token persistido no checkout, injeção de template, cache poisoning em fluxo de release | pre-commit, quando muda um fluxo |
+| gitleaks                                       | segredo no que está sendo commitado                                                                                        | pre-commit                       |
+| `gitleaks-history` (fluxo `security.yml`)      | segredo em qualquer commit do histórico                                                                                    | CI                               |
+| `gitignore-base`                               | arquivo local de ferramenta versionado (`.claude/settings.local.json`)                                                     | pre-commit                       |
+
+**O que ainda não tem trava:** o fluxo do dado da requisição até o uso (path traversal, SSRF, texto de
+exceção devolvido ao cliente). As regras S do Ruff olham linha a linha e não seguem o dado; o porte da
+suíte do CodeQL para regras próprias é a próxima entrega. Até lá, o assessment gratuito do GitHub (que
+roda o CodeQL) é a checagem funda: ele aponta, mas não barra.
+
+**Segredo antigo** que o `gitleaks-history` acusar: rotacionar primeiro (ele continua no histórico de
+quem já clonou), e só então registrar a impressão digital no `.gitleaksignore` do projeto, com o motivo.
+
+### Adotar o fluxo de segurança
+
+O alias do gitleaks no `.pre-commit-config.yaml` do projeto, no mesmo `rev` do hook do commit (a versão
+fica numa declaração só):
+
+```yaml
+- repo: https://github.com/gitleaks/gitleaks
+  rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e # frozen: v8.30.1
+  hooks:
+    - id: gitleaks
+    - id: gitleaks
+      alias: gitleaks-history
+      entry: gitleaks git --redact --verbose
+      stages: [manual]
+      always_run: true
+```
+
+E o job no CI do projeto, com o `uses:` por SHA e a tag no comentário (o Renovate sobe os dois):
+
+```yaml
+jobs:
+  security:
+    uses: welt-studio/standards/.github/workflows/security.yml@<sha> # security-v1.0.0
+    with:
+      python-project: backend # a pasta do pacote Python com o pre-commit no grupo dev
+```
 
 ## ESLint: `@welt-studio/eslint-config`
 
@@ -137,6 +189,8 @@ recebem o padrão inteiro menos as regras que exigem tipo, com os globais do Nod
 | `@eslint-react/eslint-plugin` (`recommended-type-checked`)       | key ausente ou instável, contexto recriado a cada render, API do React usada errado (substitui o `eslint-plugin-react`, parado no ESLint 9). As regras que repetem as do plugin de hooks ficam só lá                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `eslint-plugin-react-hooks` (`recommended-latest`)               | regras dos hooks e do React Compiler                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `eslint-plugin-jsx-a11y-x` (`recommended`)                       | acessibilidade (fork do `jsx-a11y` que suporta ESLint 10)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `eslint-plugin-no-unsanitized` (`recommended`)                   | XSS: HTML montado a partir de texto que chega ao DOM sem sanitizar (`innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`), em todo arquivo lintado. O `dangerouslySetInnerHTML` e a URL `javascript:` já reprovam pelo `@eslint-react` (`dom-no-dangerously-set-innerhtml`, `dom-no-script-url`)                                                                                                                                                                                                                                                                                                                                           |
+| `no-restricted-properties` (`Math.random`)                       | valor gerado com `Math.random()`, que é previsível (senha, token, id): usar `crypto.getRandomValues()` ou `crypto.randomUUID()`. O mesmo que o `S311` do Ruff no Python                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `framework: "vite"`                                              | no código do app, globais do navegador e Fast Refresh (`eslint-plugin-react-refresh`); configs de ferramenta (`*.config.ts`) ficam com os globais do Node. Liga também a arquitetura do app (`eslint-plugin-boundaries`, ver "Arquitetura do front"). Next não é suportado: os apps são Vite                                                                                                                                                                                                                                                                                                                                                           |
 | `@tanstack/eslint-plugin-query` (`query: true`)                  | chave de query incompleta, `QueryClient` instável                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `eslint-plugin-i18next` (`i18n: true`)                           | texto visível escrito direto no JSX (entre tags ou em qualquer atributo) ou num toast (`toast("…")`, `toast.error("…")`, `description`, `toast.promise`). Ficam de fora só os atributos e chaves de objeto que são código — rota (`href`, `to`), `data-*`, `testId`, ícone (`name`, `icon`), classe (`className`, `classNames`, `cn(...)`), cor, `aria-hidden`, SVG, `type` —, locale e formato (`toLocaleString`, `Intl.*`), `toast.dismiss(id)` e os testes. Prop nova é cobrada até entrar nessa lista: erro a mais aparece, erro a menos passa calado. Vale para qualquer biblioteca de tradução, e o padrão dos projetos traduzidos é o `i18next` |
@@ -648,6 +702,26 @@ que só lê o primeiro documento, passaria calado.
   args: [--allow-multiple-documents]
   files: (^|/)pnpm-lock\.yaml$
 ```
+
+## `.gitignore`: hook `gitignore-base`
+
+Arquivo local de ferramenta que pode levar segredo fica fora do git em todo projeto. A lista é uma
+só, `gitignore/required` (hoje, o `.claude/settings.local.json`, com as permissões e variáveis da
+máquina), e o hook `gitignore-base` (`hooks/check_gitignore.py`) reprova o commit quando um caminho
+dela não é ignorado pelo `.gitignore` do projeto, ou quando está versionado. O exclude global da
+máquina (`core.excludesFile`) não conta: ele não existe na CI nem na máquina de outra pessoa.
+
+```yaml
+# .pre-commit-config.yaml
+- repo: https://github.com/welt-studio/standards
+  rev: gitignore-v1.0.0
+  hooks:
+    - id: gitignore-base
+```
+
+O projeto escreve a linha no `.gitignore` dele (o hook diz qual falta); arquivo já versionado sai
+com `git rm --cached <caminho>`, e o segredo que estava nele é rotacionado, porque continua no
+histórico. Caminho novo entra no `gitignore/required`, numa tag nova.
 
 ## Testes (pytest): hook `pytest-base`
 

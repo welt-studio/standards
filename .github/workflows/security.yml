@@ -1,0 +1,43 @@
+# Fluxo de segurança reutilizável: o que é lento demais para rodar a cada commit. Os projetos o
+# chamam do próprio CI (README, "Segurança"); o `test.yml` deste repo também, como primeiro usuário.
+#
+# Hoje: o gitleaks no histórico inteiro do git. O hook `gitleaks` do pre-commit só olha o que está no
+# commit, e segredo antigo continua valendo até ser rotacionado. Roda pelo alias `gitleaks-history`
+# do `.pre-commit-config.yaml` do projeto (`stages: [manual]`), no mesmo `rev` do hook do commit: a
+# versão do gitleaks fica numa declaração só, que o Renovate sobe.
+#
+# Todo `uses:` fixado por SHA, com a versão no comentário ao lado; o Renovate atualiza os dois.
+name: Security
+
+on:
+  workflow_call:
+    inputs:
+      python-project:
+        description: Pasta do pacote Python que tem o pre-commit no grupo `dev` (`.` na raiz).
+        required: false
+        type: string
+        default: "."
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks-history:
+    name: Segredos no histórico (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      # O histórico inteiro (`fetch-depth: 0`), sem o token gravado no `.git/config`.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # O uv do `[tool.uv] required-version` do pacote, sem cache: este fluxo não roda teste, e o
+      # cache seria escrito a partir de qualquer `ref` que o projeto passe (cache poisoning).
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version-file: ${{ inputs.python-project }}/pyproject.toml
+          enable-cache: false
+      - name: Gitleaks no histórico
+        env:
+          PYTHON_PROJECT: ${{ inputs.python-project }}
+        run: uv run --project "$PYTHON_PROJECT" pre-commit run gitleaks-history --hook-stage manual --all-files

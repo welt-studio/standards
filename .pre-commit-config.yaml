@@ -63,6 +63,13 @@ repos:
         pass_filenames: false
         always_run: true
         args: [.]
+      # O `.gitignore` da raiz ignora os caminhos do `gitignore/required`.
+      - id: gitignore-base
+        name: gitignore-base (padrão .gitignore da Welt Studio)
+        entry: hooks/check_gitignore.py
+        language: script
+        pass_filenames: false
+        always_run: true
       # Dependências Python do pacote da raiz (os scripts de `hooks/` e as ferramentas do grupo dev).
       - id: deptry
         name: deptry (dependências Python, padrão da Welt Studio)
@@ -177,6 +184,25 @@ repos:
     hooks:
       - id: gitleaks
         name: Gitleaks (Detect secrets)
+      # O histórico inteiro, não só o que está no commit: segredo antigo continua valendo até ser
+      # rotacionado. Lento demais para todo commit (`stages: [manual]`), roda na CI pelo fluxo
+      # `security.yml`. Mesmo `rev` do hook acima: a versão do gitleaks fica numa declaração só.
+      - id: gitleaks
+        alias: gitleaks-history
+        name: Gitleaks (histórico inteiro)
+        entry: gitleaks git --redact --verbose
+        stages: [manual]
+        always_run: true
+
+  # Security - zizmor (workflows do GitHub Actions): `permissions` ausente, cache poisoning, injeção
+  # de template, token persistido no checkout. Roda só quando o commit toca um workflow, uma action
+  # ou a config do pre-commit (o `files` do próprio hook), sem rede (as auditorias online ficam de
+  # fora sem `GH_TOKEN`).
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: 06a39750ec31860bb44f2acf67182c40016cd1e7 # frozen: v1.32.0
+    hooks:
+      - id: zizmor
+        name: zizmor (GitHub Actions)
 
   # Renovate - o preset é lido do `main` por todos os projetos, sem tag: config inválida (ou que o
   # Renovate só aceitaria migrando, `--strict`) reprova aqui, antes do merge. O `files` padrão do hook

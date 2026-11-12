@@ -1,0 +1,5 @@
+# Caminhos que todo projeto ignora no git (hook `gitignore-base`): o `.gitignore` do projeto precisa
+# ignorá-los, e nenhum pode estar versionado. Um caminho por linha, relativo à raiz do projeto.
+
+# Permissões e variáveis locais do Claude Code: valem só para a máquina, e já levaram segredo ao git.
+.claude/settings.local.json

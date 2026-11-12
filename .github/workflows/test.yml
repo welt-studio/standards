@@ -26,7 +26,11 @@ jobs:
     name: Padrão e testes
     runs-on: ubuntu-latest
     steps:
+      # Sem o token gravado no `.git/config`: nenhum passo faz push, e o token que fica no disco vaza em
+      # qualquer artefato ou cache que leve a pasta (o `artipacked` do zizmor).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       # O uv do `[tool.uv] required-version` do pyproject; o ambiente ativado põe no PATH o Python do
       # `.python-version`, o mesmo em que o `uv run pre-commit` (e os hooks) rodam.
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
@@ -55,3 +59,9 @@ jobs:
       - name: Testes dos pacotes
         if: ${{ !cancelled() }}
         run: pnpm test
+
+  # O fluxo de segurança que os projetos chamam, rodado aqui como no primeiro usuário dele.
+  security:
+    name: Segurança
+    # `$/`, não `./`: o fluxo deste mesmo commit, sem depender do que está no disco do runner.
+    uses: $/.github/workflows/security.yml

@@ -118,3 +118,13 @@
   language: script
   pass_filenames: false
   always_run: true
+
+# Os caminhos do `gitignore/required` do `rev` declarado (arquivos locais de ferramenta, que podem
+# levar segredo, como o `.claude/settings.local.json`) ficam fora do git: o `.gitignore` do projeto
+# os ignora (o exclude global da máquina não conta) e nenhum está versionado.
+- id: gitignore-base
+  name: gitignore-base (padrão .gitignore da Welt Studio)
+  entry: hooks/check_gitignore.py
+  language: script
+  pass_filenames: false
+  always_run: true
