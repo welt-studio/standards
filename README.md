@@ -214,6 +214,9 @@ src/
   - import só de efeito depois do `./index.css` reprova (`no-restricted-syntax`): o CSS de pacote vem
     antes, e o nosso prevalece na cascata.
 
+  O `.css` conta com ou sem o sufixo de query do Vite (`?inline`, `?url`, `?raw`), e o `import()` de
+  CSS reprova em qualquer arquivo (`no-restricted-syntax`).
+
   Fica de fora o pacote importado sem a extensão (`import "@fontsource/inter"`) num arquivo que não
   é o `main.tsx`. Pelo nome, não dá para saber se ele é CSS.
 

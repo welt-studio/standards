@@ -85,6 +85,8 @@ const EXPECTED = {
   "apps/web/src/lib/cycle-b.ts": ["import-x/no-cycle"],
   "apps/web/src/routes/fat.ts": ["max-lines"],
   "apps/web/src/lib/import-css.ts": ["no-restricted-imports"],
+  "apps/web/src/lib/import-css-dynamic.ts": ["no-restricted-syntax"],
+  "apps/web/src/lib/import-css-query.ts": ["no-restricted-imports"],
   "apps/web/src/lib/throw-response.ts": ["@typescript-eslint/only-throw-error"],
   "apps/web/src/routes/goal.tsx": ["react-refresh/only-export-components"],
   "apps/web/src/lib/async-foreach.ts": ["@typescript-eslint/no-misused-promises"],
@@ -164,6 +166,18 @@ const MAIN_CASES = [
   ['import "@/styles/theme.css";\nimport "./index.css";\n', ["no-restricted-imports"]],
   ['import "./index.css";\nimport "@fontsource/inter/400.css";\n', ["no-restricted-syntax"]],
   ['import "./index.css";\nimport "@fontsource/inter";\n', ["no-restricted-syntax"]],
+  [
+    'import raw from "./tema.css?inline";\nimport "./index.css";\nexport { raw };\n',
+    ["no-restricted-imports"],
+  ],
+  [
+    'import "./index.css";\nimport url from "@fontsource/inter/400.css?url";\nexport { url };\n',
+    ["no-restricted-syntax"],
+  ],
+  [
+    'import "./index.css";\nexport const load = () => import("@fontsource/inter");\nexport const theme = () => import("./b.css");\n',
+    ["no-restricted-syntax"],
+  ],
   ['import "@fontsource/inter";\nimport "@fontsource/inter/700.css";\nimport "./index.css";\n', []],
 ];
 

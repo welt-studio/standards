@@ -74,7 +74,15 @@ const ROUTE_MAX_LINES = 60;
 // `import` no `main.tsx`, antes do `./index.css`, como a documentação do Fontsource e do Vite mostra:
 // por `@import` no CSS, o Knip não vê a dependência, porque só lê CSS pelo plugin do Tailwind. O ESLint
 // não lê o CSS, mas lê o `import` de CSS do TS, e é por ele que a regra é travada.
-const CSS_IMPORT = "\\.css$";
+// O `.css` com ou sem o sufixo de query do Vite (`?inline`, `?url`, `?raw`): o sufixo muda o que o
+// import devolve, não o fato de ser CSS.
+const CSS_IMPORT = "\\.css(\\?.*)?$";
+// `import()` de CSS: o `no-restricted-imports` só vê o import estático.
+const dynamicCssImport = {
+  selector: "ImportExpression[source.value=/\\.css(\\?|$)/]",
+  message:
+    "CSS entra só por `import` estático no `main.tsx`: o nosso por `@import` no `src/index.css`.",
+};
 const cssOutsideMainRules = {
   "no-restricted-imports": [
     "error",
@@ -88,6 +96,7 @@ const cssOutsideMainRules = {
       ],
     },
   ],
+  "no-restricted-syntax": ["error", dynamicCssImport],
 };
 const cssInMainRules = {
   "no-restricted-imports": [
@@ -96,7 +105,7 @@ const cssInMainRules = {
       patterns: [
         {
           // Relativo ou por alias, e não o `./index.css`: o nosso CSS entra por `@import` nele.
-          regex: "^(?!\\./index\\.css$)(\\.|@/).*\\.css$",
+          regex: "^(?!\\./index\\.css$)(\\.|@/).*\\.css(\\?.*)?$",
           message:
             "O nosso CSS entra por `@import` no `src/index.css`; o `main.tsx` só importa o `./index.css` e o CSS de pacote.",
         },
@@ -104,12 +113,14 @@ const cssInMainRules = {
     },
   ],
   // O `./index.css` por último: o CSS de pacote vem antes, e o nosso, carregado depois, prevalece na
-  // cascata. Depois dele, nenhum import só de efeito (CSS de pacote também entra assim).
+  // cascata. Depois dele, nenhum import só de efeito (CSS de pacote também entra assim) e nenhum import
+  // de CSS, nem com binding (`import url from "pacote/x.css?url"`).
   "no-restricted-syntax": [
     "error",
+    dynamicCssImport,
     {
       selector:
-        "ImportDeclaration[source.value='./index.css'] ~ ImportDeclaration[specifiers.length=0]",
+        "ImportDeclaration[source.value='./index.css'] ~ ImportDeclaration:matches([specifiers.length=0], [source.value=/\\.css(\\?|$)/])",
       message:
         "O `./index.css` é o último import de CSS do `main.tsx`: o CSS de pacote vem antes dele.",
     },
