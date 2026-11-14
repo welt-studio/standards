@@ -202,23 +202,177 @@ rules:
           - pattern: "@UploadedFiles(...) $X"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$GH.context.payload.$...P"
+          - pattern: "$G.context.payload"
+          - pattern-either:
+              - pattern-inside: |
+                  $G = require("@actions/github");
+                  ...
+              - pattern-inside: |
+                  import * as $G from "@actions/github";
+                  ...
+              - pattern-inside: |
+                  import $G from "@actions/github";
+                  ...
+      - patterns:
+          - pattern: "$P"
+          - pattern-either:
+              - pattern-inside: |
+                  $F = formidable(...);
+                  ...
+              - pattern-inside: |
+                  $F = formidable.formidable(...);
+                  ...
+              - pattern-inside: |
+                  $F = new formidable.IncomingForm(...);
+                  ...
+              - pattern-inside: |
+                  $F = new formidable.Formidable(...);
+                  ...
+          - pattern-either:
+              - pattern-inside: "$F.parse($REQ, ($ERR, ..., $P, ...) => {...})"
+              - pattern-inside: "$F.parse($REQ, function ($ERR, ..., $P, ...) {...})"
+      - patterns:
+          - pattern: "$P"
+          - pattern-inside: |
+              $F = new multiparty.Form(...);
+              ...
+          - pattern-either:
+              - pattern-inside: "$F.parse($REQ, (..., $P, ...) => {...})"
+              - pattern-inside: "$F.parse($REQ, function (..., $P, ...) {...})"
+      - patterns:
+          - pattern: "$P"
+          - pattern-inside: |
+              $F = new multiparty.Form(...);
+              ...
+          - pattern-either:
+              - pattern-inside: "$F.on($EVENT, ($P, ...) => {...})"
+              - pattern-inside: "$F.on($EVENT, function ($P, ...) {...})"
           - metavariable-regex:
-              metavariable: "$GH"
-              regex: "^(?:github|gh)$"
+              metavariable: "$EVENT"
+              regex: '^["''](?:part|file|field)["'']$'
       - patterns:
-          - pattern: "$F"
-          - pattern-inside: "$B.on('file', function($N, $FILE, $F, ...) {...})"
+          - pattern: "$P"
+          - pattern-inside: |
+              $F = new busboy(...);
+              ...
+          - pattern-either:
+              - pattern-inside: "$F.on($EVENT, (..., $P, ...) => {...})"
+              - pattern-inside: "$F.on($EVENT, function (..., $P, ...) {...})"
       - patterns:
-          - pattern: "$F"
-          - pattern-inside: "$B.on('file', ($N, $FILE, $F, ...) => {...})"
+          - pattern: "$MSG"
+          - pattern-either:
+              - pattern-inside: "$APP.ws($PATH, ($WS, ...) => {...})"
+              - pattern-inside: "$APP.ws($PATH, function ($WS, ...) {...})"
+              - pattern-inside: "$APP.ws($PATH, async ($WS, ...) => {...})"
+              - pattern-inside: "$APP.ws($PATH, async function ($WS, ...) {...})"
+          - pattern-either:
+              - pattern-inside: '$WS.on("message", ($MSG, ...) => {...})'
+              - pattern-inside: '$WS.on("message", function ($MSG, ...) {...})'
+              - pattern-inside: '$WS.on("message", async ($MSG, ...) => {...})'
+              - pattern-inside: '$WS.on("message", async function ($MSG, ...) {...})'
+      - patterns:
+          - pattern: "$MSG"
+          - pattern-inside: |
+              $WSS = new ws.Server(...);
+              ...
+          - pattern-either:
+              - pattern-inside: '$WSS.on("connection", ($WS, ...) => {...})'
+              - pattern-inside: '$WSS.on("connection", function ($WS, ...) {...})'
+          - pattern-either:
+              - pattern-inside: '$WS.on("message", ($MSG, ...) => {...})'
+              - pattern-inside: '$WS.on("message", function ($MSG, ...) {...})'
+              - pattern-inside: '$WS.on("message", async ($MSG, ...) => {...})'
+              - pattern-inside: '$WS.on("message", async function ($MSG, ...) {...})'
+      - patterns:
+          - pattern-either:
+              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+          - focus-metavariable: "$ARGS"
+      - patterns:
+          - pattern-either:
+              - pattern: "{..., $K: ($ARGS, ...) => {...}, ...}"
+              - pattern: "{..., $K: async ($ARGS, ...) => {...}, ...}"
+              - pattern: "{..., $K: function ($ARGS, ...) {...}, ...}"
+              - pattern: "{..., $K($ARGS, ...) {...}, ...}"
+              - pattern: "{..., async $K($ARGS, ...) {...}, ...}"
+          - pattern-inside: "$ROOT = {...}"
+          - pattern-either:
+              - pattern-inside: |
+                  $ROOT = {...};
+                  ...
+                  <... graphql.graphql({..., rootValue: $ROOT, ...}) ...>;
+              - pattern-inside: |
+                  $ROOT = {...};
+                  ...
+                  <... graphql.graphql($SCHEMA, $SOURCE, $ROOT, ...) ...>;
+          - focus-metavariable: "$ARGS"
+      - patterns:
+          - pattern-inside: |
+              "use server";
+              ...
+          - pattern-either:
+              - pattern: "export async function $F($X, ...) {...}"
+              - pattern: "export function $F($X, ...) {...}"
+              - pattern: "export const $F = async ($X, ...) => {...}"
+              - pattern: "export const $F = ($X, ...) => {...}"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D"
+          - pattern-either:
+              - pattern-inside: "http.get(..., ($RES, ...) => {...})"
+              - pattern-inside: "http.get(..., function ($RES, ...) {...})"
+              - pattern-inside: "http.request(..., ($RES, ...) => {...})"
+              - pattern-inside: "http.request(..., function ($RES, ...) {...})"
+              - pattern-inside: "https.get(..., ($RES, ...) => {...})"
+              - pattern-inside: "https.get(..., function ($RES, ...) {...})"
+              - pattern-inside: "https.request(..., ($RES, ...) => {...})"
+              - pattern-inside: "https.request(..., function ($RES, ...) {...})"
+          - pattern-either:
+              - pattern-inside: '$RES.on("data", ($D) => {...})'
+              - pattern-inside: '$RES.on("data", function ($D) {...})'
       - patterns:
           - pattern: "$F.originalname"
           - pattern-inside: "$R.forEach(function($F) {...})"
       - patterns:
           - pattern: "$F.originalname"
           - pattern-inside: "$R.forEach(($F) => {...})"
-      - pattern: "core.getInput(...)"
+    pattern-propagators:
+      - patterns:
+          - pattern-either:
+              - pattern: "$P.parse($ARGS, ...)"
+              - pattern: "$P.parseAsync($ARGS, ...)"
+              - pattern: "await $P.parseAsync($ARGS, ...)"
+          - pattern-inside: |
+              $P = new commander.Command(...);
+              ...
+        from: "$ARGS"
+        to: "$P"
+        by-side-effect: true
+      - patterns:
+          - pattern-either:
+              - pattern: "$P.parse($ARGS, ...)"
+              - pattern: "$P.parseAsync($ARGS, ...)"
+              - pattern: "await $P.parseAsync($ARGS, ...)"
+          - metavariable-pattern:
+              metavariable: "$P"
+              pattern: commander.program
+        from: "$ARGS"
+        to: "$P"
+        by-side-effect: true
+      - pattern: "$P.then(($S, ...) => {...}, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$P.then(function ($S, ...) {...}, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$P.then(async ($S, ...) => {...}, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$P.then(($S, ...) => $E, ...)"
+        from: "$P"
+        to: "$S"
     pattern-sinks:
       - patterns:
           - pattern: "child_process.exec($X, ...)"
@@ -314,25 +468,10 @@ rules:
           - pattern: "cspawn.sync($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execSh($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "execSh.promise($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
           - pattern: "exec_sh($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "cmd.run($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "shelljs.execAsync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$AEXEC.exec($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$AEXEC.getExecOutput($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$SSH.exec($X, ...)"
@@ -348,9 +487,6 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "exec_async($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "execAsync($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "require('cross-spawn')($X, ...)"
@@ -419,24 +555,6 @@ rules:
           - pattern: "require('shelljs').exec($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "util.promisify(child_process.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "util.promisify(cp.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "promisify(child_process.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P(child_process.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P(cp.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P(exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
           - pattern: "execaSync($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
@@ -455,13 +573,23 @@ rules:
           - pattern: "opener($U, {command: $X})"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$ASYNC.exec($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
           - pattern: "mz_exec($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "promisifiedExec($X, ...)"
+          - pattern: "$E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("@actions/exec");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "@actions/exec";
+                  ...
+              - pattern-inside: |
+                  import $E from "@actions/exec";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|getExecOutput)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
@@ -470,9 +598,34 @@ rules:
               - pattern: "child_process.spawn($SH, [...].concat([..., $X]), ...)"
               - pattern: "child_process.spawn($SH, [...].concat($X), ...)"
               - pattern: "child_process.spawn($SH, $X, ...)"
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
@@ -481,9 +634,34 @@ rules:
               - pattern: "child_process.spawnSync($SH, [...].concat([..., $X]), ...)"
               - pattern: "child_process.spawnSync($SH, [...].concat($X), ...)"
               - pattern: "child_process.spawnSync($SH, $X, ...)"
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
@@ -492,9 +670,34 @@ rules:
               - pattern: "child_process.execFile($SH, [...].concat([..., $X]), ...)"
               - pattern: "child_process.execFile($SH, [...].concat($X), ...)"
               - pattern: "child_process.execFile($SH, $X, ...)"
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
@@ -503,16 +706,528 @@ rules:
               - pattern: "child_process.execFileSync($SH, [...].concat([..., $X]), ...)"
               - pattern: "child_process.execFileSync($SH, [...].concat($X), ...)"
               - pattern: "child_process.execFileSync($SH, $X, ...)"
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$F($SH, $ARGS)"
           - pattern-inside: "$ARGS[$I] = $X; ..."
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W(child_process.$M, ...)($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W(child_process.$M.bind(...), ...)($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$V($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = $W(child_process.$M, ...);
+                  ...
+              - pattern-inside: |
+                  $V = $W(child_process.$M.bind(...), ...);
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$V.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = $W(child_process, ...);
+                  ...
+              - pattern-inside: |
+                  $V = $W.$A(child_process, ...);
+                  ...
+              - pattern-inside: |
+                  $V = $W(require("child_process"), ...);
+                  ...
+              - pattern-inside: |
+                  $V = $W.$A(require("child_process"), ...);
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|execSync|execFile|execFileSync|spawn|spawnSync|fork)$"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - pattern: "+$X"
+      - pattern: "typeof $X"
+      - pattern: "shellEscape($X)"
+      - pattern: "shellescape($X)"
+      - pattern: "shellQuote($X)"
+      - pattern: "shell_quote.quote($X)"
+      - pattern: "$L.quote($X)"
+      - pattern: "parseInt($X, ...)"
+      - pattern: "Number($X)"
+      - pattern: "$X.length"
+    options:
+      interfile: true
+  - id: welt-js-command-line-injection-shell-flow
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Injeção de comando: este comando de sistema é construído a partir de um valor controlado pelo usuário e pode executar comandos arbitrários. Use execFile/spawn com lista de argumentos fixa e valide a entrada."
+    metadata:
+      category: security
+      cwe: "CWE-078: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      codeql: js/command-line-injection
+    mode: taint
+    pattern-sources:
+      - label: USER
+        pattern-either:
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: "function ($REQ, $RES, ...) {...}"
+                  - pattern-inside: "function $F($REQ, $RES, ...) {...}"
+                  - pattern-inside: "async function ($REQ, $RES, ...) {...}"
+                  - pattern-inside: "async function $F($REQ, $RES, ...) {...}"
+                  - pattern-inside: "($REQ, $RES, ...) => {...}"
+                  - pattern-inside: "($REQ, $RES, ...) => $E"
+                  - pattern-inside: "async ($REQ, $RES, ...) => {...}"
+                  - pattern-inside: "async ($REQ, $RES, ...) => $E"
+                  - pattern-inside: "$M($REQ, $RES, ...) {...}"
+                  - pattern-inside: "async $M($REQ, $RES, ...) {...}"
+                  - pattern-inside: "function ($REQ) {...}"
+                  - pattern-inside: "function $F($REQ) {...}"
+                  - pattern-inside: "($REQ) => {...}"
+                  - pattern-inside: "($REQ) => $E"
+                  - pattern-inside: "async ($REQ) => {...}"
+                  - pattern-inside: "async function $F($REQ) {...}"
+                  - pattern-inside: "$M($REQ) {...}"
+              - metavariable-regex:
+                  metavariable: "$REQ"
+                  regex: "^(?i:_?(?:req|request|r))$"
+              - pattern-either:
+                  - pattern: "$REQ.query"
+                  - pattern: "$REQ.body"
+                  - pattern: "$REQ.params"
+                  - pattern: "$REQ.headers"
+                  - pattern: "$REQ.signedCookies"
+                  - pattern: "$REQ.url"
+                  - pattern: "$REQ.originalUrl"
+                  - pattern: "$REQ.path"
+                  - pattern: "$REQ.hostname"
+                  - pattern: "$REQ.host"
+                  - pattern: "$REQ.baseUrl"
+                  - pattern: "$REQ.subdomains"
+                  - pattern: "$REQ.files"
+                  - pattern: "$REQ.file"
+                  - pattern: "$REQ.rawBody"
+                  - pattern: "$REQ.payload"
+                  - pattern: "$REQ.state"
+                  - pattern: "$REQ.get(...)"
+                  - pattern: "$REQ.header(...)"
+                  - pattern: "$REQ.param(...)"
+                  - pattern: "$REQ.getHeader(...)"
+                  - pattern: "$REQ.json()"
+                  - pattern: "$REQ.text()"
+                  - pattern: "$REQ.formData()"
+                  - pattern: "$REQ.blob()"
+                  - pattern: "$REQ.arrayBuffer()"
+                  - pattern: "$REQ.nextUrl.$K"
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: "$APP.$M(..., function ($REQ, ...) {...})"
+                  - pattern-inside: "$APP.$M(..., async function ($REQ, ...) {...})"
+                  - pattern-inside: "$APP.$M(..., ($REQ, ...) => {...})"
+                  - pattern-inside: "$APP.$M(..., ($REQ, ...) => $E)"
+                  - pattern-inside: "$APP.$M(..., async ($REQ, ...) => {...})"
+                  - pattern-inside: "$APP.$M(..., async ($REQ, ...) => $E)"
+                  - pattern-inside: "$APP.$M(..., function $F($REQ, ...) {...})"
+              - metavariable-regex:
+                  metavariable: "$M"
+                  regex: "^(?:get|post|put|delete|patch|all|use|route|head|options|on|createServer|handle|addHook|register)$"
+              - pattern-either:
+                  - pattern: "$REQ.query"
+                  - pattern: "$REQ.body"
+                  - pattern: "$REQ.params"
+                  - pattern: "$REQ.headers"
+                  - pattern: "$REQ.signedCookies"
+                  - pattern: "$REQ.url"
+                  - pattern: "$REQ.originalUrl"
+                  - pattern: "$REQ.path"
+                  - pattern: "$REQ.hostname"
+                  - pattern: "$REQ.host"
+                  - pattern: "$REQ.baseUrl"
+                  - pattern: "$REQ.subdomains"
+                  - pattern: "$REQ.files"
+                  - pattern: "$REQ.file"
+                  - pattern: "$REQ.rawBody"
+                  - pattern: "$REQ.payload"
+                  - pattern: "$REQ.state"
+                  - pattern: "$REQ.get(...)"
+                  - pattern: "$REQ.header(...)"
+                  - pattern: "$REQ.param(...)"
+                  - pattern: "$REQ.getHeader(...)"
+                  - pattern: "$REQ.json()"
+                  - pattern: "$REQ.text()"
+                  - pattern: "$REQ.formData()"
+                  - pattern: "$REQ.blob()"
+                  - pattern: "$REQ.arrayBuffer()"
+                  - pattern: "$REQ.nextUrl.$K"
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: "function getServerSideProps($CTX) {...}"
+                  - pattern-inside: "async function getServerSideProps($CTX) {...}"
+                  - pattern-inside: "function getInitialProps($CTX) {...}"
+                  - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
+                  - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
+              - pattern-either:
+                  - pattern: "$CTX.query"
+                  - pattern: "$CTX.params"
+                  - pattern: "$CTX.req.url"
+                  - pattern: "$CTX.req.headers"
+                  - pattern: "$CTX.req.body"
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: "function getServerSideProps($CTX) {...}"
+                  - pattern-inside: "async function getServerSideProps($CTX) {...}"
+                  - pattern-inside: "function getInitialProps($CTX) {...}"
+                  - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
+                  - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
+              - pattern-inside: "$REQ = $CTX.req; ..."
+              - pattern-either:
+                  - pattern: "$REQ.url"
+                  - pattern: "$REQ.headers"
+                  - pattern: "$REQ.body"
+                  - pattern: "$REQ.query"
+                  - pattern: "$REQ.cookies"
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: "function ($CTX, ...) {...}"
+                  - pattern-inside: "async function ($CTX, ...) {...}"
+                  - pattern-inside: "async ($CTX, ...) => {...}"
+                  - pattern-inside: "($CTX, ...) => {...}"
+                  - pattern-inside: "async function $F($CTX, ...) {...}"
+                  - pattern-inside: "function $F($CTX, ...) {...}"
+                  - pattern-inside: "async ($CTX, $NEXT) => {...}"
+              - metavariable-regex:
+                  metavariable: "$CTX"
+                  regex: "^(?i:_?(?:ctx|context|koaContext))$"
+              - pattern-either:
+                  - pattern: "$CTX.query"
+                  - pattern: "$CTX.params"
+                  - pattern: "$CTX.headers"
+                  - pattern: "$CTX.url"
+                  - pattern: "$CTX.originalUrl"
+                  - pattern: "$CTX.path"
+                  - pattern: "$CTX.href"
+                  - pattern: "$CTX.querystring"
+                  - pattern: "$CTX.search"
+                  - pattern: "$CTX.hostname"
+                  - pattern: "$CTX.host"
+                  - pattern: "$CTX.origin"
+                  - pattern: "$CTX.request.query"
+                  - pattern: "$CTX.request.body"
+                  - pattern: "$CTX.request.headers"
+                  - pattern: "$CTX.request.url"
+                  - pattern: "$CTX.request.path"
+                  - pattern: "$CTX.request.href"
+                  - pattern: "$CTX.request.querystring"
+                  - pattern: "$CTX.request.search"
+                  - pattern: "$CTX.request.originalUrl"
+                  - pattern: "$CTX.request.host"
+                  - pattern: "$CTX.request.hostname"
+                  - pattern: "$CTX.req.url"
+                  - pattern: "$CTX.req.headers"
+                  - pattern: "$CTX.request.params"
+                  - pattern: "$CTX.cookies"
+                  - pattern: "$CTX.get(...)"
+                  - pattern: "$CTX.cookies.get(...)"
+                  - pattern: "$CTX.request.get(...)"
+                  - pattern: "$CTX.header(...)"
+          - patterns:
+              - pattern: "@Body(...) $X"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "@Query(...) $X"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "@Param(...) $X"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "@Headers(...) $X"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "@Req(...) $X"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "@Request(...) $X"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "@Cookies(...) $X"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "@UploadedFile(...) $X"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "@UploadedFiles(...) $X"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "$G.context.payload"
+              - pattern-either:
+                  - pattern-inside: |
+                      $G = require("@actions/github");
+                      ...
+                  - pattern-inside: |
+                      import * as $G from "@actions/github";
+                      ...
+                  - pattern-inside: |
+                      import $G from "@actions/github";
+                      ...
+          - patterns:
+              - pattern: "$P"
+              - pattern-either:
+                  - pattern-inside: |
+                      $F = formidable(...);
+                      ...
+                  - pattern-inside: |
+                      $F = formidable.formidable(...);
+                      ...
+                  - pattern-inside: |
+                      $F = new formidable.IncomingForm(...);
+                      ...
+                  - pattern-inside: |
+                      $F = new formidable.Formidable(...);
+                      ...
+              - pattern-either:
+                  - pattern-inside: "$F.parse($REQ, ($ERR, ..., $P, ...) => {...})"
+                  - pattern-inside: "$F.parse($REQ, function ($ERR, ..., $P, ...) {...})"
+          - patterns:
+              - pattern: "$P"
+              - pattern-inside: |
+                  $F = new multiparty.Form(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: "$F.parse($REQ, (..., $P, ...) => {...})"
+                  - pattern-inside: "$F.parse($REQ, function (..., $P, ...) {...})"
+          - patterns:
+              - pattern: "$P"
+              - pattern-inside: |
+                  $F = new multiparty.Form(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: "$F.on($EVENT, ($P, ...) => {...})"
+                  - pattern-inside: "$F.on($EVENT, function ($P, ...) {...})"
+              - metavariable-regex:
+                  metavariable: "$EVENT"
+                  regex: '^["''](?:part|file|field)["'']$'
+          - patterns:
+              - pattern: "$P"
+              - pattern-inside: |
+                  $F = new busboy(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: "$F.on($EVENT, (..., $P, ...) => {...})"
+                  - pattern-inside: "$F.on($EVENT, function (..., $P, ...) {...})"
+          - patterns:
+              - pattern: "$MSG"
+              - pattern-either:
+                  - pattern-inside: "$APP.ws($PATH, ($WS, ...) => {...})"
+                  - pattern-inside: "$APP.ws($PATH, function ($WS, ...) {...})"
+                  - pattern-inside: "$APP.ws($PATH, async ($WS, ...) => {...})"
+                  - pattern-inside: "$APP.ws($PATH, async function ($WS, ...) {...})"
+              - pattern-either:
+                  - pattern-inside: '$WS.on("message", ($MSG, ...) => {...})'
+                  - pattern-inside: '$WS.on("message", function ($MSG, ...) {...})'
+                  - pattern-inside: '$WS.on("message", async ($MSG, ...) => {...})'
+                  - pattern-inside: '$WS.on("message", async function ($MSG, ...) {...})'
+          - patterns:
+              - pattern: "$MSG"
+              - pattern-inside: |
+                  $WSS = new ws.Server(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: '$WSS.on("connection", ($WS, ...) => {...})'
+                  - pattern-inside: '$WSS.on("connection", function ($WS, ...) {...})'
+              - pattern-either:
+                  - pattern-inside: '$WS.on("message", ($MSG, ...) => {...})'
+                  - pattern-inside: '$WS.on("message", function ($MSG, ...) {...})'
+                  - pattern-inside: '$WS.on("message", async ($MSG, ...) => {...})'
+                  - pattern-inside: '$WS.on("message", async function ($MSG, ...) {...})'
+          - patterns:
+              - pattern-either:
+                  - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+                  - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+                  - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+                  - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - focus-metavariable: "$ARGS"
+          - patterns:
+              - pattern-either:
+                  - pattern: "{..., $K: ($ARGS, ...) => {...}, ...}"
+                  - pattern: "{..., $K: async ($ARGS, ...) => {...}, ...}"
+                  - pattern: "{..., $K: function ($ARGS, ...) {...}, ...}"
+                  - pattern: "{..., $K($ARGS, ...) {...}, ...}"
+                  - pattern: "{..., async $K($ARGS, ...) {...}, ...}"
+              - pattern-inside: "$ROOT = {...}"
+              - pattern-either:
+                  - pattern-inside: |
+                      $ROOT = {...};
+                      ...
+                      <... graphql.graphql({..., rootValue: $ROOT, ...}) ...>;
+                  - pattern-inside: |
+                      $ROOT = {...};
+                      ...
+                      <... graphql.graphql($SCHEMA, $SOURCE, $ROOT, ...) ...>;
+              - focus-metavariable: "$ARGS"
+          - patterns:
+              - pattern-inside: |
+                  "use server";
+                  ...
+              - pattern-either:
+                  - pattern: "export async function $F($X, ...) {...}"
+                  - pattern: "export function $F($X, ...) {...}"
+                  - pattern: "export const $F = async ($X, ...) => {...}"
+                  - pattern: "export const $F = ($X, ...) => {...}"
+              - focus-metavariable: "$X"
+          - patterns:
+              - pattern: "$D"
+              - pattern-either:
+                  - pattern-inside: "http.get(..., ($RES, ...) => {...})"
+                  - pattern-inside: "http.get(..., function ($RES, ...) {...})"
+                  - pattern-inside: "http.request(..., ($RES, ...) => {...})"
+                  - pattern-inside: "http.request(..., function ($RES, ...) {...})"
+                  - pattern-inside: "https.get(..., ($RES, ...) => {...})"
+                  - pattern-inside: "https.get(..., function ($RES, ...) {...})"
+                  - pattern-inside: "https.request(..., ($RES, ...) => {...})"
+                  - pattern-inside: "https.request(..., function ($RES, ...) {...})"
+              - pattern-either:
+                  - pattern-inside: '$RES.on("data", ($D) => {...})'
+                  - pattern-inside: '$RES.on("data", function ($D) {...})'
+          - patterns:
+              - pattern: "$F.originalname"
+              - pattern-inside: "$R.forEach(function($F) {...})"
+          - patterns:
+              - pattern: "$F.originalname"
+              - pattern-inside: "$R.forEach(($F) => {...})"
+      - label: SHELL
+        pattern-either:
+          - pattern: '"sh"'
+          - pattern: '"bash"'
+          - pattern: '"zsh"'
+          - pattern: '"dash"'
+          - pattern: '"ksh"'
+          - pattern: '"csh"'
+          - pattern: '"/bin/sh"'
+          - pattern: '"/bin/bash"'
+          - pattern: '"/bin/zsh"'
+          - pattern: '"/bin/dash"'
+          - pattern: '"/bin/ksh"'
+          - pattern: '"/bin/csh"'
+          - pattern: '"/usr/bin/sh"'
+          - pattern: '"/usr/bin/bash"'
+          - pattern: '"/usr/bin/zsh"'
+          - pattern: '"/usr/bin/dash"'
+          - pattern: '"/usr/bin/ksh"'
+          - pattern: '"/usr/bin/csh"'
+          - pattern: '"cmd"'
+          - pattern: '"cmd.exe"'
+          - pattern: '"CMD"'
+          - pattern: '"CMD.EXE"'
+          - pattern: '"powershell"'
+          - pattern: '"powershell.exe"'
+          - pattern: '"pwsh"'
+    pattern-propagators:
+      - patterns:
+          - pattern-either:
+              - pattern: "$P.parse($ARGS, ...)"
+              - pattern: "$P.parseAsync($ARGS, ...)"
+              - pattern: "await $P.parseAsync($ARGS, ...)"
+          - pattern-inside: |
+              $P = new commander.Command(...);
+              ...
+        from: "$ARGS"
+        to: "$P"
+        by-side-effect: true
+      - patterns:
+          - pattern-either:
+              - pattern: "$P.parse($ARGS, ...)"
+              - pattern: "$P.parseAsync($ARGS, ...)"
+              - pattern: "await $P.parseAsync($ARGS, ...)"
+          - metavariable-pattern:
+              metavariable: "$P"
+              pattern: commander.program
+        from: "$ARGS"
+        to: "$P"
+        by-side-effect: true
+      - pattern: "$P.then(($S, ...) => {...}, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$P.then(function ($S, ...) {...}, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$P.then(async ($S, ...) => {...}, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$P.then(($S, ...) => $E, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$F($SH, $ARGS, ...)"
+        from: "$SH"
+        to: "$ARGS"
+        requires: SHELL
+        label: SHELLARGS
+    pattern-sinks:
+      - requires: USER and SHELLARGS
+        patterns:
+          - pattern: "child_process.$M($SH, $X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:spawn|spawnSync|execFile|execFileSync)$"
           - focus-metavariable: "$X"
     pattern-sanitizers:
       - pattern: "+$X"

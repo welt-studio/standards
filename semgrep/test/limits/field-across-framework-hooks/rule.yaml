@@ -1,0 +1,19 @@
+rules:
+  - id: field-across-framework-hooks
+    languages: [javascript]
+    severity: ERROR
+    message: o campo gravado num gancho do fastify chega ao eval de outro tratador
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: request.query.$X
+    pattern-propagators:
+      - pattern: $W.$F = $SRC
+        from: $SRC
+        to: $W
+        by-side-effect: true
+    pattern-sinks:
+      - patterns:
+          - pattern: eval($C)
+          - focus-metavariable: $C

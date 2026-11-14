@@ -1,0 +1,15 @@
+rules:
+  - id: field-clean-after-branch
+    languages:
+      - javascript
+    severity: WARNING
+    message: "Uma propriedade escrita só num ramo continua com o dado do objeto no outro."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: document.location.search
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.html($X)"
+          - focus-metavariable: "$X"

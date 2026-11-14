@@ -1,0 +1,16 @@
+- patterns:
+    - pattern: "$E.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $E = require("@actions/exec");
+            ...
+        - pattern-inside: |
+            import * as $E from "@actions/exec";
+            ...
+        - pattern-inside: |
+            import $E from "@actions/exec";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:exec|getExecOutput)$"
+    - focus-metavariable: "$X"

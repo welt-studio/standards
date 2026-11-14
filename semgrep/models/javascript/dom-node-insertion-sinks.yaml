@@ -1,0 +1,7 @@
+# Métodos do DOM que recebem um nó: o receptor é um nó do DOM (o Semgrep não tem o tipo dele).
+- patterns:
+    - pattern-either:
+        - pattern: "$E.appendChild($X)"
+        - pattern: "$E.insertBefore($X, ...)"
+        - pattern: "$E.insertAdjacentElement($P, $X)"
+    - focus-metavariable: "$X"

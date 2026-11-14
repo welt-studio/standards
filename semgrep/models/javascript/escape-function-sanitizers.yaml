@@ -1,4 +1,2 @@
-- pattern: "escapeHtml($X)"
-- pattern: "escapeHTML($X)"
-- pattern: "escape($X)"
-- pattern: "escapeString($X)"
+- "$model": javascript/escape-html-function-sanitizers
+- "$model": javascript/escape-core-sanitizers

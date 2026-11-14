@@ -1,0 +1,17 @@
+rules:
+  - id: limit-guard-else-branch
+    languages:
+      - javascript
+    severity: ERROR
+    message: "Consulta montada com o corpo da requisição."
+    mode: taint
+    pattern-sources:
+      - pattern: "$REQ.body"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$M.find($X)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (mongoose.Types.ObjectId.isValid($X)) {...}"

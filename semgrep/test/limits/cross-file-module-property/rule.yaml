@@ -1,0 +1,19 @@
+rules:
+  - id: limit-cross-file-module-property
+    languages:
+      - javascript
+    severity: ERROR
+    message: "Consulta marsdb montada com o corpo da requisição."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: "$REQ.body"
+      - pattern: "new marsdb.Collection(...)"
+        label: COLLECTION
+    pattern-sinks:
+      - patterns:
+          - pattern: "$C.find($X)"
+          - focus-metavariable: "$X"
+        requires:
+          - $C: COLLECTION

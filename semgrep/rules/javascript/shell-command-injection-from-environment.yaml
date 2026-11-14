@@ -103,25 +103,10 @@ rules:
           - pattern: "cspawn.sync($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execSh($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "execSh.promise($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
           - pattern: "exec_sh($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "cmd.run($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "shelljs.execAsync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$AEXEC.exec($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$AEXEC.getExecOutput($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$SSH.exec($X, ...)"
@@ -137,9 +122,6 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "exec_async($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "execAsync($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "require('cross-spawn')($X, ...)"
@@ -208,24 +190,6 @@ rules:
           - pattern: "require('shelljs').exec($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "util.promisify(child_process.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "util.promisify(cp.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "promisify(child_process.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P(child_process.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P(cp.exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P(exec)($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
           - pattern: "execaSync($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
@@ -244,13 +208,23 @@ rules:
           - pattern: "opener($U, {command: $X})"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$ASYNC.exec($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
           - pattern: "mz_exec($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "promisifiedExec($X, ...)"
+          - pattern: "$E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("@actions/exec");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "@actions/exec";
+                  ...
+              - pattern-inside: |
+                  import $E from "@actions/exec";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|getExecOutput)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
@@ -259,9 +233,34 @@ rules:
               - pattern: "child_process.spawn($SH, [...].concat([..., $X]), ...)"
               - pattern: "child_process.spawn($SH, [...].concat($X), ...)"
               - pattern: "child_process.spawn($SH, $X, ...)"
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
@@ -270,9 +269,34 @@ rules:
               - pattern: "child_process.spawnSync($SH, [...].concat([..., $X]), ...)"
               - pattern: "child_process.spawnSync($SH, [...].concat($X), ...)"
               - pattern: "child_process.spawnSync($SH, $X, ...)"
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
@@ -281,9 +305,34 @@ rules:
               - pattern: "child_process.execFile($SH, [...].concat([..., $X]), ...)"
               - pattern: "child_process.execFile($SH, [...].concat($X), ...)"
               - pattern: "child_process.execFile($SH, $X, ...)"
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
@@ -292,16 +341,101 @@ rules:
               - pattern: "child_process.execFileSync($SH, [...].concat([..., $X]), ...)"
               - pattern: "child_process.execFileSync($SH, [...].concat($X), ...)"
               - pattern: "child_process.execFileSync($SH, $X, ...)"
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$F($SH, $ARGS)"
           - pattern-inside: "$ARGS[$I] = $X; ..."
-          - metavariable-regex:
+          - metavariable-pattern:
               metavariable: "$SH"
-              regex: "(?i)^[\"'`]?(?:/(?:usr/)?bin/)?(?:sh|bash|zsh|dash|ksh|csh|cmd(?:\\.exe)?|powershell(?:\\.exe)?|pwsh)[\"'`]?$|^\\w*[sS]hell\\w*$|^sh$|^bash$"
+              pattern-either:
+                - pattern: '"sh"'
+                - pattern: '"bash"'
+                - pattern: '"zsh"'
+                - pattern: '"dash"'
+                - pattern: '"ksh"'
+                - pattern: '"csh"'
+                - pattern: '"/bin/sh"'
+                - pattern: '"/bin/bash"'
+                - pattern: '"/bin/zsh"'
+                - pattern: '"/bin/dash"'
+                - pattern: '"/bin/ksh"'
+                - pattern: '"/bin/csh"'
+                - pattern: '"/usr/bin/sh"'
+                - pattern: '"/usr/bin/bash"'
+                - pattern: '"/usr/bin/zsh"'
+                - pattern: '"/usr/bin/dash"'
+                - pattern: '"/usr/bin/ksh"'
+                - pattern: '"/usr/bin/csh"'
+                - pattern: '"cmd"'
+                - pattern: '"cmd.exe"'
+                - pattern: '"CMD"'
+                - pattern: '"CMD.EXE"'
+                - pattern: '"powershell"'
+                - pattern: '"powershell.exe"'
+                - pattern: '"pwsh"'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W(child_process.$M, ...)($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W(child_process.$M.bind(...), ...)($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$V($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = $W(child_process.$M, ...);
+                  ...
+              - pattern-inside: |
+                  $V = $W(child_process.$M.bind(...), ...);
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$V.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = $W(child_process, ...);
+                  ...
+              - pattern-inside: |
+                  $V = $W.$A(child_process, ...);
+                  ...
+              - pattern-inside: |
+                  $V = $W(require("child_process"), ...);
+                  ...
+              - pattern-inside: |
+                  $V = $W.$A(require("child_process"), ...);
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|execSync|execFile|execFileSync|spawn|spawnSync|fork)$"
           - focus-metavariable: "$X"
     pattern-sanitizers:
       - patterns:

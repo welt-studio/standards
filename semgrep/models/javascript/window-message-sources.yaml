@@ -1,0 +1,13 @@
+- patterns:
+    - pattern-either:
+        - "$model": javascript/event-data
+    - pattern-inside: 'window.addEventListener("message", function($E) {...})'
+- patterns:
+    - "$model": javascript/event-data
+    - pattern-inside: 'window.addEventListener("message", ($E) => {...})'
+- patterns:
+    - "$model": javascript/event-data
+    - pattern-inside: "window.onmessage = function($E) {...}"
+- patterns:
+    - "$model": javascript/event-data
+    - "$model": javascript/window-onmessage-handler

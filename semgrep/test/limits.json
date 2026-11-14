@@ -1,1 +1,189 @@
-{}
+{
+  "angularjs-di-by-name": {
+    "capability": "Ligar, por um nome em texto, o serviço injetado ao serviço registrado: o `.factory(\"consumer\", [\"renderer\", function (renderer) {...}])` recebe a função que o `.factory(\"renderer\", ...)` devolve. O Semgrep não liga a chamada `renderer(valor)` ao corpo dessa função.",
+    "tried": [
+      "mode: taint com `options: interfile: true`",
+      "sumidouro `$E.html($X)` com `focus-metavariable`; a mesma chamada, numa função comum, é achada (linha 16)",
+      "pattern-propagators não ajudam: o `to` precisa estar no padrão da chamada, e o parâmetro da função devolvida pelo outro `.factory` fica em outro trecho do arquivo"
+    ],
+    "should_find": ["a.js:11"]
+  },
+  "callback-registered-before-data": {
+    "capability": "Levar o dado de uma chamada ao parâmetro de um callback registrado antes dela: o parâmetro de uma função anônima é analisado no corpo dela, sem ver a contaminação que só chega depois, em outro ponto do mesmo fluxo.",
+    "tried": [
+      "pattern-propagators com by-side-effect do argumento do parse para o objeto da biblioteca (só alcança o que vem depois da chamada)",
+      "pattern-propagators com o trecho inteiro, `$P.command(...).action(($S) => {...}); ...; $P.parse($ARGS)`, nas duas ordens, com `to` no parâmetro do callback",
+      "interfile: true",
+      "fonte estrutural no parâmetro do callback (repete a fonte e perde o fluxo por variável)"
+    ],
+    "should_find": ["before.js:7"]
+  },
+  "closure-sideeffect-in-object": {
+    "capability": "Levar o parâmetro de um callback guardado num objeto (não passado direto como argumento de chamada) a uma variável de fora que o callback escreve (`st = res`); `onNext`/`onCompleted` dos hooks do Relay.",
+    "tried": [
+      "fontes `pattern-inside` do parâmetro do callback, e a mesma escrita num callback passado direto como argumento (linha 6) é achada",
+      "mode: taint com `options: interfile: true`",
+      "pattern-propagators por efeito colateral (`by-side-effect`) do setter para a variável de estado",
+      "o callback dentro de `useMemo(() => ({...}))` também não propaga o efeito"
+    ],
+    "should_find": ["a.js:20"]
+  },
+  "cookie-across-handlers": {
+    "capability": "Fluxo por armazenamento persistente entre trechos sem relação de chamada: o dado guardado por `Cookie.set(chave, dado)` num handler de `message` volta em `Cookie.get(chave)` de uma diretiva declarada antes.",
+    "tried": [
+      "pattern-propagators `$C.set($K, $V)` de `$V` para `$C` com `by-side-effect`: o efeito não sai do callback do handler",
+      "mode: taint com `options: interfile: true`",
+      "sumidouro `{..., templateUrl: $X, ...}` com `focus-metavariable` funciona com o dado ligado direto (conferido à parte)"
+    ],
+    "should_find": ["a.js:2"]
+  },
+  "cross-file-callback-location": {
+    "capability": "Resolver a chamada `policy.createHTML(...)`, do objeto que `trustedTypes.createPolicy({createHTML: lib.createHtml})` devolve, até o corpo da função `createHtml` de outro arquivo (o CodeQL aponta o `return x` do arquivo da biblioteca).",
+    "tried": [
+      "mode: taint com `options: interfile: true`: a chamada direta `lib.createHtml(valor)` chega ao `return x` (conferido à parte), a feita pelo objeto da política não",
+      "o sumidouro no ponto da chamada (`$POL.createHTML($X)`) acha o caso dentro do mesmo arquivo, mas o alerta fica no arquivo da chamada, não no da biblioteca"
+    ],
+    "should_find": ["lib.js:2"]
+  },
+  "cross-file-module-property": {
+    "capability": "O taint do Semgrep (mesmo no motor Pro, com `interfile: true`) não leva o rótulo de um valor de módulo de um arquivo para a propriedade que outro arquivo lê (`module.exports = { coll }` e `db.coll.find(...)`): só o retorno de função atravessa o arquivo.",
+    "tried": [
+      "taint com rótulo na origem (`new marsdb.Collection(...)`) e `requires` no receptor do sumidouro, com `interfile: true`",
+      "padrão com `pattern-inside` ligando o `require` relativo (só vê um arquivo)",
+      "`metavariable-type` (só TypeScript, e exige declaração de tipo)"
+    ],
+    "should_find": ["to.js:7"]
+  },
+  "field-across-framework-hooks": {
+    "capability": "Seguir um campo gravado no objeto da requisição dentro de um gancho do framework (`fastify.addHook`) até a leitura do mesmo campo em outro tratador: o fastify entrega o mesmo objeto aos dois callbacks, mas o motor analisa cada função à parte e não liga o parâmetro de uma ao da outra.",
+    "tried": [
+      "interfile: true",
+      "propagador by-side-effect da escrita `$W.$F = $SRC` para o objeto `$W`",
+      "fonte by-side-effect na escrita do campo, com focus-metavariable no objeto",
+      "propagador by-side-effect do parâmetro do gancho para o parâmetro do tratador (`pattern-inside` do `addHook` seguido do tratador)",
+      "o campo gravado e lido no mesmo tratador pega (control.js); só o campo entre gancho e tratador escapa"
+    ],
+    "should_find": ["hook.js:7"]
+  },
+  "field-clean-after-branch": {
+    "capability": "Manter a propriedade tainted depois de um `if` que a reescreve só num ramo: o Semgrep trata `obj.campo` como limpo no encontro dos ramos, enquanto o CodeQL só limpa com uma escrita que domina a leitura.",
+    "tried": [
+      "mode: taint com `options: interfile: true`",
+      "fonte e sumidouro sobre a propriedade (`$E.innerHTML = $X`): sem a escrita no ramo (linha 11) o Semgrep acha"
+    ],
+    "should_find": ["a.js:6"]
+  },
+  "guard-else-branch": {
+    "capability": "O sanitizador por guarda (`pattern-inside: if (guarda($X)) {...}`) cobre o `if` inteiro: não há como limitá-lo ao ramo verdadeiro, e o `else` perde o rastro do dado.",
+    "tried": [
+      "`pattern-not-inside` com o `if ... else` (apaga o ramo verdadeiro junto)",
+      "`pattern-inside` com `if (...) {...} else {...}` (o intervalo é o do `if` inteiro)",
+      "sanitizador `by-side-effect` na chamada da guarda (vale depois dela, nos dois ramos)",
+      "fonte nova no ramo `else` (não há padrão que selecione só o bloco `else`)"
+    ],
+    "should_find": ["target.js:8"]
+  },
+  "higher-order-wrapper-call": {
+    "capability": "Seguir a chamada de uma função embrulhada por uma biblioteca (`promisify(f)(x)`) até o parâmetro de `f`: o motor não liga o valor da variável que guarda o embrulho à função embrulhada.",
+    "tried": [
+      "pattern-propagators com by-side-effect do argumento da chamada para o símbolo da função embrulhada (`$V = $W($F); ...; $V($X)`)",
+      "pattern-propagators do argumento para o parâmetro da função anônima passada ao embrulho",
+      "interfile: true",
+      "a chamada direta `f(x)` pega (control.js); só a chamada pelo embrulho escapa"
+    ],
+    "should_find": ["wrapped.js:5", "wrapped.js:12"]
+  },
+  "html-embedded-javascript": {
+    "capability": "Análise de fluxo (modo taint) sobre o JavaScript dentro de `<script>` de um arquivo .html: o motor só roda o fluxo em arquivo da linguagem da regra.",
+    "tried": [
+      "regra taint com languages: [javascript] (pega o page.js, não o .html)",
+      "regra taint com languages: [html] (o padrão `document.location.hash` não é um padrão válido de HTML e a regra nem carrega)",
+      "modo de busca com metavariable-pattern e language: javascript dentro de `<script>$JS</script>` (pega só o fluxo direto de uma atribuição, sem sanitizador e sem mais de um salto)",
+      "regex do fonte ao sumidouro sobre o texto do .html (repete as listas de fontes e sumidouros e não segue variável)"
+    ],
+    "should_find": ["page.html:5"]
+  },
+  "labeled-receiver-object-argument": {
+    "capability": "Com `requires` no receptor (rótulo vindo do retorno de uma função), o argumento do sumidouro só conta quando o dado é uma expressão tainted inteira; um objeto tainted por escrita de propriedade (`query.title = req.body.title`) não dispara o sumidouro.",
+    "tried": [
+      "`requires` só no receptor (`$C`) com rótulo na origem `mongoose.Query`",
+      "`requires` nos dois (`$C` e `$X`), com rótulo `USER` na fonte",
+      "`interfile: true`",
+      "função de retorno declarada dentro e fora do handler"
+    ],
+    "should_find": ["target.js:10"]
+  },
+  "react-class-state-props": {
+    "capability": "Levar o dado de `this.state`/`this.props` entre métodos da classe e dos pontos que preenchem as props (`defaultProps`, atributos JSX, construtor): o Semgrep analisa cada método sozinho, sem o estado do objeto.",
+    "tried": [
+      "pattern-propagators por efeito colateral (`by-side-effect`) de `$S = {..., $K: $X, ...}` e de `$C.defaultProps = {...}` para o alvo da atribuição: o efeito não sai do método",
+      "mode: taint com `options: interfile: true`"
+    ],
+    "should_find": ["a.js:8", "a.js:14"]
+  },
+  "react-jsx-prop-function": {
+    "capability": "Levar o valor devolvido por uma função passada como atributo JSX (`<Child provide={() => source} />`) ao componente filho que a chama (`props.provide()`).",
+    "tried": [
+      "mode: taint com `options: interfile: true`: o mesmo dado ligado direto ao sumidouro é achado (linha 13)",
+      "pattern-propagators do atributo JSX para `props.$ATTR`: o `to` precisa estar no padrão do JSX, e o uso fica no outro componente",
+      "propagador de `<$C $ATTR={() => $X} />` para a variável do filho que recebe a prop (`const provide = props.provide`), com pattern-inside do componente filho: o propagador não atravessa da função do pai para a do filho",
+      "o mesmo, com pattern-inside envolvendo também a função pai e `to` na chamada `provide()` (via metavariable-pattern): em modo de busca o padrão casa, mas o propagador não carrega o dado",
+      "só uma fonte pela forma do código (a chamada da prop no filho vira fonte quando o pai passa `() => v` com `const v = <fonte>`) pega o caso; não é fluxo, e fica de fora pela mesma decisão do PO sobre o fastify (2026-11-14)"
+    ],
+    "should_find": ["a.jsx:3"]
+  },
+  "react-setstate-callback-order": {
+    "capability": "Dar ao parâmetro da função do setter (`setState(prev => ...)`) o estado definido por um `setState` que vem DEPOIS no código: o CodeQL junta todas as chamadas do setter, o Semgrep segue a ordem do texto.",
+    "tried": [
+      "pattern-propagators do estado para o parâmetro `$PREV` do callback: com o setter antes (linha 16) funciona, depois não",
+      "mode: taint com `options: interfile: true`"
+    ],
+    "should_find": ["a.js:6"]
+  },
+  "react-setstate-lazy-return": {
+    "capability": "Levar o valor devolvido pela função passada ao setter (`setState(() => source)`) ao estado: o dado dentro do corpo da função não sai dela por propagador.",
+    "tried": [
+      "pattern-propagators `$SET($X)`, `$SET(() => $X)` e `$SET(() => {... return $X; ...})`: com o valor passado direto (linha 12) funciona",
+      "mode: taint com `options: interfile: true`"
+    ],
+    "should_find": ["a.jsx:6"]
+  },
+  "taint-field-after-conditional-write": {
+    "capability": "taint de campo (`obj.f`) preservado na junção de um if: o ramo que só limpa o campo faz o campo ficar limpo depois do if, mesmo com o objeto contaminado pelo outro ramo",
+    "tried": [
+      "options.interfile: true",
+      "pattern-propagators de `$O` para `$O.$F`: a regra é aceita e o campo continua limpo na junção",
+      "sumidouro com padrão de campo e focus-metavariable no objeto (`readFileSync($O.$F)`, focus `$O`) mais pattern-not-inside da escrita que domina: acerta a linha, mas só para aquele sumidouro, e não há como aplicá-lo a todos os sumidouros da regra"
+    ],
+    "should_find": ["target.js:9"]
+  },
+  "taint-state-after-decode": {
+    "capability": "reviver o estado cru de um taint que outra regra de estado já descartou: depois de decodeURIComponent o caminho volta a ser cru, mas o taint dele só existe na regra do estado normalizado",
+    "tried": [
+      "taint labels: `requires: SRC and not NORM` no sumidouro separa o normalizado, mas o rótulo NORM não sai depois do decode",
+      "pattern-propagators com replace-labels (e label): a chave é aceita e o rótulo não é trocado",
+      "decode como fonte incondicional em cada regra de estado: acha a linha, mas também todo decode de valor limpo, porque a fonte não pode exigir que o argumento esteja contaminado",
+      "options.interfile: true"
+    ],
+    "should_find": ["target.js:8"]
+  },
+  "typeahead-callback": {
+    "capability": "Ligar o dado entregue ao callback `cb(valor)` da opção `source` do typeahead ao parâmetro da função `templates.suggestion` do mesmo objeto de opções.",
+    "tried": [
+      "mode: taint com `options: interfile: true`",
+      "sumidouro `return $X;` dentro de `templates.suggestion` com `focus-metavariable`: o dado devolvido direto (linha 21) é achado",
+      "pattern-propagators não ligam `cb($X)` ao parâmetro de outra função literal: o `to` precisa estar no padrão",
+      "propagador de `$CB($X)` com pattern-inside no objeto de opções do `.typeahead(...)`, `from: $X` e `to` no parâmetro de `templates.suggestion`: as funções `source` e `suggestion` são corpos diferentes e o propagador não as liga",
+      "só uma fonte pela forma do código (o parâmetro de `suggestion` vira fonte quando `source` faz `$T = <fonte>; cb($T)`) pega o caso; não é fluxo, e fica de fora pela mesma decisão do PO sobre o fastify (2026-11-14)"
+    ],
+    "should_find": ["a.js:10"]
+  },
+  "vue-single-file-component": {
+    "capability": "Ler arquivos `.vue`: o Semgrep (1.184.0) não analisa componentes de arquivo único, então nem o script nem o `v-html` do template entram numa regra de JavaScript ou TypeScript.",
+    "tried": [
+      "mode: taint com languages javascript e typescript: o mesmo script num `.js` (control.js, linha 3) é achado, o do `.vue` (linha 7) não",
+      "uma regra `generic` só casaria o texto `v-html=\"...\"`, sem o fluxo do dado, e acusaria todo `v-html` (também os de valor constante)"
+    ],
+    "should_find": ["a.vue:7"]
+  }
+}

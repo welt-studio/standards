@@ -1,0 +1,16 @@
+rules:
+  - id: react-jsx-prop-function
+    languages:
+      - javascript
+    severity: WARNING
+    message: "Uma função passada como atributo JSX devolve o dado ao componente filho."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: document.location.search
+    pattern-sinks:
+      - patterns:
+          - pattern: "{__html: $X}"
+          - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
+          - focus-metavariable: "$X"

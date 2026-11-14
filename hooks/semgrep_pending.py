@@ -1,12 +1,16 @@
 """As pendências da paridade com o CodeQL (`semgrep/test/pending.json`) e a evidência de cada uma.
 
-Por consulta, seis listas, como `pasta/arquivo:linha` dentro de `semgrep/test/vendor/codeql/`:
+Por consulta, sete listas, como `pasta/arquivo:linha` dentro de `semgrep/test/vendor/codeql/`:
 
 - `missing`: o CodeQL acusa e a regra ainda não pega. A paridade é esta lista vazia.
 - `spurious`: o CodeQL acusa, mas o próprio teste dele marca a linha como alarme falso (`SPURIOUS`,
   ou `OK` sem `NOT`). Não pegar é o certo.
 - `limited`: o CodeQL acusa e o Semgrep não tem como pegar; aponta para um limite provado em
   `semgrep/test/limits.json`, com a reprodução mínima em `semgrep/test/limits/<limite>/`.
+- `threat_model`: o CodeQL só acusa porque a pasta do teste liga um modelo de ameaça fora do padrão
+  (`local`, `environment`, `response`...), num `*.ext.json` ou `*.ext.yml` com
+  `threatModelConfiguration`; aponta para o modelo. As regras seguem o CodeQL padrão, que só usa o
+  `remote`: não pegar é o certo.
 - `extra`: a regra acusa onde o CodeQL não acusa. A paridade é esta lista vazia.
 - `accepted`: acusa a mais, mas o teste do CodeQL marca a linha como vulnerável e o CodeQL não pega
   (`MISSING`, `NOT OK`, `BAD`, `$ Alert`): o acerto é nosso.
@@ -14,7 +18,8 @@ Por consulta, seis listas, como `pasta/arquivo:linha` dentro de `semgrep/test/ve
   (`test-names.txt`): a regra está presa ao teste, não a uma API. A paridade é esta lista vazia.
 
 A evidência das categorias aceitas é conferida aqui, sobre os arquivos do teste: nenhum aceite passa
-sem a marca do CodeQL na linha, nenhum limite sem a reprodução.
+sem a marca do CodeQL na linha, nenhum limite sem a reprodução, nenhum modelo de ameaça que a pasta
+do teste não ligue.
 """
 
 import json
@@ -38,7 +43,10 @@ PRINT_WIDTH = 100
 # As marcas dos testes do CodeQL, na linha do caso ou na de cima.
 SPURIOUS_MARK = re.compile(r"SPURIOUS|(?<!NOT )(?<!NOT_)\bOK\b")
 VULNERABLE_MARK = re.compile(r"MISSING|NOT[ _]OK|\bBAD\b|\$\s*Alert")
-CATEGORIES = ("missing", "spurious", "limited", "extra", "accepted", "overfit")
+CATEGORIES = ("missing", "spurious", "limited", "threat_model", "extra", "accepted", "overfit")
+# O modelo de ameaça do CodeQL padrão: o que os testes ligam além dele não é paridade.
+DEFAULT_THREAT_MODEL = "remote"
+THREAT_MODEL_EXTENSIBLE = "threatModelConfiguration"
 
 
 @dataclass(frozen=True)
@@ -48,13 +56,14 @@ class Pending:
     missing: frozenset[str] = frozenset()
     spurious: frozenset[str] = frozenset()
     limited: dict[str, str] = field(default_factory=dict[str, str])
+    threat_model: dict[str, str] = field(default_factory=dict[str, str])
     extra: frozenset[str] = frozenset()
     accepted: frozenset[str] = frozenset()
     overfit: frozenset[str] = frozenset()
 
     def known_missing(self) -> set[str]:
         """O que o CodeQL acusa e a regra não pega, em qualquer das categorias."""
-        return set(self.missing | self.spurious | self.limited.keys())
+        return set(self.missing | self.spurious | self.limited.keys() | self.threat_model.keys())
 
     def known_extra(self) -> set[str]:
         return set(self.extra | self.accepted)
@@ -82,6 +91,7 @@ def load_pending(text: str) -> dict[str, Pending]:
                 missing=strings(entry.get("missing")),
                 spurious=strings(entry.get("spurious")),
                 limited=string_map(entry.get("limited")),
+                threat_model=string_map(entry.get("threat_model")),
                 extra=strings(entry.get("extra")),
                 accepted=strings(entry.get("accepted")),
                 overfit=strings(entry.get("overfit")),
@@ -91,15 +101,21 @@ def load_pending(text: str) -> dict[str, Pending]:
 
 def classify(missing: set[str], extra: set[str], overfit: set[str], previous: Pending) -> Pending:
     """As pendências medidas agora, mantendo a categoria que cada caso já tinha (o alarme falso do
-    CodeQL, o limite, o acerto nosso). Caso novo entra como `missing` ou `extra`."""
+    CodeQL, o limite, o modelo de ameaça, o acerto nosso). Caso novo entra como `missing` ou
+    `extra`."""
     return Pending(
         missing=frozenset(
             item
             for item in missing
-            if item not in previous.spurious and item not in previous.limited
+            if item not in previous.spurious
+            and item not in previous.limited
+            and item not in previous.threat_model
         ),
         spurious=frozenset(missing & previous.spurious),
         limited={item: name for item, name in previous.limited.items() if item in missing},
+        threat_model={
+            item: name for item, name in previous.threat_model.items() if item in missing
+        },
         extra=frozenset(extra - previous.accepted),
         accepted=frozenset(extra & previous.accepted),
         overfit=frozenset(overfit),
@@ -190,7 +206,7 @@ def evidence_problems(
     pending: dict[str, Pending], vendor: Path, limits: dict[str, dict[str, object]]
 ) -> list[str]:
     """O aceite sem evidência: alarme falso sem a marca do CodeQL, acerto nosso sem a marca de
-    vulnerável, limite que não existe."""
+    vulnerável, limite que não existe, modelo de ameaça que a pasta do teste não liga."""
     found: list[str] = []
     for query, entry in sorted(pending.items()):
         found.extend(
@@ -208,7 +224,43 @@ def evidence_problems(
             for case, name in sorted(entry.limited.items())
             if name not in limits
         )
+        found.extend(
+            f"{query}: {case} aponta para o modelo de ameaça {name}, que a pasta do teste não liga"
+            for case, name in sorted(entry.threat_model.items())
+            if name == DEFAULT_THREAT_MODEL or name not in enabled_threat_models(case, vendor)
+        )
     return found
+
+
+def enabled_threat_models(case: str, vendor: Path) -> set[str]:
+    """Os modelos de ameaça que o teste do caso liga: os `*.ext.json`/`*.ext.yml` da pasta do
+    arquivo e das de cima, até o `vendor`, com `threatModelConfiguration`."""
+    path, _, _ = case.rpartition(":")
+    folder = (vendor / path).parent
+    enabled: set[str] = set()
+    while folder.is_relative_to(vendor) and folder != vendor:
+        for ext in sorted([*folder.glob("*.ext.json"), *folder.glob("*.ext.yml")]):
+            enabled.update(threat_models(yaml.safe_load(ext.read_text(encoding="utf-8"))))
+        folder = folder.parent
+    return enabled
+
+
+def threat_models(document: object) -> set[str]:
+    """Os modelos ligados (`true`) numa extensão de dados do CodeQL (o JSON é YAML também)."""
+    extensions = document.get("extensions") if isinstance(document, dict) else None
+    enabled: set[str] = set()
+    for extension in extensions if isinstance(extensions, list) else []:
+        adds = extension.get("addsTo") if isinstance(extension, dict) else None
+        if not isinstance(adds, dict) or adds.get("extensible") != THREAT_MODEL_EXTENSIBLE:
+            continue
+        rows = extension.get("data")
+        enabled.update(
+            row[0]
+            for row in (rows if isinstance(rows, list) else [])
+            # `[nome, true, prioridade]`: o segundo campo diz se o modelo está ligado.
+            if isinstance(row, list) and row[1:2] == [True] and isinstance(row[0], str)
+        )
+    return enabled
 
 
 def marked(mark: re.Pattern[str], case: str, vendor: Path) -> bool:

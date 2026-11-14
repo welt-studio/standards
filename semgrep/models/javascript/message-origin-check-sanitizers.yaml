@@ -7,6 +7,12 @@
     - pattern-inside: "if ($E.origin == $O) {...}"
 - patterns:
     - "$model": javascript/event-data
+    - pattern-inside: "if ($E.origin !== $O) { return; } ..."
+- patterns:
+    - "$model": javascript/event-data
+    - pattern-inside: "if ($E.origin != $O) { return; } ..."
+- patterns:
+    - "$model": javascript/event-data
     - pattern-inside: "if (!$E.origin.startsWith($O)) { return; } ..."
 - patterns:
     - "$model": javascript/event-data

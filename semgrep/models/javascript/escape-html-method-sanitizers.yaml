@@ -1,0 +1,2 @@
+- pattern: "$L.escapeHtml($X)"
+- pattern: "$L.escapeHTML($X)"

@@ -1,0 +1,15 @@
+rules:
+  - id: limit-taint-field-after-conditional-write
+    languages:
+      - javascript
+    severity: ERROR
+    message: "o campo de um objeto contaminado volta a ser contaminado depois de um if que só limpou o campo num ramo"
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: "req.query.path"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$FS.readFileSync($X)"
+          - focus-metavariable: "$X"

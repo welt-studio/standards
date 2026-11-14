@@ -1,0 +1,7 @@
+# Troca GLOBAL com a expressão regular escrita como literal (`/.../g`, com outras flags junto): a
+# troca troca todas as ocorrências, e não só a primeira, e é o que conta como sanitização.
+- pattern: "$X.replace(/$RE/g, ...)"
+- pattern: "$X.replace(/$RE/gi, ...)"
+- pattern: "$X.replace(/$RE/gm, ...)"
+- pattern: "$X.replace(/$RE/gu, ...)"
+- pattern: "$X.replace(/$RE/ig, ...)"

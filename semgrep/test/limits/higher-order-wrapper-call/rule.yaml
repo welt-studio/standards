@@ -1,0 +1,29 @@
+rules:
+  - id: wrapped-callee-parameter
+    languages: [javascript]
+    severity: ERROR
+    message: o argumento do wrapper chega ao parâmetro da função embrulhada
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: req.body
+    pattern-propagators:
+      - pattern: |
+          $V = $W($F);
+          ...
+          $V($X, ...);
+        from: $X
+        to: $F
+        by-side-effect: true
+      - pattern: |
+          $V = $W(($P, ...) => {...});
+          ...
+          $V($X, ...);
+        from: $X
+        to: $P
+        by-side-effect: true
+    pattern-sinks:
+      - patterns:
+          - pattern: child_process.exec($C, ...)
+          - focus-metavariable: $C

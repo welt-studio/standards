@@ -1,11 +1,32 @@
+# Troca GLOBAL por uma expressão regular que sempre casa um metacaractere HTML (`<`, `'` ou `"`)
+# ou que é um curinga (`.`, `\W`, `[^a-z]`, `.*`): é o MetacharEscapeSanitizer do CodeQL. A
+# expressão que é uma sequência (`<\w+`) não conta, nem a troca sem a flag `g`. Uma regex guardada
+# em variável entra por propagação de constante.
 - patterns:
-    - "$model": javascript/replace-with-regex-literal
+    - pattern-either:
+        - "$model": javascript/global-replace-with-regex-literal
     - metavariable-regex:
         metavariable: "$RE"
-        regex: ".*(?:<|\\\\x3[cC]|\\\\u003[cC]).*"
+        regex:
+          "$text": javascript/html-metachar-regex
 - patterns:
-    - pattern: '$X.replace(new RegExp("$RE", ...), ...)'
+    - pattern-either:
+        - pattern: "$X.replaceAll(/$RE/g, ...)"
+        - pattern: "$X.replaceAll(/$RE/gi, ...)"
     - metavariable-regex:
         metavariable: "$RE"
-        regex: ".*<.*"
+        regex:
+          "$text": javascript/html-metachar-regex
+# `new RegExp(texto, flags)`: vale com `g` nas flags, ou com flags que não se sabe quais são.
+- patterns:
+    - pattern-either:
+        - pattern: '$X.replace(new RegExp("$RE", $FLAGS), ...)'
+        - pattern: '$X.replaceAll(new RegExp("$RE", $FLAGS), ...)'
+    - metavariable-regex:
+        metavariable: "$RE"
+        regex:
+          "$text": javascript/html-metachar-regex
+    - metavariable-regex:
+        metavariable: "$FLAGS"
+        regex: '^(?:["''][^"'']*g[^"'']*["'']|[^"''].*)$'
 - pattern: "$X.charCodeAt(...)"

@@ -1,0 +1,25 @@
+- patterns:
+    - pattern-either:
+        - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+        - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+        - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+        - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+    - focus-metavariable: "$ARGS"
+- patterns:
+    - pattern-either:
+        - pattern: "{..., $K: ($ARGS, ...) => {...}, ...}"
+        - pattern: "{..., $K: async ($ARGS, ...) => {...}, ...}"
+        - pattern: "{..., $K: function ($ARGS, ...) {...}, ...}"
+        - pattern: "{..., $K($ARGS, ...) {...}, ...}"
+        - pattern: "{..., async $K($ARGS, ...) {...}, ...}"
+    - pattern-inside: "$ROOT = {...}"
+    - pattern-either:
+        - pattern-inside: |
+            $ROOT = {...};
+            ...
+            <... graphql.graphql({..., rootValue: $ROOT, ...}) ...>;
+        - pattern-inside: |
+            $ROOT = {...};
+            ...
+            <... graphql.graphql($SCHEMA, $SOURCE, $ROOT, ...) ...>;
+    - focus-metavariable: "$ARGS"

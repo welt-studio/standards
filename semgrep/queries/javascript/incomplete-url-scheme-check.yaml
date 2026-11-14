@@ -54,7 +54,7 @@ rules:
           - patterns:
               - pattern-either:
                   - pattern: "/$RE/.exec($X)"
-                  - pattern: "/$RE/.test($X)"
+                  - "$model": javascript/regexp-literal-test-call
               - metavariable-regex:
                   metavariable: "$RE"
                   regex: "^\\^?\\(?(?:\\?:)?(?:javascript|data)\\b(?!.*vbscript).*"

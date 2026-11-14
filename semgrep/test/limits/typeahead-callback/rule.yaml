@@ -1,0 +1,16 @@
+rules:
+  - id: typeahead-callback
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O dado entregue ao callback da fonte do typeahead chega à função `suggestion`."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: document.location.search
+    pattern-sinks:
+      - patterns:
+          - pattern: "return $X;"
+          - pattern-inside: "$J.typeahead(..., {..., templates: {..., suggestion: function (...) {...}, ...}, ...})"
+          - focus-metavariable: "$X"

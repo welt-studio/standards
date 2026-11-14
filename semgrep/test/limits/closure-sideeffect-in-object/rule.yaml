@@ -1,0 +1,20 @@
+rules:
+  - id: closure-sideeffect-in-object
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O parâmetro de um callback chega a uma variável de fora, escrita dentro do callback."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern-inside: "{..., onData: ($D) => {...}, ...}"
+          - pattern: "$D"
+      - patterns:
+          - pattern-inside: "register(($D) => {...})"
+          - pattern: "$D"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.html($X)"
+          - focus-metavariable: "$X"

@@ -20,6 +20,7 @@ def test_load_pending_reads_every_category() -> None:
                 "missing": ["a:1", 2],
                 "spurious": ["b:1"],
                 "limited": {"c:1": "lim", "d:1": 3},
+                "threat_model": {"g:1": "local"},
                 "extra": ["e:1"],
                 "accepted": ["f:1"],
                 "overfit": ["promisifiedExec"],
@@ -32,6 +33,7 @@ def test_load_pending_reads_every_category() -> None:
             missing=frozenset({"a:1"}),
             spurious=frozenset({"b:1"}),
             limited={"c:1": "lim"},
+            threat_model={"g:1": "local"},
             extra=frozenset({"e:1"}),
             accepted=frozenset({"f:1"}),
             overfit=frozenset({"promisifiedExec"}),
@@ -44,14 +46,16 @@ def test_classify_keeps_the_known_category() -> None:
     previous = Pending(
         spurious=frozenset({"s:1"}),
         limited={"l:1": "lim", "gone:1": "lim"},
+        threat_model={"t:1": "local", "gone:2": "local"},
         accepted=frozenset({"a:1"}),
     )
     assert semgrep_pending.classify(
-        {"s:1", "l:1", "new:1"}, {"a:1", "x:1"}, {"n"}, previous
+        {"s:1", "l:1", "t:1", "new:1"}, {"a:1", "x:1"}, {"n"}, previous
     ) == Pending(
         missing=frozenset({"new:1"}),
         spurious=frozenset({"s:1"}),
         limited={"l:1": "lim"},
+        threat_model={"t:1": "local"},
         extra=frozenset({"x:1"}),
         accepted=frozenset({"a:1"}),
         overfit=frozenset({"n"}),
@@ -102,6 +106,45 @@ def test_evidence_needs_the_codeql_mark(tmp_path: Path) -> None:
         "q: js/T/missing.js:1 não tem a marca de vulnerável do CodeQL",
         "q: js/T/a.js:3 aponta para o limite ghost, que não existe",
     ]
+
+
+def test_threat_model_needs_the_test_config(tmp_path: Path) -> None:
+    write(tmp_path / "js/On/a.js", "x();\n")
+    write(tmp_path / "js/On/inner/b.js", "x();\n")
+    write(
+        tmp_path / "js/On/Q.ext.json",
+        '{"extensions": [{"addsTo": {"extensible": "threatModelConfiguration"},'
+        ' "data": [["local", true, 0], ["response", false, 0]]}, {"addsTo": {"extensible": "x"},'
+        ' "data": [["environment", true, 0]]}, "junk"]}',
+    )
+    write(
+        tmp_path / "py/Yml/Q.ext.yml",
+        "extensions:\n  - addsTo: {extensible: threatModelConfiguration}\n"
+        "    data:\n      - [remote, true, 0]\n      - [environment, true, 0]\n",
+    )
+    write(tmp_path / "py/Yml/t.py", "x()\n")
+    write(tmp_path / "js/Off/c.js", "x();\n")
+    pending = {
+        "q": Pending(
+            threat_model={
+                "js/On/a.js:1": "local",
+                "js/On/inner/b.js:1": "local",
+                "js/On/a.js:2": "response",
+                "js/On/a.js:3": "environment",
+                "js/Off/c.js:1": "local",
+                "py/Yml/t.py:1": "environment",
+                "py/Yml/t.py:2": "remote",
+            }
+        )
+    }
+    message = "que a pasta do teste não liga"
+    assert semgrep_pending.evidence_problems(pending, tmp_path, {}) == [
+        f"q: js/Off/c.js:1 aponta para o modelo de ameaça local, {message}",
+        f"q: js/On/a.js:2 aponta para o modelo de ameaça response, {message}",
+        f"q: js/On/a.js:3 aponta para o modelo de ameaça environment, {message}",
+        f"q: py/Yml/t.py:2 aponta para o modelo de ameaça remote, {message}",
+    ]
+    assert semgrep_pending.threat_models(["not", "a", "mapping"]) == set()
 
 
 def test_limit_needs_capability_tries_lines_and_repro(tmp_path: Path) -> None:

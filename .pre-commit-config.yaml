@@ -12,11 +12,13 @@ default_install_hook_types: [pre-commit, commit-msg, pre-push]
 # mensagem do commit e no push. Quem precisa de outro estágio declara `stages:` (testes, mensagem).
 default_stages: [pre-commit]
 
-# Os testes do CodeQL copiados sem mudança (`hooks/sync_codeql_tests.py`): código de terceiros, com
-# falha de propósito (segredo falso, workflow vulnerável) e o `.expected` apontando para a linha
-# exata. Nenhum hook confere, reformata ou "conserta" esses arquivos: um espaço tirado ou uma linha
-# a mais desloca o que o teste de paridade compara.
-exclude: ^semgrep/test/vendor/
+# Os testes do CodeQL copiados sem mudança (`hooks/sync_codeql_tests.py`), as reproduções dos
+# limites do Semgrep (`semgrep/test/limits/`) e os testes próprios das regras (`semgrep/test/own/`):
+# código vulnerável de propósito (segredo falso, workflow vulnerável, `require` e variável sem uso),
+# com o `.expected`, o `should_find` do `limits.json` ou a marca `$ Alert[...]` apontando para a
+# linha exata. Nenhum hook confere, reformata ou "conserta" esses
+# arquivos: um espaço tirado ou uma linha a mais desloca o que o teste de paridade compara.
+exclude: ^semgrep/test/(vendor|limits|own)/
 
 repos:
   - repo: local

@@ -29,6 +29,14 @@ rules:
       - "$model": javascript/document-referrer
       - "$model": javascript/window-name
       - "$model": javascript/window-location-and-message-sources
+      - "$model": javascript/github-actions-payload-sources
+      - "$model": javascript/form-parser-sources
+      - "$model": javascript/websocket-message-sources
+      - "$model": javascript/graphql-resolver-sources
+      - "$model": javascript/react-server-function-sources
+    pattern-propagators:
+      - "$model": javascript/commander-propagators
+      - "$model": javascript/promise-then-propagators
     pattern-sinks:
       - patterns:
           - pattern: "eval($X)"
@@ -196,16 +204,23 @@ rules:
           - pattern: "Mustache.render($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "Hogan.compile($X, ...)"
+          - pattern: "$H.compile($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $H = require("hogan.js");
+                  ...
+              - pattern-inside: |
+                  import * as $H from "hogan.js";
+                  ...
+              - pattern-inside: |
+                  import $H from "hogan.js";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "Eta.render($X, ...)"
+          - pattern: "eta.render($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "Eta.compile($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "Sqrl.render($X, ...)"
+          - pattern: "eta.compile($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "squirrelly.render($X, ...)"
@@ -245,6 +260,134 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "executeJavaScript($X)"
+          - focus-metavariable: "$X"
+      # Operador de código de uma consulta do MongoDB (`$where` roda JavaScript no servidor).
+      - patterns:
+          - pattern: "{..., $where: $X, ...}"
+          - focus-metavariable: "$X"
+      # Expressões do AngularJS que o serviço interpreta como código.
+      - patterns:
+          - pattern-either:
+              - pattern: "$SCOPE.$watchCollection($X, ...)"
+              - pattern: "$SCOPE.$watchGroup($X, ...)"
+              - pattern: "$filter('orderBy')($ARR, $X, ...)"
+          - focus-metavariable: "$X"
+      # O serviço do AngularJS guardado em uma variável local antes da chamada.
+      - patterns:
+          - pattern: "$ALIAS($X, ...)"
+          - pattern-inside: |
+              $ALIAS = $SERVICE;
+              ...
+          - metavariable-regex:
+              metavariable: "$SERVICE"
+              regex: "^\\$(?:compile|parse|interpolate)$"
+          - focus-metavariable: "$X"
+      # Função do `vm` guardada em uma variável local antes da chamada.
+      - patterns:
+          - pattern: "$F($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $F = require("vm").$M;
+                  ...
+              - pattern-inside: |
+                  $F = vm.$M;
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:runInThisContext|runInNewContext|runInContext|compileFunction)$"
+          - focus-metavariable: "$X"
+      # Código do `node -e` (qualquer elemento da lista de argumentos que leva o `-e`).
+      - patterns:
+          - pattern-either:
+              - pattern: 'child_process.$M("node", [..., "-e", ..., $X, ...], ...)'
+              - pattern: 'child_process.$M("node", [..., $X, ..., "-e", ...], ...)'
+              - pattern: 'child_process.$M(process.argv[0], [..., "-e", ..., $X, ...], ...)'
+              - pattern: 'child_process.$M(process.argv[0], [..., $X, ..., "-e", ...], ...)'
+          - metavariable-regex:
+              metavariable: "$M"
+              regex:
+                "$text": javascript/child-process-argument-list-method-regex
+          - focus-metavariable: "$X"
+      # O terminal do `node-pty` executa o que se escreve nele.
+      - patterns:
+          - pattern: "$SH.write($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $PTY = require("node-pty");
+                  ...
+                  $SH = $PTY.spawn(...);
+                  ...
+              - pattern-inside: |
+                  import * as $PTY from "node-pty";
+                  ...
+                  $SH = $PTY.spawn(...);
+                  ...
+              - pattern-inside: |
+                  import $PTY from "node-pty";
+                  ...
+                  $SH = $PTY.spawn(...);
+                  ...
+              - pattern-inside: |
+                  import {..., spawn, ...} from "node-pty";
+                  ...
+                  $SH = spawn(...);
+                  ...
+              - pattern-inside: |
+                  const {..., spawn, ...} = require("node-pty");
+                  ...
+                  $SH = spawn(...);
+                  ...
+          - focus-metavariable: "$X"
+      # `Module.prototype._compile` compila o código recebido.
+      - patterns:
+          - pattern: "$M._compile($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $MOD = require("module");
+                  ...
+                  $M = new $MOD(...);
+                  ...
+              - pattern-inside: |
+                  import $MOD from "module";
+                  ...
+                  $M = new $MOD(...);
+                  ...
+              - pattern-inside: |
+                  $M = new module.constructor(...);
+                  ...
+              - pattern-inside: |
+                  $M = new module.constructor;
+                  ...
+          - focus-metavariable: "$X"
+      # JavaScript injetado em um `WebView` do React Native.
+      - patterns:
+          - pattern: "<WebView ... injectedJavaScript={$X} ... />"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., WebView, ...} from "react-native";
+                  ...
+              - pattern-inside: |
+                  const {..., WebView, ...} = require("react-native");
+                  ...
+          - focus-metavariable: "$X"
+      # Corpo de um elemento `<script>` em JSX.
+      - patterns:
+          - pattern: "<script ...>{$X}</script>"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "WebAssembly.compile(..., $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "WebAssembly.compileStreaming(..., $X, ...)"
+          - focus-metavariable: "$X"
+      # Atributo de evento (`onclick`...) escrito com um texto, que o navegador executa.
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.attr($N, $X)"
+              - pattern: "$E.setAttribute($N, $X)"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: '(?i)^["'']on.+["'']$'
           - focus-metavariable: "$X"
     pattern-sanitizers:
       - "$model": javascript/parse-int-x-sanitizer

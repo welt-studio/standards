@@ -1,0 +1,14 @@
+rules:
+  - id: vue-single-file-component
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "O dado da janela chega ao HTML dentro de um componente Vue de arquivo único."
+    mode: taint
+    pattern-sources:
+      - pattern: window.name
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.html($X)"
+          - focus-metavariable: "$X"

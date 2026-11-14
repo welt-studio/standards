@@ -236,6 +236,158 @@ rules:
       - patterns:
           - pattern: "$E.data"
           - pattern-inside: "window.onmessage = ($E) => {...}"
+      - patterns:
+          - pattern: "$G.context.payload"
+          - pattern-either:
+              - pattern-inside: |
+                  $G = require("@actions/github");
+                  ...
+              - pattern-inside: |
+                  import * as $G from "@actions/github";
+                  ...
+              - pattern-inside: |
+                  import $G from "@actions/github";
+                  ...
+      - patterns:
+          - pattern: "$P"
+          - pattern-either:
+              - pattern-inside: |
+                  $F = formidable(...);
+                  ...
+              - pattern-inside: |
+                  $F = formidable.formidable(...);
+                  ...
+              - pattern-inside: |
+                  $F = new formidable.IncomingForm(...);
+                  ...
+              - pattern-inside: |
+                  $F = new formidable.Formidable(...);
+                  ...
+          - pattern-either:
+              - pattern-inside: "$F.parse($REQ, ($ERR, ..., $P, ...) => {...})"
+              - pattern-inside: "$F.parse($REQ, function ($ERR, ..., $P, ...) {...})"
+      - patterns:
+          - pattern: "$P"
+          - pattern-inside: |
+              $F = new multiparty.Form(...);
+              ...
+          - pattern-either:
+              - pattern-inside: "$F.parse($REQ, (..., $P, ...) => {...})"
+              - pattern-inside: "$F.parse($REQ, function (..., $P, ...) {...})"
+      - patterns:
+          - pattern: "$P"
+          - pattern-inside: |
+              $F = new multiparty.Form(...);
+              ...
+          - pattern-either:
+              - pattern-inside: "$F.on($EVENT, ($P, ...) => {...})"
+              - pattern-inside: "$F.on($EVENT, function ($P, ...) {...})"
+          - metavariable-regex:
+              metavariable: "$EVENT"
+              regex: '^["''](?:part|file|field)["'']$'
+      - patterns:
+          - pattern: "$P"
+          - pattern-inside: |
+              $F = new busboy(...);
+              ...
+          - pattern-either:
+              - pattern-inside: "$F.on($EVENT, (..., $P, ...) => {...})"
+              - pattern-inside: "$F.on($EVENT, function (..., $P, ...) {...})"
+      - patterns:
+          - pattern: "$MSG"
+          - pattern-either:
+              - pattern-inside: "$APP.ws($PATH, ($WS, ...) => {...})"
+              - pattern-inside: "$APP.ws($PATH, function ($WS, ...) {...})"
+              - pattern-inside: "$APP.ws($PATH, async ($WS, ...) => {...})"
+              - pattern-inside: "$APP.ws($PATH, async function ($WS, ...) {...})"
+          - pattern-either:
+              - pattern-inside: '$WS.on("message", ($MSG, ...) => {...})'
+              - pattern-inside: '$WS.on("message", function ($MSG, ...) {...})'
+              - pattern-inside: '$WS.on("message", async ($MSG, ...) => {...})'
+              - pattern-inside: '$WS.on("message", async function ($MSG, ...) {...})'
+      - patterns:
+          - pattern: "$MSG"
+          - pattern-inside: |
+              $WSS = new ws.Server(...);
+              ...
+          - pattern-either:
+              - pattern-inside: '$WSS.on("connection", ($WS, ...) => {...})'
+              - pattern-inside: '$WSS.on("connection", function ($WS, ...) {...})'
+          - pattern-either:
+              - pattern-inside: '$WS.on("message", ($MSG, ...) => {...})'
+              - pattern-inside: '$WS.on("message", function ($MSG, ...) {...})'
+              - pattern-inside: '$WS.on("message", async ($MSG, ...) => {...})'
+              - pattern-inside: '$WS.on("message", async function ($MSG, ...) {...})'
+      - patterns:
+          - pattern-either:
+              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+          - focus-metavariable: "$ARGS"
+      - patterns:
+          - pattern-either:
+              - pattern: "{..., $K: ($ARGS, ...) => {...}, ...}"
+              - pattern: "{..., $K: async ($ARGS, ...) => {...}, ...}"
+              - pattern: "{..., $K: function ($ARGS, ...) {...}, ...}"
+              - pattern: "{..., $K($ARGS, ...) {...}, ...}"
+              - pattern: "{..., async $K($ARGS, ...) {...}, ...}"
+          - pattern-inside: "$ROOT = {...}"
+          - pattern-either:
+              - pattern-inside: |
+                  $ROOT = {...};
+                  ...
+                  <... graphql.graphql({..., rootValue: $ROOT, ...}) ...>;
+              - pattern-inside: |
+                  $ROOT = {...};
+                  ...
+                  <... graphql.graphql($SCHEMA, $SOURCE, $ROOT, ...) ...>;
+          - focus-metavariable: "$ARGS"
+      - patterns:
+          - pattern-inside: |
+              "use server";
+              ...
+          - pattern-either:
+              - pattern: "export async function $F($X, ...) {...}"
+              - pattern: "export function $F($X, ...) {...}"
+              - pattern: "export const $F = async ($X, ...) => {...}"
+              - pattern: "export const $F = ($X, ...) => {...}"
+          - focus-metavariable: "$X"
+    pattern-propagators:
+      - patterns:
+          - pattern-either:
+              - pattern: "$P.parse($ARGS, ...)"
+              - pattern: "$P.parseAsync($ARGS, ...)"
+              - pattern: "await $P.parseAsync($ARGS, ...)"
+          - pattern-inside: |
+              $P = new commander.Command(...);
+              ...
+        from: "$ARGS"
+        to: "$P"
+        by-side-effect: true
+      - patterns:
+          - pattern-either:
+              - pattern: "$P.parse($ARGS, ...)"
+              - pattern: "$P.parseAsync($ARGS, ...)"
+              - pattern: "await $P.parseAsync($ARGS, ...)"
+          - metavariable-pattern:
+              metavariable: "$P"
+              pattern: commander.program
+        from: "$ARGS"
+        to: "$P"
+        by-side-effect: true
+      - pattern: "$P.then(($S, ...) => {...}, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$P.then(function ($S, ...) {...}, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$P.then(async ($S, ...) => {...}, ...)"
+        from: "$P"
+        to: "$S"
+      - pattern: "$P.then(($S, ...) => $E, ...)"
+        from: "$P"
+        to: "$S"
     pattern-sinks:
       - patterns:
           - pattern: "eval($X)"
@@ -403,16 +555,23 @@ rules:
           - pattern: "Mustache.render($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "Hogan.compile($X, ...)"
+          - pattern: "$H.compile($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $H = require("hogan.js");
+                  ...
+              - pattern-inside: |
+                  import * as $H from "hogan.js";
+                  ...
+              - pattern-inside: |
+                  import $H from "hogan.js";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "Eta.render($X, ...)"
+          - pattern: "eta.render($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "Eta.compile($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "Sqrl.render($X, ...)"
+          - pattern: "eta.compile($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "squirrelly.render($X, ...)"
@@ -452,6 +611,123 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "executeJavaScript($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "{..., $where: $X, ...}"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$SCOPE.$watchCollection($X, ...)"
+              - pattern: "$SCOPE.$watchGroup($X, ...)"
+              - pattern: "$filter('orderBy')($ARR, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$ALIAS($X, ...)"
+          - pattern-inside: |
+              $ALIAS = $SERVICE;
+              ...
+          - metavariable-regex:
+              metavariable: "$SERVICE"
+              regex: "^\\$(?:compile|parse|interpolate)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$F($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $F = require("vm").$M;
+                  ...
+              - pattern-inside: |
+                  $F = vm.$M;
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:runInThisContext|runInNewContext|runInContext|compileFunction)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: 'child_process.$M("node", [..., "-e", ..., $X, ...], ...)'
+              - pattern: 'child_process.$M("node", [..., $X, ..., "-e", ...], ...)'
+              - pattern: 'child_process.$M(process.argv[0], [..., "-e", ..., $X, ...], ...)'
+              - pattern: 'child_process.$M(process.argv[0], [..., $X, ..., "-e", ...], ...)'
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:spawn|spawnSync|execFile|execFileSync)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$SH.write($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $PTY = require("node-pty");
+                  ...
+                  $SH = $PTY.spawn(...);
+                  ...
+              - pattern-inside: |
+                  import * as $PTY from "node-pty";
+                  ...
+                  $SH = $PTY.spawn(...);
+                  ...
+              - pattern-inside: |
+                  import $PTY from "node-pty";
+                  ...
+                  $SH = $PTY.spawn(...);
+                  ...
+              - pattern-inside: |
+                  import {..., spawn, ...} from "node-pty";
+                  ...
+                  $SH = spawn(...);
+                  ...
+              - pattern-inside: |
+                  const {..., spawn, ...} = require("node-pty");
+                  ...
+                  $SH = spawn(...);
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$M._compile($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $MOD = require("module");
+                  ...
+                  $M = new $MOD(...);
+                  ...
+              - pattern-inside: |
+                  import $MOD from "module";
+                  ...
+                  $M = new $MOD(...);
+                  ...
+              - pattern-inside: |
+                  $M = new module.constructor(...);
+                  ...
+              - pattern-inside: |
+                  $M = new module.constructor;
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "<WebView ... injectedJavaScript={$X} ... />"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., WebView, ...} from "react-native";
+                  ...
+              - pattern-inside: |
+                  const {..., WebView, ...} = require("react-native");
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "<script ...>{$X}</script>"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "WebAssembly.compile(..., $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "WebAssembly.compileStreaming(..., $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.attr($N, $X)"
+              - pattern: "$E.setAttribute($N, $X)"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: '(?i)^["'']on.+["'']$'
           - focus-metavariable: "$X"
     pattern-sanitizers:
       - pattern: "parseInt($X, ...)"

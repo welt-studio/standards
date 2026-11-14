@@ -1,0 +1,7 @@
+- pattern: "sanitizeHtml($X, ...)"
+- pattern: "sanitizeHtml($X)"
+- pattern: "xss($X)"
+- pattern: "$L.escape($X)"
+- pattern: "$L.sanitize($X, ...)"
+- pattern: "$L.encode($X, ...)"
+- pattern: "he.escape($X)"

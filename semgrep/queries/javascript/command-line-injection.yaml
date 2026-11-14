@@ -10,27 +10,39 @@ rules:
       cwe: "CWE-078: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
       codeql: js/command-line-injection
     mode: taint
-    pattern-sources:
+    pattern-sources: &user_sources
       - "$model": javascript/express-request-sources-signed-cookies
       - "$model": javascript/nextjs-server-side-sources
+      - "$model": javascript/github-actions-payload-sources
+      - "$model": javascript/form-parser-sources
+      - "$model": javascript/websocket-message-sources
+      - "$model": javascript/graphql-resolver-sources
+      - "$model": javascript/react-server-function-sources
+      # Resposta de um servidor de terceiros (os dados do `res.on("data")` de http/https): o
+      # CodeQL a trata como fonte só nesta consulta.
       - patterns:
-          - pattern: "$GH.context.payload.$...P"
-          - metavariable-regex:
-              metavariable: "$GH"
-              regex: "^(?:github|gh)$"
-      - patterns:
-          - pattern: "$F"
-          - pattern-inside: "$B.on('file', function($N, $FILE, $F, ...) {...})"
-      - patterns:
-          - pattern: "$F"
-          - pattern-inside: "$B.on('file', ($N, $FILE, $F, ...) => {...})"
+          - pattern: "$D"
+          - pattern-either:
+              - pattern-inside: "http.get(..., ($RES, ...) => {...})"
+              - pattern-inside: "http.get(..., function ($RES, ...) {...})"
+              - pattern-inside: "http.request(..., ($RES, ...) => {...})"
+              - pattern-inside: "http.request(..., function ($RES, ...) {...})"
+              - pattern-inside: "https.get(..., ($RES, ...) => {...})"
+              - pattern-inside: "https.get(..., function ($RES, ...) {...})"
+              - pattern-inside: "https.request(..., ($RES, ...) => {...})"
+              - pattern-inside: "https.request(..., function ($RES, ...) {...})"
+          - pattern-either:
+              - pattern-inside: '$RES.on("data", ($D) => {...})'
+              - pattern-inside: '$RES.on("data", function ($D) {...})'
       - patterns:
           - pattern: "$F.originalname"
           - pattern-inside: "$R.forEach(function($F) {...})"
       - patterns:
           - pattern: "$F.originalname"
           - pattern-inside: "$R.forEach(($F) => {...})"
-      - pattern: "core.getInput(...)"
+    pattern-propagators:
+      - "$model": javascript/commander-propagators
+      - "$model": javascript/promise-then-propagators
     pattern-sinks:
       - "$model": javascript/child-process-exec-sinks
       - patterns:
@@ -51,7 +63,7 @@ rules:
       - "$model": javascript/child-process-sinks
       - "$model": javascript/execa-x-sink
       - "$model": javascript/execa-sinks
-    pattern-sanitizers:
+    pattern-sanitizers: &sanitizers
       - pattern: "+$X"
       - pattern: "typeof $X"
       - "$model": javascript/shell-escape-sanitizers
@@ -61,5 +73,45 @@ rules:
       - "$model": javascript/parse-int-x-sanitizer
       - "$model": javascript/number-x-sanitizer
       - "$model": javascript/x-length
+    options:
+      interfile: true
+  # O interpretador de comandos chega ao `spawn` por um campo de objeto ou pelo retorno de uma
+  # função (`spawn(getShell(), ["-c", comando])`): só o fluxo de dados sabe que o primeiro
+  # argumento é um shell, então ele vira o rótulo SHELL, e o usuário o rótulo USER.
+  - id: welt-js-command-line-injection-shell-flow
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Injeção de comando: este comando de sistema é construído a partir de um valor controlado pelo usuário e pode executar comandos arbitrários. Use execFile/spawn com lista de argumentos fixa e valide a entrada."
+    metadata:
+      category: security
+      cwe: "CWE-078: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      codeql: js/command-line-injection
+    mode: taint
+    pattern-sources:
+      - label: USER
+        pattern-either: *user_sources
+      - label: SHELL
+        pattern-either:
+          - "$model": javascript/shell-interpreter-literals
+    pattern-propagators:
+      - "$model": javascript/commander-propagators
+      - "$model": javascript/promise-then-propagators
+      - pattern: "$F($SH, $ARGS, ...)"
+        from: "$SH"
+        to: "$ARGS"
+        requires: SHELL
+        label: SHELLARGS
+    pattern-sinks:
+      - requires: USER and SHELLARGS
+        patterns:
+          - pattern: "child_process.$M($SH, $X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex:
+                "$text": javascript/child-process-argument-list-method-regex
+          - focus-metavariable: "$X"
+    pattern-sanitizers: *sanitizers
     options:
       interfile: true

@@ -13,22 +13,8 @@ rules:
     pattern-sources:
       - "$model": javascript/express-request-sources
       - "$model": javascript/nextjs-server-side-sources
-      - "$model": javascript/location-hash
-      - "$model": javascript/location-search
-      - "$model": javascript/location-href-and-pathname-sources
-      - "$model": javascript/window-location-hash
-      - "$model": javascript/window-location-search
-      - "$model": javascript/window-location-href
-      - "$model": javascript/window-location-pathname-source
-      - "$model": javascript/document-location-hash
-      - "$model": javascript/document-location-search
-      - "$model": javascript/document-location-href
-      - "$model": javascript/document-location-pathname-source
-      - "$model": javascript/document-url-sources
-      - "$model": javascript/document-base-uri-source
-      - "$model": javascript/document-referrer
       - "$model": javascript/window-name
-      - "$model": javascript/window-location-and-message-sources
+      - "$model": javascript/window-message-sources
       - pattern: "useRouter().query"
       - pattern: "useRouter().query.$K"
       - pattern: "useSearchParams()"
@@ -37,7 +23,10 @@ rules:
       - pattern: "useParams().$K"
       - pattern: router.query
       - pattern: "router.query.$K"
-      - pattern: "$ROUTER.query"
+      # `$ROUTER.query` é o objeto de consulta do roteador, não a chamada de um método `query`.
+      - patterns:
+          - pattern: "$ROUTER.query"
+          - pattern-not-inside: "$ROUTER.query(...)"
       - pattern: props.searchParams
       - pattern: props.params
       - pattern: "$P.searchParams"
@@ -47,14 +36,36 @@ rules:
       - pattern: "useRouteMatch().params"
       - pattern: "new URLSearchParams(location.search).get(...)"
       - pattern: "$.urlParam(...)"
+      # HTML vindo da área de transferência ou de arrastar e soltar (DataTransfer).
+      - pattern: "$DT.getData('text/html')"
+      - "$model": javascript/message-event-data-sources
+      # Página do Next.js: as props do componente padrão vêm do que `getServerSideProps` (ou
+      # `getStaticProps`) devolve, montado com a requisição.
+      - patterns:
+          - pattern: "$P"
+          - pattern-inside: |
+              export default function $F($P, ...) {...}
+          - pattern-inside: |
+              ...
+              export async function getServerSideProps(...) {...}
+              ...
     pattern-sinks:
       - "$model": javascript/dom-xss-sinks
-    pattern-sanitizers:
-      - "$model": javascript/escape-function-sanitizers
+      - "$model": javascript/dom-node-insertion-sinks
+      # Política do Trusted Types cujo `createHTML` devolve a entrada sem mudar: a chamada que a
+      # alimenta é o sumidouro (uma política que devolve outra coisa não é).
+      - patterns:
+          - pattern: "$POL.createHTML($X)"
+          - pattern-inside: |
+              $POL = trustedTypes.createPolicy($N, {..., createHTML: ($P) => $P, ...});
+              ...
+          - focus-metavariable: "$X"
+    pattern-sanitizers: &html_sanitizers
+      - "$model": javascript/escape-core-sanitizers
       - "$model": javascript/encode-uri-component-x-sanitizer
       - "$model": javascript/encode-uri-x-sanitizer
       - "$model": javascript/sanitize-x-sanitizer
-      - "$model": javascript/html-sanitizer-library-sanitizers
+      - "$model": javascript/html-sanitizer-core-sanitizers
       - "$model": javascript/dom-purify-sanitize-x-sanitizer
       - "$model": javascript/validator-escape-sanitizers
       - "$model": javascript/parse-int-x-sanitizer
@@ -62,10 +73,24 @@ rules:
       - "$model": javascript/number-x-sanitizer
       - "$model": javascript/boolean-x-sanitizer
       - "$model": javascript/numeric-and-strip-tags-sanitizers
-      - "$model": javascript/striptags-x-sanitizer
+      # Pacotes de escape e de remoção de tags, ligados pelo módulo e não pelo nome que o código deu.
+      - patterns:
+          - pattern: "$F($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  import $F from "escape-html";
+                  ...
+              - pattern-inside: |
+                  $F = require("escape-html");
+                  ...
+              - pattern-inside: |
+                  import $F from "striptags";
+                  ...
+              - pattern-inside: |
+                  $F = require("striptags");
+                  ...
       - "$model": javascript/html-encoding-sanitizers
       - "$model": javascript/x-length
-      - "$model": javascript/json-stringify-x-sanitizer
       - pattern: "+$X"
       - pattern: "typeof $X"
       - patterns:
@@ -87,5 +112,486 @@ rules:
       - "$model": javascript/angle-bracket-replacement-sanitizers
       - "$model": javascript/indexof-call
       - "$model": javascript/message-origin-check-sanitizers
+      # Ler uma tabela (um objeto literal) pela chave tainted não devolve dado tainted, e a chave de
+      # um `for (k in obj)` é o nome da propriedade, não o valor dela.
+      - patterns:
+          - pattern: "$OBJ[$K]"
+          - pattern-inside: |
+              $OBJ = {...};
+              ...
+      - patterns:
+          - pattern: "$K"
+          - pattern-either:
+              - pattern-inside: |
+                  for (var $K in $OBJ) $BODY
+              - pattern-inside: |
+                  for (let $K in $OBJ) $BODY
+              - pattern-inside: |
+                  for (const $K in $OBJ) $BODY
+      # A parte de uma URL antes do `?`/`#` não carrega o sufixo controlado pelo atacante.
+      - patterns:
+          - pattern-either:
+              - pattern: '$L.split("?")[0]'
+              - pattern: '$L.split("#")[0]'
+          - metavariable-pattern:
+              metavariable: "$L"
+              pattern-either:
+                - pattern: location.href
+                - pattern: window.location.href
+                - pattern: document.location.href
+                - pattern: document.URL
+      # Teste com regex (o SanitizingRegExpTest e o ContainsHtmlGuard do CodeQL). Uma regex de
+      # lista de permitidos, ancorada nas duas pontas e sem curinga (`/^\d+$/`), limpa o valor no
+      # ramo em que casou; uma regex com os quatro caracteres do HTML (`/[<>'"&]/`) limpa no ramo
+      # em que NÃO casou. O valor só é limpo no bloco do ramo, não no `if` inteiro.
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: "if (/$RE/.test($X)) { $...BODY }"
+                    - pattern: "if (/$RE/.exec($X)) { $...BODY }"
+                    - pattern: "if (($M = /$RE/.exec($X))) { $...BODY }"
+                    - pattern: "if ($X.match(/$RE/)) { $...BODY }"
+                    - pattern: 'if ($X.match("$RE")) { $...BODY }'
+                - metavariable-regex:
+                    metavariable: "$RE"
+                    regex: '^\^(?!.*(?:\.|\\[WSD]|\[\^)).*\$$'
+                - focus-metavariable: "$...BODY"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: |
+                        if (!(/$RE/.test($X))) return;
+                        $...REST
+                    - pattern: |
+                        if (!(/$RE/.test($X))) { return; }
+                        $...REST
+                - metavariable-regex:
+                    metavariable: "$RE"
+                    regex: '^\^(?!.*(?:\.|\\[WSD]|\[\^)).*\$$'
+                - focus-metavariable: "$...REST"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: "if (/$RE/.test($X)) {...} else { $...BODY }"
+                    - pattern: "if (/$RE/.exec($X)) {...} else { $...BODY }"
+                    - pattern: "if (/$RE/.exec($X) != null) {...} else { $...BODY }"
+                    - pattern: "if (!/$RE/.test($X)) { $...BODY } else {...}"
+                    - pattern: "if (/$RE/.exec($X) == null) { $...BODY } else {...}"
+                - metavariable-regex:
+                    metavariable: "$RE"
+                    regex: '^\[(?=[^\]]*<)(?=[^\]]*>)(?=[^\]]*&)(?=[^\]]*")[^\]]*\]$'
+                - focus-metavariable: "$...BODY"
+      # Guarda de aspas (QuoteGuard do CodeQL): quem sai cedo quando o valor tem `"` não leva o valor
+      # com aspas ao atributo HTML, então o restante do bloco está limpo.
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: |
+                        if ($X.indexOf('"') !== -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf("\"") !== -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf('"') != -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf("\"") != -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf('"') >= 0) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf("\"") >= 0) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.includes('"')) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.includes("\"")) { return; }
+                        $...REST
+                - focus-metavariable: "$...REST"
+      # Sanitização opcional (`ligado ? DOMPurify.sanitize(x) : x`, ou o `if` que a aplica): quem
+      # a desliga é a configuração, e o CodeQL não conta o ramo sem sanitizar como fluxo.
+      - pattern-either:
+          - pattern: "$C ? DOMPurify.sanitize($X) : $X"
+          - pattern: "$C ? $X : DOMPurify.sanitize($X)"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if ($C) {
+                $X = DOMPurify.sanitize($X);
+              }
+              ...
+    pattern-propagators:
+      &state_propagators # `const [estado, setEstado] = useState(...)`: o que entra no setter vira o estado.
+      - patterns:
+          - pattern-either:
+              - pattern: "$SET($X)"
+              - pattern: "$SET(() => $X)"
+              - pattern: "$SET(() => {... return $X; ...})"
+          - pattern-inside: |
+              [$STATE, $SET] = useState(...);
+              ...
+        from: "$X"
+        to: "$STATE"
+      # Função declarada depois da chamada (a declaração sobe ao topo do escopo): o argumento da
+      # chamada chega ao parâmetro, como na função declarada antes.
+      - patterns:
+          - pattern: "$F($X)"
+          - pattern-inside: |
+              $F(...);
+              ...
+              function $F($P) {...}
+        from: "$X"
+        to: "$P"
+      # Resultado decodificado de `jwt.verify(token, chave, (erro, decodificado) => ...)`.
+      - patterns:
+          - pattern-either:
+              - pattern: "$JWT.verify($TOKEN, ..., ($ERR, $DECODED) => {...})"
+              - pattern: "$JWT.verify($TOKEN, ..., function ($ERR, $DECODED) {...})"
+          - pattern-either:
+              - pattern-inside: |
+                  import $JWT from "jsonwebtoken";
+                  ...
+              - pattern-inside: |
+                  $JWT = require("jsonwebtoken");
+                  ...
+        from: "$TOKEN"
+        to: "$DECODED"
+    options:
+      interfile: true
+  # A URL da página (`location.search`, `location.hash`, `document.URL`...): o atacante controla só o
+  # sufixo dela. No `$(...)` do jQuery o valor só vira HTML depois de uma extração do sufixo
+  # (`substring(1)`, `replace('#', '')`, `.get(...)`) ou de uma concatenação que começa por `<`;
+  # passado inteiro ou com um prefixo fixo, ele é um seletor. Os demais destinos aceitam o valor
+  # como está.
+  - id: welt-js-xss-url-suffix
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Vulnerabilidade de XSS: a URL da página (query string, fragmento) chega ao HTML da página sem escape. Use textContent/escape ou um sanitizador (DOMPurify)."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/xss
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/location-hash
+      - "$model": javascript/location-search
+      - "$model": javascript/location-href-and-pathname-sources
+      - "$model": javascript/window-location-hash
+      - "$model": javascript/window-location-search
+      - "$model": javascript/window-location-href
+      - "$model": javascript/window-location-pathname-source
+      - "$model": javascript/document-location-hash
+      - "$model": javascript/document-location-search
+      - "$model": javascript/document-location-href
+      - "$model": javascript/document-location-pathname-source
+      - "$model": javascript/document-url-sources
+      - "$model": javascript/document-base-uri-source
+      - "$model": javascript/document-referrer
+      - "$model": javascript/frame-location-sources
+      # O objeto `location` inteiro (`new URL(document.location)`, `loc = location`).
+      - pattern: location
+      - pattern: document.location
+      - pattern: window.location
+      # `throw location`: o valor lançado chega ao parâmetro do `catch` (o Semgrep não leva o
+      # dado do `throw` ao `catch`, então a fonte é o próprio parâmetro quando o `try` lança o
+      # `location`).
+      - patterns:
+          - pattern: "$E"
+          - pattern-inside: |
+              try { $...BODY } catch ($E) {...}
+          - metavariable-pattern:
+              metavariable: "$...BODY"
+              patterns:
+                - pattern: "throw $S"
+                - metavariable-pattern:
+                    metavariable: "$S"
+                    pattern-either:
+                      - pattern: location
+                      - pattern: window.location
+                      - pattern: document.location
+      # Armazenamento da página: o que se guarda em `setItem(chave, ...)` volta em `getItem(chave)`.
+      - patterns:
+          - pattern: "$ST.getItem($K)"
+          - pattern-inside: |
+              $ST.setItem($K, $V);
+              ...
+          - metavariable-pattern:
+              metavariable: "$V"
+              pattern-either:
+                - "$model": javascript/location-search
+                - "$model": javascript/location-hash
+                - "$model": javascript/window-location-search
+                - "$model": javascript/window-location-hash
+                - "$model": javascript/document-location-search
+                - "$model": javascript/document-location-hash
+    pattern-propagators: *state_propagators
+    pattern-sinks:
+      - "$model": javascript/dom-xss-sinks
+      - "$model": javascript/dom-node-insertion-sinks
+    pattern-sanitizers:
+      - pattern-either: *html_sanitizers
+      # Um valor da URL passado a `$(...)` sem extrair o sufixo é um seletor, e só vira HTML nas
+      # extrações (`substring(1)`, `replace('#', '')`, `.get(...)`) e nas concatenações com `<` na
+      # frente. Inteiro, depois de um prefixo, ou com o começo preservado (`substring(0, n)`), ele é
+      # só um seletor.
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$($X)"
+          - metavariable-regex:
+              metavariable: "$X"
+              regex: "^[\\w$.]+$"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$($X)"
+          - metavariable-pattern:
+              metavariable: "$X"
+              pattern: "$A + $B"
+          - metavariable-regex:
+              metavariable: "$X"
+              regex: "^(?!\\s*[\"'`]\\s*<)[\\s\\S]+$"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$($X)"
+          - metavariable-pattern:
+              metavariable: "$X"
+              patterns:
+                - pattern: "$L.replace($A, $B)"
+                - pattern-not:
+                    patterns:
+                      - pattern: "$L.replace($A, $B)"
+                      - metavariable-regex:
+                          metavariable: "$A"
+                          regex: '^["''][#?]["'']$'
+                      - metavariable-regex:
+                          metavariable: "$B"
+                          regex: '^["'']{2}$'
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$($X)"
+          - metavariable-pattern:
+              metavariable: "$X"
+              patterns:
+                - pattern: "$L.$M($A, ...)"
+                - metavariable-regex:
+                    metavariable: "$M"
+                    regex: "^(?:substring|substr|slice)$"
+                - metavariable-regex:
+                    metavariable: "$A"
+                    regex: "^0$"
+      # Um objeto URL (o resultado de uma chamada ou construtor) não tem `.get`: ele existe em
+      # `url.searchParams`, que vem de uma leitura de propriedade.
+      - patterns:
+          - pattern: "$U.get(...)"
+          - pattern-inside: |
+              $U = $F(...);
+              ...
+    options:
+      interfile: true
+  # Destinos de URL que executam `javascript:`: só vale quando o atacante controla o prefixo
+  # (o CodeQL põe isso num estado do fluxo). Por isso as fontes aqui não são as de sufixo de URL
+  # (`location.search`, `location.hash`...), só as já extraídas (`substr(1)`...), e a concatenação
+  # depois de um prefixo fixo e o `join` sanitizam.
+  - id: welt-js-xss-url
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Vulnerabilidade de XSS: dados controlados pelo usuário definem um endereço (href, src, navegação, histórico) sem validação. Um atacante pode injetar `javascript:`. Valide o esquema ou concatene depois de um prefixo fixo."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/xss
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/express-request-sources
+      - "$model": javascript/nextjs-server-side-sources
+      - "$model": javascript/window-name
+      - patterns:
+          - pattern-either:
+              - pattern: "$L.substr(1)"
+              - pattern: "$L.substring(1)"
+              - pattern: "$L.slice(1)"
+          - metavariable-pattern:
+              metavariable: "$L"
+              pattern-either:
+                - pattern: location.search
+                - pattern: location.hash
+                - pattern: window.location.search
+                - pattern: window.location.hash
+                - pattern: document.location.search
+                - pattern: document.location.hash
+      - pattern: "router.query.$K"
+      - patterns:
+          - pattern: "$ROUTER.query"
+          - pattern-not-inside: "$ROUTER.query(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$($TAG, {..., $ATTR: $X, ...})"
+              - pattern: '$($TAG, {..., "$ATTR": $X, ...})'
+              - pattern: "$J.attr({..., $ATTR: $X, ...})"
+              - pattern: '$J.attr({..., "$ATTR": $X, ...})'
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: "(?i)^(?:action|formaction|href|src|xlink:href|data)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$J.attr($ATTR, $X)"
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: '(?i)^["''](?:action|formaction|href|src|xlink:href|data)["'']$'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.setAttribute($ATTR, $X)"
+              - pattern: "$E.setAttributeNS($NS, $ATTR, $X)"
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: '(?i)^["''](?:action|formaction|href|src|xlink:href|data)["'']$'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "navigation.navigate($X, ...)"
+              - pattern: "window.navigation.navigate($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$H.push($X, ...)"
+              - pattern: "$H.replace($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $H = require("history").$CREATE(...);
+                  ...
+              - pattern-inside: |
+                  import {..., $CREATE, ...} from "history";
+                  ...
+                  $H = $CREATE(...);
+                  ...
+              - pattern-inside: |
+                  function $F(...) {
+                    ...
+                    <... $H.query ...>
+                  }
+          - focus-metavariable: "$X"
+      - "$model": javascript/location-navigation-sinks
+      # Atributo de endereço de um elemento HTML (minúsculo) no JSX.
+      - patterns:
+          - pattern-either:
+              - pattern: "<$EL ... href={$X} ... />"
+              - pattern: "<$EL ... src={$X} ... />"
+              - pattern: "<$EL ... action={$X} ... />"
+              - pattern: "<$EL ... formAction={$X} ... />"
+          - metavariable-regex:
+              metavariable: "$EL"
+              regex: "^[a-z]"
+          - focus-metavariable: "$X"
+      # `templateUrl` de uma diretiva do AngularJS.
+      - patterns:
+          - pattern: "{..., templateUrl: $X, ...}"
+          - pattern-inside: "$M.directive(..., function () {...})"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - "$model": javascript/escape-core-sanitizers
+      - "$model": javascript/encode-uri-component-x-sanitizer
+      - "$model": javascript/encode-uri-x-sanitizer
+      - "$model": javascript/html-sanitizer-core-sanitizers
+      - "$model": javascript/dom-purify-sanitize-x-sanitizer
+      - "$model": javascript/parse-int-x-sanitizer
+      - "$model": javascript/number-x-sanitizer
+      - pattern: '"$P" + $X'
+      - pattern: "[..., $X, ...].join(...)"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern: |
+                    if ($X.startsWith("https://")) { $...BODY }
+                - focus-metavariable: "$...BODY"
+    options:
+      interfile: true
+  # Angular (só TypeScript: o tipo do roteador vem da declaração, e `metavariable-type` não existe
+  # em JavaScript). O valor vem do `ActivatedRoute`, do `ActivatedRouteSnapshot` e do `Router`.
+  - id: welt-js-xss-angular
+    languages:
+      - typescript
+    severity: WARNING
+    message: "Vulnerabilidade de XSS: um parâmetro da rota do Angular chega ao HTML da página sem escape. Use a interpolação do template ou um sanitizador."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/xss
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$R.snapshot.url"
+              - pattern: "$R.snapshot.params"
+              - pattern: "$R.snapshot.queryParams"
+              - pattern: "$R.snapshot.fragment"
+              - pattern: "$R.snapshot.paramMap"
+              - pattern: "$R.snapshot.queryParamMap"
+          - metavariable-type:
+              metavariable: "$R"
+              types:
+                - ActivatedRoute
+      - patterns:
+          - pattern-either:
+              - pattern: "$S.url"
+              - pattern: "$S.params"
+              - pattern: "$S.queryParams"
+              - pattern: "$S.fragment"
+              - pattern: "$S.paramMap"
+              - pattern: "$S.queryParamMap"
+          - metavariable-type:
+              metavariable: "$S"
+              types:
+                - ActivatedRouteSnapshot
+      - patterns:
+          - pattern: "$ROUTER.url"
+          - metavariable-type:
+              metavariable: "$ROUTER"
+              types:
+                - Router
+      # `route.paramMap.subscribe(map => ...)`: o parâmetro do callback é o valor da rota.
+      - patterns:
+          - pattern-either:
+              - pattern: "$R.$PROP.subscribe(($V) => {...})"
+              - pattern: "$R.$PROP.subscribe(function ($V) {...})"
+          - metavariable-type:
+              metavariable: "$R"
+              types:
+                - ActivatedRoute
+          - metavariable-regex:
+              metavariable: "$PROP"
+              regex: "^(?:url|params|queryParams|fragment|paramMap|queryParamMap)$"
+          - focus-metavariable: "$V"
+      - pattern: "ɵgetDOM().getLocation()"
+    pattern-sinks:
+      - "$model": javascript/dom-xss-sinks
+      - "$model": javascript/dom-node-insertion-sinks
+      # Renderer2.setProperty(el, "innerHTML", valor)
+      - patterns:
+          - pattern-either:
+              - pattern: '$RENDERER.setProperty($EL, "innerHTML", $X)'
+              - pattern: '$RENDERER.setProperty($EL, "outerHTML", $X)'
+          - metavariable-type:
+              metavariable: "$RENDERER"
+              types:
+                - Renderer2
+          - focus-metavariable: "$X"
+    pattern-sanitizers: *html_sanitizers
     options:
       interfile: true

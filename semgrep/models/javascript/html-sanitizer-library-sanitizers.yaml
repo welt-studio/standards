@@ -1,9 +1,2 @@
-- pattern: "sanitizeHtml($X, ...)"
-- pattern: "sanitizeHtml($X)"
-- pattern: "xss($X)"
-- pattern: "$L.escape($X)"
-- pattern: "$L.sanitize($X, ...)"
-- pattern: "$L.encode($X, ...)"
-- pattern: "$L.escapeHtml($X)"
-- pattern: "$L.escapeHTML($X)"
-- pattern: "he.escape($X)"
+- "$model": javascript/html-sanitizer-core-sanitizers
+- "$model": javascript/escape-html-method-sanitizers

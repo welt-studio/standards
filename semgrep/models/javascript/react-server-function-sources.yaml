@@ -1,0 +1,10 @@
+- patterns:
+    - pattern-inside: |
+        "use server";
+        ...
+    - pattern-either:
+        - pattern: "export async function $F($X, ...) {...}"
+        - pattern: "export function $F($X, ...) {...}"
+        - pattern: "export const $F = async ($X, ...) => {...}"
+        - pattern: "export const $F = ($X, ...) => {...}"
+    - focus-metavariable: "$X"

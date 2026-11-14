@@ -1,0 +1,24 @@
+rules:
+  - id: taint-on-javascript-file
+    languages: [javascript]
+    severity: ERROR
+    message: o fluxo chega ao webix.exec
+    mode: taint
+    pattern-sources:
+      - pattern: document.location.hash
+    pattern-sinks:
+      - pattern: webix.exec(...)
+  - id: match-on-embedded-javascript
+    languages: [html]
+    severity: ERROR
+    message: o fluxo chega ao webix.exec
+    patterns:
+      - pattern: <script>$JS</script>
+      - metavariable-pattern:
+          metavariable: $JS
+          language: javascript
+          patterns:
+            - pattern: |
+                $V = document.location.hash;
+                ...
+                webix.exec($V);

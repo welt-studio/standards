@@ -1,0 +1,56 @@
+- patterns:
+    - pattern-either:
+        - pattern: "child_process.spawn($SH, [..., $X, ...], ...)"
+        - pattern: "child_process.spawn($SH, [..., $X].concat(...), ...)"
+        - pattern: "child_process.spawn($SH, [...].concat([..., $X]), ...)"
+        - pattern: "child_process.spawn($SH, [...].concat($X), ...)"
+        - pattern: "child_process.spawn($SH, $X, ...)"
+    - metavariable-pattern:
+        metavariable: "$SH"
+        pattern-either:
+          - "$model": javascript/shell-interpreter-literals
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "child_process.spawnSync($SH, [..., $X, ...], ...)"
+        - pattern: "child_process.spawnSync($SH, [..., $X].concat(...), ...)"
+        - pattern: "child_process.spawnSync($SH, [...].concat([..., $X]), ...)"
+        - pattern: "child_process.spawnSync($SH, [...].concat($X), ...)"
+        - pattern: "child_process.spawnSync($SH, $X, ...)"
+    - metavariable-pattern:
+        metavariable: "$SH"
+        pattern-either:
+          - "$model": javascript/shell-interpreter-literals
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "child_process.execFile($SH, [..., $X, ...], ...)"
+        - pattern: "child_process.execFile($SH, [..., $X].concat(...), ...)"
+        - pattern: "child_process.execFile($SH, [...].concat([..., $X]), ...)"
+        - pattern: "child_process.execFile($SH, [...].concat($X), ...)"
+        - pattern: "child_process.execFile($SH, $X, ...)"
+    - metavariable-pattern:
+        metavariable: "$SH"
+        pattern-either:
+          - "$model": javascript/shell-interpreter-literals
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "child_process.execFileSync($SH, [..., $X, ...], ...)"
+        - pattern: "child_process.execFileSync($SH, [..., $X].concat(...), ...)"
+        - pattern: "child_process.execFileSync($SH, [...].concat([..., $X]), ...)"
+        - pattern: "child_process.execFileSync($SH, [...].concat($X), ...)"
+        - pattern: "child_process.execFileSync($SH, $X, ...)"
+    - metavariable-pattern:
+        metavariable: "$SH"
+        pattern-either:
+          - "$model": javascript/shell-interpreter-literals
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$F($SH, $ARGS)"
+    - pattern-inside: "$ARGS[$I] = $X; ..."
+    - metavariable-pattern:
+        metavariable: "$SH"
+        pattern-either:
+          - "$model": javascript/shell-interpreter-literals
+    - focus-metavariable: "$X"

@@ -1,0 +1,22 @@
+- patterns:
+    - pattern-either:
+        - pattern: "$P.parse($ARGS, ...)"
+        - pattern: "$P.parseAsync($ARGS, ...)"
+        - pattern: "await $P.parseAsync($ARGS, ...)"
+    - pattern-inside: |
+        $P = new commander.Command(...);
+        ...
+  from: "$ARGS"
+  to: "$P"
+  by-side-effect: true
+- patterns:
+    - pattern-either:
+        - pattern: "$P.parse($ARGS, ...)"
+        - pattern: "$P.parseAsync($ARGS, ...)"
+        - pattern: "await $P.parseAsync($ARGS, ...)"
+    - metavariable-pattern:
+        metavariable: "$P"
+        pattern: "commander.program"
+  from: "$ARGS"
+  to: "$P"
+  by-side-effect: true

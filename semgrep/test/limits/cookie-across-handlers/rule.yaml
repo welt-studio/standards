@@ -1,0 +1,22 @@
+rules:
+  - id: cookie-across-handlers
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O dado de uma mensagem, guardado num cookie por um handler, volta numa leitura de outro lugar."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern: "$EV.data"
+          - pattern-inside: 'addEventListener("message", ($EV) => {...})'
+    pattern-propagators:
+      - pattern: "$C.set($K, $V)"
+        from: "$V"
+        to: "$C"
+        by-side-effect: true
+    pattern-sinks:
+      - patterns:
+          - pattern: "{..., templateUrl: $X, ...}"
+          - focus-metavariable: "$X"

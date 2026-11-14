@@ -119,6 +119,40 @@ def test_main_usage_error(capsys: pytest.CaptureFixture[str]) -> None:
     assert "uso:" in capsys.readouterr().err
 
 
+def test_own_cases_read_queries_and_marks(tmp_path: Path) -> None:
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "a.js").write_text(
+        "// own-test: js/a, js/b\nx(); // $ Alert[js/a]\nz(); // $ Alert[js/a, js/b]\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "sub" / "b.py").write_text("w()  # $ Alert[py/c]\n", encoding="utf-8")
+    assert semgrep_parity.own_cases(tmp_path) == semgrep_parity.OwnCases(
+        queries={"a.js": frozenset({"js/a", "js/b"}), "sub/b.py": frozenset()},
+        expected=frozenset(
+            {("js/a", "a.js", 2), ("js/a", "a.js", 3), ("js/b", "a.js", 3), ("py/c", "sub/b.py", 1)}
+        ),
+    )
+
+
+def test_own_problems_take_no_exception() -> None:
+    cases = semgrep_parity.OwnCases(
+        queries={"a.js": frozenset({"js/a"}), "b.js": frozenset({"js/a"}), "c.js": frozenset()},
+        expected=frozenset({("js/a", "a.js", 1), ("js/a", "a.js", 9), ("js/z", "b.js", 3)}),
+    )
+    findings = [
+        Finding("js/a", "a.js", 2, 2),
+        Finding("js/b", "a.js", 1, 1),
+        Finding("js/a", "b.js", 5, 6),
+    ]
+    assert semgrep_parity.own_problems(cases, findings) == [
+        "c.js: falta a linha `own-test:` com as consultas que o arquivo testa",
+        "b.js:3: a marca js/z não está no `own-test:` do arquivo",
+        "js/a: deixou de pegar a.js:9",
+        "js/z: deixou de pegar b.js:3",
+        "js/a: acusa a mais b.js:5",
+    ]
+
+
 def _folders() -> list[str]:
     if not semgrep_parity.MANIFEST.exists():
         return []
@@ -149,3 +183,18 @@ def test_limit_still_holds(name: str) -> None:
     limits = semgrep_pending.load_limits(semgrep_pending.LIMITS.read_text(encoding="utf-8"))
     expected = semgrep_pending.strings(limits[name].get("should_find"))
     assert semgrep_parity.still_missed(name, limits[name]) == sorted(expected)
+
+
+def _own() -> list[str]:
+    return sorted(path.name for path in semgrep_parity.OWN.iterdir() if path.is_dir())
+
+
+@pytest.mark.semgrep
+@pytest.mark.timeout(900)
+@pytest.mark.parametrize("language", _own())
+def test_own_cases(language: str) -> None:
+    """Os testes próprios: o alarme falso que o teste do CodeQL não cobre, e a perda que ele cobre
+    mal. Sem pendência: todo achado fora de uma marca reprova."""
+    folder = semgrep_parity.OWN / language
+    findings = semgrep_parity.scan_own(folder)
+    assert semgrep_parity.own_problems(semgrep_parity.own_cases(folder), findings) == []

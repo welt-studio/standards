@@ -1,0 +1,15 @@
+rules:
+  - id: react-class-state-props
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O dado guardado em this.state ou em this.props de uma classe chega a outro método."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: document.location.search
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.html($X)"
+          - focus-metavariable: "$X"

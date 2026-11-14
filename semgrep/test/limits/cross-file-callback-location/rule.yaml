@@ -1,0 +1,16 @@
+rules:
+  - id: cross-file-callback-location
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O dado chega à função de outro arquivo, que o objeto criado por createPolicy guarda como createHTML."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: window.name
+    pattern-sinks:
+      - patterns:
+          - pattern: "return $X;"
+          - pattern-inside: "function createHtml($P) {...}"
+          - focus-metavariable: "$X"

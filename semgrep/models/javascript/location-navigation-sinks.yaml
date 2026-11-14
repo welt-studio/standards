@@ -1,0 +1,9 @@
+# Troca da localização da página: o endereço vira o da navegação (e `javascript:` roda).
+- pattern: "location = $X"
+- pattern: "$W.location = $X"
+- pattern: "location.href = $X"
+- pattern: "$W.location.href = $X"
+- pattern: "location.assign($X)"
+- pattern: "$W.location.assign($X)"
+- pattern: "location.replace($X)"
+- pattern: "$W.location.replace($X)"

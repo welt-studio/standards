@@ -58,9 +58,30 @@ rules:
               - pattern-inside: |
                   $W.addEventListener("message", ($EV, ...) => {...})
               - pattern-inside: |
+                  addEventListener("message", function ($EV, ...) {...})
+              - pattern-inside: |
                   addEventListener("message", ($EV, ...) => {...})
               - pattern-inside: |
                   $W.onmessage = ($EV) => {...}
+              - pattern-inside: |
+                  function $F($EV, ...) {...}
+                  ...
+                  $W.addEventListener("message", $F.bind($THIS))
+              - pattern-inside: |
+                  function $F($A, $EV, ...) {...}
+                  ...
+                  $W.addEventListener("message", $F.bind($THIS, $B))
+              - pattern-inside: |
+                  function $F($A, $B, $EV, ...) {...}
+                  ...
+                  $W.addEventListener("message", $F.bind($THIS, $C, $D))
+      - patterns:
+          - pattern: data
+          - pattern-either:
+              - pattern-inside: |
+                  $W.addEventListener("message", function ({data}) {...})
+              - pattern-inside: |
+                  $W.addEventListener("message", ({data}) => {...})
     pattern-sanitizers:
       - pattern: "$X.slice(0, ...)"
       - pattern: "$X.substring(0, ...)"

@@ -1,0 +1,2 @@
+- pattern: "escape($X)"
+- pattern: "escapeString($X)"

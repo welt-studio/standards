@@ -1,18 +1,2 @@
-- pattern: self.location.hash
-- pattern: self.location.search
-- pattern: self.location.href
-- pattern: top.location.hash
-- pattern: top.location.search
-- patterns:
-    - pattern-either:
-        - "$model": javascript/event-data
-    - pattern-inside: 'window.addEventListener("message", function($E) {...})'
-- patterns:
-    - "$model": javascript/event-data
-    - pattern-inside: 'window.addEventListener("message", ($E) => {...})'
-- patterns:
-    - "$model": javascript/event-data
-    - pattern-inside: "window.onmessage = function($E) {...}"
-- patterns:
-    - "$model": javascript/event-data
-    - "$model": javascript/window-onmessage-handler
+- "$model": javascript/frame-location-sources
+- "$model": javascript/window-message-sources

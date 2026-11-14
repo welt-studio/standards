@@ -1,0 +1,27 @@
+rules:
+  - id: react-setstate-lazy-return
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O valor devolvido pela função que o setter do useState recebe vira o estado."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: document.location.search
+    pattern-propagators:
+      - patterns:
+          - pattern-either:
+              - pattern: "$SET($X)"
+              - pattern: "$SET(() => $X)"
+              - pattern: "$SET(() => {... return $X; ...})"
+          - pattern-inside: |
+              [$STATE, $SET] = useState(...);
+              ...
+        from: "$X"
+        to: "$STATE"
+    pattern-sinks:
+      - patterns:
+          - pattern: "{__html: $X}"
+          - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
+          - focus-metavariable: "$X"

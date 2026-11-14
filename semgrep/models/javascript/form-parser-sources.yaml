@@ -1,0 +1,45 @@
+- patterns:
+    - pattern: "$P"
+    - pattern-either:
+        - pattern-inside: |
+            $F = formidable(...);
+            ...
+        - pattern-inside: |
+            $F = formidable.formidable(...);
+            ...
+        - pattern-inside: |
+            $F = new formidable.IncomingForm(...);
+            ...
+        - pattern-inside: |
+            $F = new formidable.Formidable(...);
+            ...
+    - pattern-either:
+        - pattern-inside: "$F.parse($REQ, ($ERR, ..., $P, ...) => {...})"
+        - pattern-inside: "$F.parse($REQ, function ($ERR, ..., $P, ...) {...})"
+- patterns:
+    - pattern: "$P"
+    - pattern-inside: |
+        $F = new multiparty.Form(...);
+        ...
+    - pattern-either:
+        - pattern-inside: "$F.parse($REQ, (..., $P, ...) => {...})"
+        - pattern-inside: "$F.parse($REQ, function (..., $P, ...) {...})"
+- patterns:
+    - pattern: "$P"
+    - pattern-inside: |
+        $F = new multiparty.Form(...);
+        ...
+    - pattern-either:
+        - pattern-inside: "$F.on($EVENT, ($P, ...) => {...})"
+        - pattern-inside: "$F.on($EVENT, function ($P, ...) {...})"
+    - metavariable-regex:
+        metavariable: "$EVENT"
+        regex: '^["''](?:part|file|field)["'']$'
+- patterns:
+    - pattern: "$P"
+    - pattern-inside: |
+        $F = new busboy(...);
+        ...
+    - pattern-either:
+        - pattern-inside: "$F.on($EVENT, (..., $P, ...) => {...})"
+        - pattern-inside: "$F.on($EVENT, function (..., $P, ...) {...})"

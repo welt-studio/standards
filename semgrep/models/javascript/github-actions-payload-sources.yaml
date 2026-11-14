@@ -1,0 +1,12 @@
+- patterns:
+    - pattern: "$G.context.payload"
+    - pattern-either:
+        - pattern-inside: |
+            $G = require("@actions/github");
+            ...
+        - pattern-inside: |
+            import * as $G from "@actions/github";
+            ...
+        - pattern-inside: |
+            import $G from "@actions/github";
+            ...

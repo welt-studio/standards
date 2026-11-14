@@ -1,0 +1,33 @@
+rules:
+  - id: callback-before-feed
+    languages: [javascript]
+    severity: ERROR
+    message: o parâmetro do callback vem de uma chamada que só acontece depois
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: req.body.args
+    pattern-propagators:
+      - pattern: $P.parse($ARGS, ...)
+        from: $ARGS
+        to: $P
+        by-side-effect: true
+      - pattern: |
+          $P.command(...).action(($S, ...) => {...});
+          ...
+          $P.parse($ARGS, ...);
+        from: $ARGS
+        to: $S
+        by-side-effect: true
+      - pattern: |
+          $P.parse($ARGS, ...);
+          ...
+          $P.command(...).action(($S, ...) => {...});
+        from: $ARGS
+        to: $S
+        by-side-effect: true
+    pattern-sinks:
+      - patterns:
+          - pattern: child_process.exec($X, ...)
+          - focus-metavariable: $X

@@ -1,0 +1,25 @@
+- patterns:
+    - pattern: "$MSG"
+    - pattern-either:
+        - pattern-inside: "$APP.ws($PATH, ($WS, ...) => {...})"
+        - pattern-inside: "$APP.ws($PATH, function ($WS, ...) {...})"
+        - pattern-inside: "$APP.ws($PATH, async ($WS, ...) => {...})"
+        - pattern-inside: "$APP.ws($PATH, async function ($WS, ...) {...})"
+    - pattern-either:
+        - pattern-inside: '$WS.on("message", ($MSG, ...) => {...})'
+        - pattern-inside: '$WS.on("message", function ($MSG, ...) {...})'
+        - pattern-inside: '$WS.on("message", async ($MSG, ...) => {...})'
+        - pattern-inside: '$WS.on("message", async function ($MSG, ...) {...})'
+- patterns:
+    - pattern: "$MSG"
+    - pattern-inside: |
+        $WSS = new ws.Server(...);
+        ...
+    - pattern-either:
+        - pattern-inside: '$WSS.on("connection", ($WS, ...) => {...})'
+        - pattern-inside: '$WSS.on("connection", function ($WS, ...) {...})'
+    - pattern-either:
+        - pattern-inside: '$WS.on("message", ($MSG, ...) => {...})'
+        - pattern-inside: '$WS.on("message", function ($MSG, ...) {...})'
+        - pattern-inside: '$WS.on("message", async ($MSG, ...) => {...})'
+        - pattern-inside: '$WS.on("message", async function ($MSG, ...) {...})'

@@ -1,0 +1,5 @@
+- pattern: self.location.hash
+- pattern: self.location.search
+- pattern: self.location.href
+- pattern: top.location.hash
+- pattern: top.location.search

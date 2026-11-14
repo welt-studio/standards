@@ -1,0 +1,35 @@
+# Dado de mensagem recebida (`message` do postMessage) por qualquer `addEventListener`, ou
+# `onmessage`. O evento pode vir desestruturado (`{data}`) ou ligado por `bind`: os argumentos
+# ligados deslocam o parâmetro do evento.
+- patterns:
+    - pattern: "$EV.data"
+    - pattern-either:
+        - pattern-inside: |
+            $W.addEventListener("message", function ($EV, ...) {...})
+        - pattern-inside: |
+            $W.addEventListener("message", ($EV, ...) => {...})
+        - pattern-inside: |
+            addEventListener("message", function ($EV, ...) {...})
+        - pattern-inside: |
+            addEventListener("message", ($EV, ...) => {...})
+        - pattern-inside: |
+            $W.onmessage = ($EV) => {...}
+        - pattern-inside: |
+            function $F($EV, ...) {...}
+            ...
+            $W.addEventListener("message", $F.bind($THIS))
+        - pattern-inside: |
+            function $F($A, $EV, ...) {...}
+            ...
+            $W.addEventListener("message", $F.bind($THIS, $B))
+        - pattern-inside: |
+            function $F($A, $B, $EV, ...) {...}
+            ...
+            $W.addEventListener("message", $F.bind($THIS, $C, $D))
+- patterns:
+    - pattern: data
+    - pattern-either:
+        - pattern-inside: |
+            $W.addEventListener("message", function ({data}) {...})
+        - pattern-inside: |
+            $W.addEventListener("message", ({data}) => {...})

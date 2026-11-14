@@ -6,5 +6,5 @@
   "ignoreIssues": {
     "eslint/test/fixture/**": ["files", "exports", "types", "unlisted", "unresolved"]
   },
-  "ignore": ["semgrep/test/vendor/**"]
+  "ignore": ["semgrep/test/vendor/**", "semgrep/test/limits/**", "semgrep/test/own/**"]
 }

@@ -12,11 +12,18 @@ lista.
 O achado conta para o alerta com folga de uma linha, porque o CodeQL marca o nó e o Semgrep o
 trecho. Roda o motor Pro (fluxo entre arquivos), que exige o login do Semgrep.
 
+Os testes próprios (`semgrep/test/own/<linguagem>/`) cobrem o que os do CodeQL quase não cobrem:
+o alarme falso. Cada arquivo declara as consultas que testa (`own-test: js/xss, ...`), e cada linha
+que tem de alertar leva a marca do CodeQL, `$ Alert[consulta]`. Todas as regras rodam sobre a pasta;
+das consultas declaradas, qualquer achado fora de uma linha marcada reprova, assim como a linha
+marcada que a consulta não pega. Não há lista de pendências: o teste próprio não aceita exceção.
+
 Uso: `semgrep_parity.py --write-pending`, na raiz do standards, regrava as pendências a partir do
 que as regras pegam hoje.
 """
 
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -43,6 +50,11 @@ from semgrep_pending import (
 ROOT = Path(__file__).resolve().parent.parent
 VENDOR = ROOT / "semgrep" / "test" / "vendor" / "codeql"
 MANIFEST = VENDOR / "queries.json"
+OWN = ROOT / "semgrep" / "test" / "own"
+# A marca de alerta dos testes do CodeQL, nos testes próprios: `$ Alert[consulta, ...]`.
+ALERT_MARK = re.compile(r"\$ Alert\[([^\]]+)\]")
+# As consultas que um arquivo de teste próprio cobre: `own-test: js/xss, js/code-injection`.
+OWN_QUERIES = re.compile(r"own-test:\s*([\w/.,\s-]+?)\s*$")
 # Folga, em linhas, entre o alerta do CodeQL e o trecho do achado.
 TOLERANCE = 1
 # Execuções do Semgrep ao mesmo tempo: mais que isso disputa memória e o motor Pro erra resultado.
@@ -244,6 +256,78 @@ def still_missed(name: str, limit: dict[str, object]) -> list[str]:
         and near(int(item.rpartition(":")[2]), finding.start, finding.end)
     }
     return sorted(expected - caught)
+
+
+@dataclass(frozen=True)
+class OwnCases:
+    """Os testes próprios de uma pasta: as consultas de cada arquivo e os alertas exigidos."""
+
+    queries: dict[str, frozenset[str]]
+    expected: frozenset[tuple[str, str, int]]
+
+
+def own_cases(folder: Path) -> OwnCases:
+    """As consultas declaradas (`own-test:`) e as marcas de cada arquivo de teste próprio."""
+    queries: dict[str, frozenset[str]] = {}
+    expected: set[tuple[str, str, int]] = set()
+    for path in sorted(item for item in folder.rglob("*") if item.is_file()):
+        relative = path.relative_to(folder).as_posix()
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        declared = {
+            query.strip()
+            for line in lines
+            for match in OWN_QUERIES.findall(line)
+            for query in match.split(",")
+            if query.strip()
+        }
+        queries[relative] = frozenset(declared)
+        for number, line in enumerate(lines, start=1):
+            for mark in ALERT_MARK.findall(line):
+                expected.update((query.strip(), relative, number) for query in mark.split(","))
+    return OwnCases(queries, frozenset(expected))
+
+
+def own_problems(cases: OwnCases, findings: list[Finding]) -> list[str]:
+    """O que o teste próprio reprova: o arquivo sem consulta declarada, a marca de consulta que o
+    arquivo não declara, a linha marcada que a consulta não pega e qualquer achado da consulta
+    declarada fora de uma linha marcada."""
+    expected = cases.expected
+    undeclared = [
+        f"{path}: falta a linha `own-test:` com as consultas que o arquivo testa"
+        for path, queries in sorted(cases.queries.items())
+        if not queries
+    ]
+    unmarked = sorted(
+        {
+            f"{path}:{line}: a marca {query} não está no `own-test:` do arquivo"
+            for query, path, line in expected
+            if query not in cases.queries.get(path, frozenset())
+        }
+    )
+    findings = [f for f in findings if f.query in cases.queries.get(f.path, frozenset())]
+    missing = [
+        f"{query}: deixou de pegar {path}:{line}"
+        for query, path, line in sorted(expected)
+        if not any(
+            f.query == query and f.path == path and near(line, f.start, f.end) for f in findings
+        )
+    ]
+    extra = sorted(
+        {
+            f"{f.query}: acusa a mais {f.path}:{f.start}"
+            for f in findings
+            if not any(
+                f.query == query and f.path == path and near(line, f.start, f.end)
+                for query, path, line in expected
+            )
+        }
+    )
+    return [*undeclared, *unmarked, *missing, *extra]
+
+
+def scan_own(folder: Path) -> list[Finding]:
+    """Roda todas as regras sobre uma pasta de testes próprios."""
+    return run_semgrep(folder, sorted(RULES.rglob("*.yaml")))
 
 
 def main(args: list[str]) -> int:

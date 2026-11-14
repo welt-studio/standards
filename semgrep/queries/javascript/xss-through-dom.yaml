@@ -54,6 +54,7 @@ rules:
           - pattern-inside: "{..., validate: $V => {...}, ...}"
     pattern-sinks:
       - "$model": javascript/dom-xss-sinks
+      - "$model": javascript/dom-node-insertion-sinks
     pattern-sanitizers:
       - "$model": javascript/escape-function-sanitizers
       - "$model": javascript/encode-uri-component-x-sanitizer

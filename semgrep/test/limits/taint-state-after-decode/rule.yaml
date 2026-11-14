@@ -1,0 +1,36 @@
+rules:
+  - id: limit-taint-state-after-decode-raw
+    languages:
+      - javascript
+    severity: ERROR
+    message: "caminho cru: path.normalize deixa de ser cru, então o taint morre nele"
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: "req.query.p"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$FS.readFileSync($X)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - pattern: "path.normalize(...)"
+  - id: limit-taint-state-after-decode-normalized
+    languages:
+      - javascript
+    severity: ERROR
+    message: "caminho normalizado: a checagem de absoluto e de '..' no começo o limpa"
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: "path.normalize(req.query.p)"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$FS.readFileSync($X)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (!path.isAbsolute($X) && !$X.startsWith("..")) {...}

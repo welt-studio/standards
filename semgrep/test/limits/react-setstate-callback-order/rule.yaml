@@ -1,0 +1,30 @@
+rules:
+  - id: react-setstate-callback-order
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O parâmetro da função do setter recebe o estado que um setState posterior definiu."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: document.location.search
+    pattern-propagators:
+      - patterns:
+          - pattern: "$SET($X)"
+          - pattern-inside: |
+              [$STATE, $SET] = useState(...);
+              ...
+        from: "$X"
+        to: "$STATE"
+      - patterns:
+          - pattern: "$SET(($PREV) => {...})"
+          - pattern-inside: |
+              [$STATE, $SET] = useState(...);
+              ...
+        from: "$STATE"
+        to: "$PREV"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.html($X)"
+          - focus-metavariable: "$X"

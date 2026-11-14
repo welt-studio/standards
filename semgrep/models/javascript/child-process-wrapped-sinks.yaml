@@ -1,0 +1,35 @@
+- patterns:
+    - pattern: "$W(child_process.$M, ...)($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$W(child_process.$M.bind(...), ...)($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$V($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $V = $W(child_process.$M, ...);
+            ...
+        - pattern-inside: |
+            $V = $W(child_process.$M.bind(...), ...);
+            ...
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$V.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $V = $W(child_process, ...);
+            ...
+        - pattern-inside: |
+            $V = $W.$A(child_process, ...);
+            ...
+        - pattern-inside: |
+            $V = $W(require("child_process"), ...);
+            ...
+        - pattern-inside: |
+            $V = $W.$A(require("child_process"), ...);
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:exec|execSync|execFile|execFileSync|spawn|spawnSync|fork)$"
+    - focus-metavariable: "$X"

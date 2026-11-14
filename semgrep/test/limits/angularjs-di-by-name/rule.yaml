@@ -1,0 +1,15 @@
+rules:
+  - id: angularjs-di-by-name
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O dado entregue a um serviço do AngularJS, injetado pelo nome, chega ao sumidouro dele."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: window.location.search
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.html($X)"
+          - focus-metavariable: "$X"

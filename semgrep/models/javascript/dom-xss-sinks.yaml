@@ -31,17 +31,15 @@
 - patterns:
     - pattern: "$E.html($X)"
     - focus-metavariable: "$X"
+# Métodos do jQuery que leem a string como HTML. O `append`/`prepend`/`after`/`before` nativo do
+# DOM (`document.body.append(...)`) insere texto, então um nó de `document` não é receptor jQuery.
 - patterns:
-    - pattern: "$E.append($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.prepend($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.after($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.before($X)"
+    - pattern-either:
+        - pattern: "$E.append($X)"
+        - pattern: "$E.prepend($X)"
+        - pattern: "$E.after($X)"
+        - pattern: "$E.before($X)"
+    - pattern-not: "document.$P.$M($X)"
     - focus-metavariable: "$X"
 - patterns:
     - pattern: "$E.wrap($X)"
@@ -76,8 +74,27 @@
 - patterns:
     - pattern: "$R.createContextualFragment($X)"
     - focus-metavariable: "$X"
+# Serviço `$sce` do AngularJS (o nome é o do serviço injetado): trustAsHtml/trustAsCss e
+# trustAs(HTML|CSS, valor) viram HTML confiável.
 - patterns:
-    - pattern: "$S.trustAsHtml($X)"
+    - pattern-either:
+        - pattern: "$SCE.trustAsHtml($X)"
+        - pattern: "$SCE.trustAsCss($X)"
+    - metavariable-regex:
+        metavariable: "$SCE"
+        regex: '^\$sce$'
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$SCE.trustAs($KIND, $X)"
+    - metavariable-regex:
+        metavariable: "$SCE"
+        regex: '^\$sce$'
+    - metavariable-regex:
+        metavariable: "$KIND"
+        regex: '^\$sce\.(?:HTML|CSS)$'
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "angular.element($X)"
     - focus-metavariable: "$X"
 - patterns:
     - pattern: "$S.bypassSecurityTrustHtml($X)"
@@ -118,4 +135,86 @@
 - patterns:
     - pattern: "{__html: $X}"
     - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
+    - focus-metavariable: "$X"
+# Métodos do jQuery cujo callback devolve o HTML (`.html(d => ...)`, `.replaceWith(function () {...})`).
+- patterns:
+    - pattern-either:
+        - pattern: "$E.$M(($D) => $X)"
+        - pattern: "$E.$M(function ($D) { ... return $X; })"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:html|append|prepend|before|after|wrap|wrapAll|wrapInner|replaceWith)$"
+    - focus-metavariable: "$X"
+# DOMParser: o instanciado com `new DOMParser()` interpreta o texto como HTML/XML.
+- patterns:
+    - pattern: "$P.parseFromString($X, ...)"
+    - pattern-inside: |
+        $P = new DOMParser();
+        ...
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "new Handlebars.SafeString($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$J.jGrowl($X, ...)"
+    - focus-metavariable: "$X"
+# MooTools: a opção/propriedade `html` do Element e o appendHtml.
+- patterns:
+    - pattern-either:
+        - pattern: "new Element($TAG, {..., html: $X, ...})"
+        - pattern: 'new Element($TAG, {..., "html": $X, ...})'
+        - pattern: "new Element(...).set('html', $X)"
+        - pattern: 'new Element(...).set({..., "html": $X, ...})'
+        - pattern: "new Element(...).setProperty('html', $X)"
+        - pattern: 'new Element(...).setProperties({..., "html": $X, ...})'
+        - pattern: "new Element(...).appendHtml($X)"
+    - focus-metavariable: "$X"
+# React.createElement/createFactory com dangerouslySetInnerHTML nas props.
+- patterns:
+    - pattern-either:
+        - pattern: "React.createElement($T, {..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+        - pattern: "React.createFactory($T)({..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+    - focus-metavariable: "$X"
+# WinJS: as variantes "Unsafe" não filtram o HTML.
+- patterns:
+    - pattern-either:
+        - pattern: "$W.setInnerHTMLUnsafe($EL, $X)"
+        - pattern: "$W.setOuterHTMLUnsafe($EL, $X)"
+    - focus-metavariable: "$X"
+# JSDOM com `runScripts: "dangerously"` executa os scripts do HTML recebido.
+- patterns:
+    - pattern: 'new JSDOM($X, {..., runScripts: "dangerously", ...})'
+    - pattern-either:
+        - pattern-inside: |
+            import { JSDOM } from "jsdom";
+            ...
+        - pattern-inside: |
+            const { JSDOM } = require("jsdom");
+            ...
+    - focus-metavariable: "$X"
+# Corpo HTML de e-mail (nodemailer): o transporte vem de `createTransport`.
+- patterns:
+    - pattern: "$T.sendMail({..., html: $X, ...})"
+    - pattern-inside: |
+        $T = $NM.createTransport(...);
+        ...
+    - focus-metavariable: "$X"
+# Typeahead: o retorno da função `suggestion` dos templates vira HTML.
+- patterns:
+    - pattern: "return $X;"
+    - pattern-inside: "$J.typeahead(..., {..., templates: {..., suggestion: function (...) {...}, ...}, ...})"
+    - focus-metavariable: "$X"
+# React Native: `html` do WebView.
+- patterns:
+    - pattern-either:
+        - pattern: "<WebView ... html={$X} ... />"
+        - pattern: "<WebView ... source={{..., html: $X, ...}} ... />"
+    - focus-metavariable: "$X"
+# react-tooltip: `data-tip` vira HTML com `data-html` ligado.
+- patterns:
+    - pattern-either:
+        - pattern: '<$EL ... data-tip={$X} ... data-html="true" ... />'
+        - pattern: "<$EL ... data-tip={$X} ... data-html={true} ... />"
+        - pattern: '<$EL ... data-html="true" ... data-tip={$X} ... />'
+        - pattern: "<$EL ... data-html={true} ... data-tip={$X} ... />"
     - focus-metavariable: "$X"

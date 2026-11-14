@@ -199,28 +199,7 @@ rules:
       - patterns:
           - pattern: "@UploadedFiles(...) $X"
           - focus-metavariable: "$X"
-      - pattern: location.hash
-      - pattern: location.search
-      - pattern: location.href
-      - pattern: location.pathname
-      - pattern: window.location.hash
-      - pattern: window.location.search
-      - pattern: window.location.href
-      - pattern: window.location.pathname
-      - pattern: document.location.hash
-      - pattern: document.location.search
-      - pattern: document.location.href
-      - pattern: document.location.pathname
-      - pattern: document.URL
-      - pattern: document.documentURI
-      - pattern: document.baseURI
-      - pattern: document.referrer
       - pattern: window.name
-      - pattern: self.location.hash
-      - pattern: self.location.search
-      - pattern: self.location.href
-      - pattern: top.location.hash
-      - pattern: top.location.search
       - patterns:
           - pattern-either:
               - pattern: "$E.data"
@@ -242,7 +221,9 @@ rules:
       - pattern: "useParams().$K"
       - pattern: router.query
       - pattern: "router.query.$K"
-      - pattern: "$ROUTER.query"
+      - patterns:
+          - pattern: "$ROUTER.query"
+          - pattern-not-inside: "$ROUTER.query(...)"
       - pattern: props.searchParams
       - pattern: props.params
       - pattern: "$P.searchParams"
@@ -252,6 +233,47 @@ rules:
       - pattern: "useRouteMatch().params"
       - pattern: "new URLSearchParams(location.search).get(...)"
       - pattern: "$.urlParam(...)"
+      - pattern: "$DT.getData('text/html')"
+      - patterns:
+          - pattern: "$EV.data"
+          - pattern-either:
+              - pattern-inside: |
+                  $W.addEventListener("message", function ($EV, ...) {...})
+              - pattern-inside: |
+                  $W.addEventListener("message", ($EV, ...) => {...})
+              - pattern-inside: |
+                  addEventListener("message", function ($EV, ...) {...})
+              - pattern-inside: |
+                  addEventListener("message", ($EV, ...) => {...})
+              - pattern-inside: |
+                  $W.onmessage = ($EV) => {...}
+              - pattern-inside: |
+                  function $F($EV, ...) {...}
+                  ...
+                  $W.addEventListener("message", $F.bind($THIS))
+              - pattern-inside: |
+                  function $F($A, $EV, ...) {...}
+                  ...
+                  $W.addEventListener("message", $F.bind($THIS, $B))
+              - pattern-inside: |
+                  function $F($A, $B, $EV, ...) {...}
+                  ...
+                  $W.addEventListener("message", $F.bind($THIS, $C, $D))
+      - patterns:
+          - pattern: data
+          - pattern-either:
+              - pattern-inside: |
+                  $W.addEventListener("message", function ({data}) {...})
+              - pattern-inside: |
+                  $W.addEventListener("message", ({data}) => {...})
+      - patterns:
+          - pattern: "$P"
+          - pattern-inside: |
+              export default function $F($P, ...) {...}
+          - pattern-inside: |
+              ...
+              export async function getServerSideProps(...) {...}
+              ...
     pattern-sinks:
       - patterns:
           - pattern: "$E.innerHTML = $X"
@@ -287,16 +309,12 @@ rules:
           - pattern: "$E.html($X)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$E.append($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$E.prepend($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$E.after($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$E.before($X)"
+          - pattern-either:
+              - pattern: "$E.append($X)"
+              - pattern: "$E.prepend($X)"
+              - pattern: "$E.after($X)"
+              - pattern: "$E.before($X)"
+          - pattern-not: "document.$P.$M($X)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$E.wrap($X)"
@@ -332,7 +350,24 @@ rules:
           - pattern: "$R.createContextualFragment($X)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$S.trustAsHtml($X)"
+          - pattern-either:
+              - pattern: "$SCE.trustAsHtml($X)"
+              - pattern: "$SCE.trustAsCss($X)"
+          - metavariable-regex:
+              metavariable: "$SCE"
+              regex: "^\\$sce$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$SCE.trustAs($KIND, $X)"
+          - metavariable-regex:
+              metavariable: "$SCE"
+              regex: "^\\$sce$"
+          - metavariable-regex:
+              metavariable: "$KIND"
+              regex: "^\\$sce\\.(?:HTML|CSS)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "angular.element($X)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$S.bypassSecurityTrustHtml($X)"
@@ -374,9 +409,91 @@ rules:
           - pattern: "{__html: $X}"
           - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
           - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.$M(($D) => $X)"
+              - pattern: "$E.$M(function ($D) { ... return $X; })"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|before|after|wrap|wrapAll|wrapInner|replaceWith)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$P.parseFromString($X, ...)"
+          - pattern-inside: |
+              $P = new DOMParser();
+              ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new Handlebars.SafeString($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$J.jGrowl($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "new Element($TAG, {..., html: $X, ...})"
+              - pattern: 'new Element($TAG, {..., "html": $X, ...})'
+              - pattern: "new Element(...).set('html', $X)"
+              - pattern: 'new Element(...).set({..., "html": $X, ...})'
+              - pattern: "new Element(...).setProperty('html', $X)"
+              - pattern: 'new Element(...).setProperties({..., "html": $X, ...})'
+              - pattern: "new Element(...).appendHtml($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "React.createElement($T, {..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+              - pattern: "React.createFactory($T)({..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$W.setInnerHTMLUnsafe($EL, $X)"
+              - pattern: "$W.setOuterHTMLUnsafe($EL, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'new JSDOM($X, {..., runScripts: "dangerously", ...})'
+          - pattern-either:
+              - pattern-inside: |
+                  import { JSDOM } from "jsdom";
+                  ...
+              - pattern-inside: |
+                  const { JSDOM } = require("jsdom");
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$T.sendMail({..., html: $X, ...})"
+          - pattern-inside: |
+              $T = $NM.createTransport(...);
+              ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "return $X;"
+          - pattern-inside: "$J.typeahead(..., {..., templates: {..., suggestion: function (...) {...}, ...}, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<WebView ... html={$X} ... />"
+              - pattern: "<WebView ... source={{..., html: $X, ...}} ... />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: '<$EL ... data-tip={$X} ... data-html="true" ... />'
+              - pattern: "<$EL ... data-tip={$X} ... data-html={true} ... />"
+              - pattern: '<$EL ... data-html="true" ... data-tip={$X} ... />'
+              - pattern: "<$EL ... data-html={true} ... data-tip={$X} ... />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.appendChild($X)"
+              - pattern: "$E.insertBefore($X, ...)"
+              - pattern: "$E.insertAdjacentElement($P, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$POL.createHTML($X)"
+          - pattern-inside: |
+              $POL = trustedTypes.createPolicy($N, {..., createHTML: ($P) => $P, ...});
+              ...
+          - focus-metavariable: "$X"
     pattern-sanitizers:
-      - pattern: "escapeHtml($X)"
-      - pattern: "escapeHTML($X)"
       - pattern: "escape($X)"
       - pattern: "escapeString($X)"
       - pattern: "encodeURIComponent($X)"
@@ -388,8 +505,6 @@ rules:
       - pattern: "$L.escape($X)"
       - pattern: "$L.sanitize($X, ...)"
       - pattern: "$L.encode($X, ...)"
-      - pattern: "$L.escapeHtml($X)"
-      - pattern: "$L.escapeHTML($X)"
       - pattern: "he.escape($X)"
       - pattern: "DOMPurify.sanitize($X, ...)"
       - pattern: "validator.escape($X)"
@@ -400,7 +515,21 @@ rules:
       - pattern: "Boolean($X)"
       - pattern: "isNaN($X)"
       - pattern: "$L.stripTags($X)"
-      - pattern: "striptags($X)"
+      - patterns:
+          - pattern: "$F($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  import $F from "escape-html";
+                  ...
+              - pattern-inside: |
+                  $F = require("escape-html");
+                  ...
+              - pattern-inside: |
+                  import $F from "striptags";
+                  ...
+              - pattern-inside: |
+                  $F = require("striptags");
+                  ...
       - pattern: "$L.filterXSS($X)"
       - pattern: "filterXSS($X)"
       - pattern: "escapeHtmlEntities($X)"
@@ -409,7 +538,6 @@ rules:
       - pattern: "$L.encodeForHTML($X)"
       - pattern: "encodeHTML($X)"
       - pattern: "$X.length"
-      - pattern: "JSON.stringify($X)"
       - pattern: "+$X"
       - pattern: "typeof $X"
       - patterns:
@@ -436,15 +564,32 @@ rules:
           - pattern: "$X"
           - pattern-inside: "if (isElement($X)) {...}"
       - patterns:
-          - pattern: "$X.replace(/$RE/, ...)"
+          - pattern-either:
+              - pattern: "$X.replace(/$RE/g, ...)"
+              - pattern: "$X.replace(/$RE/gi, ...)"
+              - pattern: "$X.replace(/$RE/gm, ...)"
+              - pattern: "$X.replace(/$RE/gu, ...)"
+              - pattern: "$X.replace(/$RE/ig, ...)"
           - metavariable-regex:
               metavariable: "$RE"
-              regex: ".*(?:<|\\\\x3[cC]|\\\\u003[cC]).*"
+              regex: "^(?:[^|]*\\|)*(?:[<'\"]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022)|\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\]|\\[(?!\\^)(?:[^\\]\\\\]|\\\\.)*(?:[<'\"]|\\\\[WSD]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022))(?:[^\\]\\\\]|\\\\.)*\\]|(?:\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\])[*+])(?:\\|.*)?$"
       - patterns:
-          - pattern: '$X.replace(new RegExp("$RE", ...), ...)'
+          - pattern-either:
+              - pattern: "$X.replaceAll(/$RE/g, ...)"
+              - pattern: "$X.replaceAll(/$RE/gi, ...)"
           - metavariable-regex:
               metavariable: "$RE"
-              regex: ".*<.*"
+              regex: "^(?:[^|]*\\|)*(?:[<'\"]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022)|\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\]|\\[(?!\\^)(?:[^\\]\\\\]|\\\\.)*(?:[<'\"]|\\\\[WSD]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022))(?:[^\\]\\\\]|\\\\.)*\\]|(?:\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\])[*+])(?:\\|.*)?$"
+      - patterns:
+          - pattern-either:
+              - pattern: '$X.replace(new RegExp("$RE", $FLAGS), ...)'
+              - pattern: '$X.replaceAll(new RegExp("$RE", $FLAGS), ...)'
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "^(?:[^|]*\\|)*(?:[<'\"]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022)|\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\]|\\[(?!\\^)(?:[^\\]\\\\]|\\\\.)*(?:[<'\"]|\\\\[WSD]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022))(?:[^\\]\\\\]|\\\\.)*\\]|(?:\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\])[*+])(?:\\|.*)?$"
+          - metavariable-regex:
+              metavariable: "$FLAGS"
+              regex: '^(?:["''][^"'']*g[^"'']*["'']|[^"''].*)$'
       - pattern: "$X.charCodeAt(...)"
       - pattern: "$X.indexOf(...)"
       - pattern: "$X.search(...)"
@@ -456,9 +601,1560 @@ rules:
           - pattern-inside: "if ($E.origin == $O) {...}"
       - patterns:
           - pattern: "$E.data"
+          - pattern-inside: "if ($E.origin !== $O) { return; } ..."
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if ($E.origin != $O) { return; } ..."
+      - patterns:
+          - pattern: "$E.data"
           - pattern-inside: "if (!$E.origin.startsWith($O)) { return; } ..."
       - patterns:
           - pattern: "$E.data"
           - pattern-inside: "if ($O.includes($E.origin)) {...}"
+      - patterns:
+          - pattern: "$OBJ[$K]"
+          - pattern-inside: |
+              $OBJ = {...};
+              ...
+      - patterns:
+          - pattern: "$K"
+          - pattern-either:
+              - pattern-inside: |
+                  for (var $K in $OBJ) $BODY
+              - pattern-inside: |
+                  for (let $K in $OBJ) $BODY
+              - pattern-inside: |
+                  for (const $K in $OBJ) $BODY
+      - patterns:
+          - pattern-either:
+              - pattern: '$L.split("?")[0]'
+              - pattern: '$L.split("#")[0]'
+          - metavariable-pattern:
+              metavariable: "$L"
+              pattern-either:
+                - pattern: location.href
+                - pattern: window.location.href
+                - pattern: document.location.href
+                - pattern: document.URL
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: "if (/$RE/.test($X)) { $...BODY }"
+                    - pattern: "if (/$RE/.exec($X)) { $...BODY }"
+                    - pattern: "if (($M = /$RE/.exec($X))) { $...BODY }"
+                    - pattern: "if ($X.match(/$RE/)) { $...BODY }"
+                    - pattern: 'if ($X.match("$RE")) { $...BODY }'
+                - metavariable-regex:
+                    metavariable: "$RE"
+                    regex: "^\\^(?!.*(?:\\.|\\\\[WSD]|\\[\\^)).*\\$$"
+                - focus-metavariable: "$...BODY"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: |
+                        if (!(/$RE/.test($X))) return;
+                        $...REST
+                    - pattern: |
+                        if (!(/$RE/.test($X))) { return; }
+                        $...REST
+                - metavariable-regex:
+                    metavariable: "$RE"
+                    regex: "^\\^(?!.*(?:\\.|\\\\[WSD]|\\[\\^)).*\\$$"
+                - focus-metavariable: "$...REST"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: "if (/$RE/.test($X)) {...} else { $...BODY }"
+                    - pattern: "if (/$RE/.exec($X)) {...} else { $...BODY }"
+                    - pattern: "if (/$RE/.exec($X) != null) {...} else { $...BODY }"
+                    - pattern: "if (!/$RE/.test($X)) { $...BODY } else {...}"
+                    - pattern: "if (/$RE/.exec($X) == null) { $...BODY } else {...}"
+                - metavariable-regex:
+                    metavariable: "$RE"
+                    regex: "^\\[(?=[^\\]]*<)(?=[^\\]]*>)(?=[^\\]]*&)(?=[^\\]]*\")[^\\]]*\\]$"
+                - focus-metavariable: "$...BODY"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: |
+                        if ($X.indexOf('"') !== -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf("\"") !== -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf('"') != -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf("\"") != -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf('"') >= 0) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf("\"") >= 0) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.includes('"')) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.includes("\"")) { return; }
+                        $...REST
+                - focus-metavariable: "$...REST"
+      - pattern-either:
+          - pattern: "$C ? DOMPurify.sanitize($X) : $X"
+          - pattern: "$C ? $X : DOMPurify.sanitize($X)"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if ($C) {
+                $X = DOMPurify.sanitize($X);
+              }
+              ...
+    pattern-propagators:
+      - patterns:
+          - pattern-either:
+              - pattern: "$SET($X)"
+              - pattern: "$SET(() => $X)"
+              - pattern: "$SET(() => {... return $X; ...})"
+          - pattern-inside: |
+              [$STATE, $SET] = useState(...);
+              ...
+        from: "$X"
+        to: "$STATE"
+      - patterns:
+          - pattern: "$F($X)"
+          - pattern-inside: |
+              $F(...);
+              ...
+              function $F($P) {...}
+        from: "$X"
+        to: "$P"
+      - patterns:
+          - pattern-either:
+              - pattern: "$JWT.verify($TOKEN, ..., ($ERR, $DECODED) => {...})"
+              - pattern: "$JWT.verify($TOKEN, ..., function ($ERR, $DECODED) {...})"
+          - pattern-either:
+              - pattern-inside: |
+                  import $JWT from "jsonwebtoken";
+                  ...
+              - pattern-inside: |
+                  $JWT = require("jsonwebtoken");
+                  ...
+        from: "$TOKEN"
+        to: "$DECODED"
+    options:
+      interfile: true
+  - id: welt-js-xss-url-suffix
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Vulnerabilidade de XSS: a URL da página (query string, fragmento) chega ao HTML da página sem escape. Use textContent/escape ou um sanitizador (DOMPurify)."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/xss
+    mode: taint
+    pattern-sources:
+      - pattern: location.hash
+      - pattern: location.search
+      - pattern: location.href
+      - pattern: location.pathname
+      - pattern: window.location.hash
+      - pattern: window.location.search
+      - pattern: window.location.href
+      - pattern: window.location.pathname
+      - pattern: document.location.hash
+      - pattern: document.location.search
+      - pattern: document.location.href
+      - pattern: document.location.pathname
+      - pattern: document.URL
+      - pattern: document.documentURI
+      - pattern: document.baseURI
+      - pattern: document.referrer
+      - pattern: self.location.hash
+      - pattern: self.location.search
+      - pattern: self.location.href
+      - pattern: top.location.hash
+      - pattern: top.location.search
+      - pattern: location
+      - pattern: document.location
+      - pattern: window.location
+      - patterns:
+          - pattern: "$E"
+          - pattern-inside: |
+              try { $...BODY } catch ($E) {...}
+          - metavariable-pattern:
+              metavariable: "$...BODY"
+              patterns:
+                - pattern: "throw $S"
+                - metavariable-pattern:
+                    metavariable: "$S"
+                    pattern-either:
+                      - pattern: location
+                      - pattern: window.location
+                      - pattern: document.location
+      - patterns:
+          - pattern: "$ST.getItem($K)"
+          - pattern-inside: |
+              $ST.setItem($K, $V);
+              ...
+          - metavariable-pattern:
+              metavariable: "$V"
+              pattern-either:
+                - pattern: location.search
+                - pattern: location.hash
+                - pattern: window.location.search
+                - pattern: window.location.hash
+                - pattern: document.location.search
+                - pattern: document.location.hash
+    pattern-propagators:
+      - patterns:
+          - pattern-either:
+              - pattern: "$SET($X)"
+              - pattern: "$SET(() => $X)"
+              - pattern: "$SET(() => {... return $X; ...})"
+          - pattern-inside: |
+              [$STATE, $SET] = useState(...);
+              ...
+        from: "$X"
+        to: "$STATE"
+      - patterns:
+          - pattern: "$F($X)"
+          - pattern-inside: |
+              $F(...);
+              ...
+              function $F($P) {...}
+        from: "$X"
+        to: "$P"
+      - patterns:
+          - pattern-either:
+              - pattern: "$JWT.verify($TOKEN, ..., ($ERR, $DECODED) => {...})"
+              - pattern: "$JWT.verify($TOKEN, ..., function ($ERR, $DECODED) {...})"
+          - pattern-either:
+              - pattern-inside: |
+                  import $JWT from "jsonwebtoken";
+                  ...
+              - pattern-inside: |
+                  $JWT = require("jsonwebtoken");
+                  ...
+        from: "$TOKEN"
+        to: "$DECODED"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.innerHTML = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.outerHTML = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.innerHTML += $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.outerHTML += $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.srcdoc = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "document.write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "document.writeln($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D.write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D.writeln($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.insertAdjacentHTML($P, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.html($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.append($X)"
+              - pattern: "$E.prepend($X)"
+              - pattern: "$E.after($X)"
+              - pattern: "$E.before($X)"
+          - pattern-not: "document.$P.$M($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.wrap($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.wrapAll($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.wrapInner($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.replaceWith($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.appendTo($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.prependTo($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jQuery($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$.parseHTML($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jQuery.parseHTML($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$R.createContextualFragment($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$SCE.trustAsHtml($X)"
+              - pattern: "$SCE.trustAsCss($X)"
+          - metavariable-regex:
+              metavariable: "$SCE"
+              regex: "^\\$sce$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$SCE.trustAs($KIND, $X)"
+          - metavariable-regex:
+              metavariable: "$SCE"
+              regex: "^\\$sce$"
+          - metavariable-regex:
+              metavariable: "$KIND"
+              regex: "^\\$sce\\.(?:HTML|CSS)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "angular.element($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustHtml($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustScript($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustStyle($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustUrl($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustResourceUrl($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setAttribute('srcdoc', $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setAttribute('on$EV', $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "<$C dangerouslySetInnerHTML={{__html: $X}} />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setHTML($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setHTMLUnsafe($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W.document.write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.insertAdjacentHTML($P, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "{__html: $X}"
+          - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.$M(($D) => $X)"
+              - pattern: "$E.$M(function ($D) { ... return $X; })"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|before|after|wrap|wrapAll|wrapInner|replaceWith)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$P.parseFromString($X, ...)"
+          - pattern-inside: |
+              $P = new DOMParser();
+              ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new Handlebars.SafeString($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$J.jGrowl($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "new Element($TAG, {..., html: $X, ...})"
+              - pattern: 'new Element($TAG, {..., "html": $X, ...})'
+              - pattern: "new Element(...).set('html', $X)"
+              - pattern: 'new Element(...).set({..., "html": $X, ...})'
+              - pattern: "new Element(...).setProperty('html', $X)"
+              - pattern: 'new Element(...).setProperties({..., "html": $X, ...})'
+              - pattern: "new Element(...).appendHtml($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "React.createElement($T, {..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+              - pattern: "React.createFactory($T)({..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$W.setInnerHTMLUnsafe($EL, $X)"
+              - pattern: "$W.setOuterHTMLUnsafe($EL, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'new JSDOM($X, {..., runScripts: "dangerously", ...})'
+          - pattern-either:
+              - pattern-inside: |
+                  import { JSDOM } from "jsdom";
+                  ...
+              - pattern-inside: |
+                  const { JSDOM } = require("jsdom");
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$T.sendMail({..., html: $X, ...})"
+          - pattern-inside: |
+              $T = $NM.createTransport(...);
+              ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "return $X;"
+          - pattern-inside: "$J.typeahead(..., {..., templates: {..., suggestion: function (...) {...}, ...}, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<WebView ... html={$X} ... />"
+              - pattern: "<WebView ... source={{..., html: $X, ...}} ... />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: '<$EL ... data-tip={$X} ... data-html="true" ... />'
+              - pattern: "<$EL ... data-tip={$X} ... data-html={true} ... />"
+              - pattern: '<$EL ... data-html="true" ... data-tip={$X} ... />'
+              - pattern: "<$EL ... data-html={true} ... data-tip={$X} ... />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.appendChild($X)"
+              - pattern: "$E.insertBefore($X, ...)"
+              - pattern: "$E.insertAdjacentElement($P, $X)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: "escape($X)"
+          - pattern: "escapeString($X)"
+          - pattern: "encodeURIComponent($X)"
+          - pattern: "encodeURI($X)"
+          - pattern: "sanitize($X)"
+          - pattern: "sanitizeHtml($X, ...)"
+          - pattern: "sanitizeHtml($X)"
+          - pattern: "xss($X)"
+          - pattern: "$L.escape($X)"
+          - pattern: "$L.sanitize($X, ...)"
+          - pattern: "$L.encode($X, ...)"
+          - pattern: "he.escape($X)"
+          - pattern: "DOMPurify.sanitize($X, ...)"
+          - pattern: "validator.escape($X)"
+          - pattern: "_.escape($X)"
+          - pattern: "parseInt($X, ...)"
+          - pattern: "parseFloat($X)"
+          - pattern: "Number($X)"
+          - pattern: "Boolean($X)"
+          - pattern: "isNaN($X)"
+          - pattern: "$L.stripTags($X)"
+          - patterns:
+              - pattern: "$F($X)"
+              - pattern-either:
+                  - pattern-inside: |
+                      import $F from "escape-html";
+                      ...
+                  - pattern-inside: |
+                      $F = require("escape-html");
+                      ...
+                  - pattern-inside: |
+                      import $F from "striptags";
+                      ...
+                  - pattern-inside: |
+                      $F = require("striptags");
+                      ...
+          - pattern: "$L.filterXSS($X)"
+          - pattern: "filterXSS($X)"
+          - pattern: "escapeHtmlEntities($X)"
+          - pattern: "htmlEscape($X)"
+          - pattern: "$X.toFixed(...)"
+          - pattern: "$L.encodeForHTML($X)"
+          - pattern: "encodeHTML($X)"
+          - pattern: "$X.length"
+          - pattern: "+$X"
+          - pattern: "typeof $X"
+          - patterns:
+              - pattern: '"$P" + $X'
+              - metavariable-regex:
+                  metavariable: "$P"
+                  regex: "^(?!\\s*<).+"
+          - pattern: "DOMPurify.sanitize($X, ...)"
+          - pattern: "$D.sanitize($X, ...)"
+          - pattern: "$E.text($X)"
+          - pattern: "document.createTextNode($X)"
+          - pattern: "$T.sanitizeHtml($X)"
+          - pattern: '$X.replace(/[<>&"'']/g, ...)'
+          - patterns:
+              - pattern: "$X"
+              - pattern-inside: "if ($X.jquery) {...}"
+          - patterns:
+              - pattern: "$X"
+              - pattern-inside: "if (typeof $X === 'object') {...}"
+          - patterns:
+              - pattern: "$X"
+              - pattern-inside: "if (typeof $X !== 'string') {...}"
+          - patterns:
+              - pattern: "$X"
+              - pattern-inside: "if (isElement($X)) {...}"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.replace(/$RE/g, ...)"
+                  - pattern: "$X.replace(/$RE/gi, ...)"
+                  - pattern: "$X.replace(/$RE/gm, ...)"
+                  - pattern: "$X.replace(/$RE/gu, ...)"
+                  - pattern: "$X.replace(/$RE/ig, ...)"
+              - metavariable-regex:
+                  metavariable: "$RE"
+                  regex: "^(?:[^|]*\\|)*(?:[<'\"]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022)|\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\]|\\[(?!\\^)(?:[^\\]\\\\]|\\\\.)*(?:[<'\"]|\\\\[WSD]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022))(?:[^\\]\\\\]|\\\\.)*\\]|(?:\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\])[*+])(?:\\|.*)?$"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.replaceAll(/$RE/g, ...)"
+                  - pattern: "$X.replaceAll(/$RE/gi, ...)"
+              - metavariable-regex:
+                  metavariable: "$RE"
+                  regex: "^(?:[^|]*\\|)*(?:[<'\"]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022)|\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\]|\\[(?!\\^)(?:[^\\]\\\\]|\\\\.)*(?:[<'\"]|\\\\[WSD]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022))(?:[^\\]\\\\]|\\\\.)*\\]|(?:\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\])[*+])(?:\\|.*)?$"
+          - patterns:
+              - pattern-either:
+                  - pattern: '$X.replace(new RegExp("$RE", $FLAGS), ...)'
+                  - pattern: '$X.replaceAll(new RegExp("$RE", $FLAGS), ...)'
+              - metavariable-regex:
+                  metavariable: "$RE"
+                  regex: "^(?:[^|]*\\|)*(?:[<'\"]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022)|\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\]|\\[(?!\\^)(?:[^\\]\\\\]|\\\\.)*(?:[<'\"]|\\\\[WSD]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022))(?:[^\\]\\\\]|\\\\.)*\\]|(?:\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\])[*+])(?:\\|.*)?$"
+              - metavariable-regex:
+                  metavariable: "$FLAGS"
+                  regex: '^(?:["''][^"'']*g[^"'']*["'']|[^"''].*)$'
+          - pattern: "$X.charCodeAt(...)"
+          - pattern: "$X.indexOf(...)"
+          - pattern: "$X.search(...)"
+          - patterns:
+              - pattern: "$E.data"
+              - pattern-inside: "if ($E.origin === $O) {...}"
+          - patterns:
+              - pattern: "$E.data"
+              - pattern-inside: "if ($E.origin == $O) {...}"
+          - patterns:
+              - pattern: "$E.data"
+              - pattern-inside: "if ($E.origin !== $O) { return; } ..."
+          - patterns:
+              - pattern: "$E.data"
+              - pattern-inside: "if ($E.origin != $O) { return; } ..."
+          - patterns:
+              - pattern: "$E.data"
+              - pattern-inside: "if (!$E.origin.startsWith($O)) { return; } ..."
+          - patterns:
+              - pattern: "$E.data"
+              - pattern-inside: "if ($O.includes($E.origin)) {...}"
+          - patterns:
+              - pattern: "$OBJ[$K]"
+              - pattern-inside: |
+                  $OBJ = {...};
+                  ...
+          - patterns:
+              - pattern: "$K"
+              - pattern-either:
+                  - pattern-inside: |
+                      for (var $K in $OBJ) $BODY
+                  - pattern-inside: |
+                      for (let $K in $OBJ) $BODY
+                  - pattern-inside: |
+                      for (const $K in $OBJ) $BODY
+          - patterns:
+              - pattern-either:
+                  - pattern: '$L.split("?")[0]'
+                  - pattern: '$L.split("#")[0]'
+              - metavariable-pattern:
+                  metavariable: "$L"
+                  pattern-either:
+                    - pattern: location.href
+                    - pattern: window.location.href
+                    - pattern: document.location.href
+                    - pattern: document.URL
+          - patterns:
+              - pattern: "$X"
+              - pattern-inside:
+                  patterns:
+                    - pattern-either:
+                        - pattern: "if (/$RE/.test($X)) { $...BODY }"
+                        - pattern: "if (/$RE/.exec($X)) { $...BODY }"
+                        - pattern: "if (($M = /$RE/.exec($X))) { $...BODY }"
+                        - pattern: "if ($X.match(/$RE/)) { $...BODY }"
+                        - pattern: 'if ($X.match("$RE")) { $...BODY }'
+                    - metavariable-regex:
+                        metavariable: "$RE"
+                        regex: "^\\^(?!.*(?:\\.|\\\\[WSD]|\\[\\^)).*\\$$"
+                    - focus-metavariable: "$...BODY"
+          - patterns:
+              - pattern: "$X"
+              - pattern-inside:
+                  patterns:
+                    - pattern-either:
+                        - pattern: |
+                            if (!(/$RE/.test($X))) return;
+                            $...REST
+                        - pattern: |
+                            if (!(/$RE/.test($X))) { return; }
+                            $...REST
+                    - metavariable-regex:
+                        metavariable: "$RE"
+                        regex: "^\\^(?!.*(?:\\.|\\\\[WSD]|\\[\\^)).*\\$$"
+                    - focus-metavariable: "$...REST"
+          - patterns:
+              - pattern: "$X"
+              - pattern-inside:
+                  patterns:
+                    - pattern-either:
+                        - pattern: "if (/$RE/.test($X)) {...} else { $...BODY }"
+                        - pattern: "if (/$RE/.exec($X)) {...} else { $...BODY }"
+                        - pattern: "if (/$RE/.exec($X) != null) {...} else { $...BODY }"
+                        - pattern: "if (!/$RE/.test($X)) { $...BODY } else {...}"
+                        - pattern: "if (/$RE/.exec($X) == null) { $...BODY } else {...}"
+                    - metavariable-regex:
+                        metavariable: "$RE"
+                        regex: "^\\[(?=[^\\]]*<)(?=[^\\]]*>)(?=[^\\]]*&)(?=[^\\]]*\")[^\\]]*\\]$"
+                    - focus-metavariable: "$...BODY"
+          - patterns:
+              - pattern: "$X"
+              - pattern-inside:
+                  patterns:
+                    - pattern-either:
+                        - pattern: |
+                            if ($X.indexOf('"') !== -1) { return; }
+                            $...REST
+                        - pattern: |
+                            if ($X.indexOf("\"") !== -1) { return; }
+                            $...REST
+                        - pattern: |
+                            if ($X.indexOf('"') != -1) { return; }
+                            $...REST
+                        - pattern: |
+                            if ($X.indexOf("\"") != -1) { return; }
+                            $...REST
+                        - pattern: |
+                            if ($X.indexOf('"') >= 0) { return; }
+                            $...REST
+                        - pattern: |
+                            if ($X.indexOf("\"") >= 0) { return; }
+                            $...REST
+                        - pattern: |
+                            if ($X.includes('"')) { return; }
+                            $...REST
+                        - pattern: |
+                            if ($X.includes("\"")) { return; }
+                            $...REST
+                    - focus-metavariable: "$...REST"
+          - pattern-either:
+              - pattern: "$C ? DOMPurify.sanitize($X) : $X"
+              - pattern: "$C ? $X : DOMPurify.sanitize($X)"
+          - patterns:
+              - pattern: "$X"
+              - pattern-inside: |
+                  if ($C) {
+                    $X = DOMPurify.sanitize($X);
+                  }
+                  ...
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$($X)"
+          - metavariable-regex:
+              metavariable: "$X"
+              regex: "^[\\w$.]+$"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$($X)"
+          - metavariable-pattern:
+              metavariable: "$X"
+              pattern: "$A + $B"
+          - metavariable-regex:
+              metavariable: "$X"
+              regex: "^(?!\\s*[\"'`]\\s*<)[\\s\\S]+$"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$($X)"
+          - metavariable-pattern:
+              metavariable: "$X"
+              patterns:
+                - pattern: "$L.replace($A, $B)"
+                - pattern-not:
+                    patterns:
+                      - pattern: "$L.replace($A, $B)"
+                      - metavariable-regex:
+                          metavariable: "$A"
+                          regex: '^["''][#?]["'']$'
+                      - metavariable-regex:
+                          metavariable: "$B"
+                          regex: '^["'']{2}$'
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$($X)"
+          - metavariable-pattern:
+              metavariable: "$X"
+              patterns:
+                - pattern: "$L.$M($A, ...)"
+                - metavariable-regex:
+                    metavariable: "$M"
+                    regex: "^(?:substring|substr|slice)$"
+                - metavariable-regex:
+                    metavariable: "$A"
+                    regex: "^0$"
+      - patterns:
+          - pattern: "$U.get(...)"
+          - pattern-inside: |
+              $U = $F(...);
+              ...
+    options:
+      interfile: true
+  - id: welt-js-xss-url
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Vulnerabilidade de XSS: dados controlados pelo usuário definem um endereço (href, src, navegação, histórico) sem validação. Um atacante pode injetar `javascript:`. Valide o esquema ou concatene depois de um prefixo fixo."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/xss
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "function ($REQ, $RES, ...) {...}"
+              - pattern-inside: "function $F($REQ, $RES, ...) {...}"
+              - pattern-inside: "async function ($REQ, $RES, ...) {...}"
+              - pattern-inside: "async function $F($REQ, $RES, ...) {...}"
+              - pattern-inside: "($REQ, $RES, ...) => {...}"
+              - pattern-inside: "($REQ, $RES, ...) => $E"
+              - pattern-inside: "async ($REQ, $RES, ...) => {...}"
+              - pattern-inside: "async ($REQ, $RES, ...) => $E"
+              - pattern-inside: "$M($REQ, $RES, ...) {...}"
+              - pattern-inside: "async $M($REQ, $RES, ...) {...}"
+              - pattern-inside: "function ($REQ) {...}"
+              - pattern-inside: "function $F($REQ) {...}"
+              - pattern-inside: "($REQ) => {...}"
+              - pattern-inside: "($REQ) => $E"
+              - pattern-inside: "async ($REQ) => {...}"
+              - pattern-inside: "async function $F($REQ) {...}"
+              - pattern-inside: "$M($REQ) {...}"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(?i:_?(?:req|request|r))$"
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.baseUrl"
+              - pattern: "$REQ.subdomains"
+              - pattern: "$REQ.files"
+              - pattern: "$REQ.file"
+              - pattern: "$REQ.rawBody"
+              - pattern: "$REQ.payload"
+              - pattern: "$REQ.state"
+              - pattern: "$REQ.get(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.getHeader(...)"
+              - pattern: "$REQ.json()"
+              - pattern: "$REQ.text()"
+              - pattern: "$REQ.formData()"
+              - pattern: "$REQ.blob()"
+              - pattern: "$REQ.arrayBuffer()"
+              - pattern: "$REQ.nextUrl.$K"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "$APP.$M(..., function ($REQ, ...) {...})"
+              - pattern-inside: "$APP.$M(..., async function ($REQ, ...) {...})"
+              - pattern-inside: "$APP.$M(..., ($REQ, ...) => {...})"
+              - pattern-inside: "$APP.$M(..., ($REQ, ...) => $E)"
+              - pattern-inside: "$APP.$M(..., async ($REQ, ...) => {...})"
+              - pattern-inside: "$APP.$M(..., async ($REQ, ...) => $E)"
+              - pattern-inside: "$APP.$M(..., function $F($REQ, ...) {...})"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:get|post|put|delete|patch|all|use|route|head|options|on|createServer|handle|addHook|register)$"
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.baseUrl"
+              - pattern: "$REQ.subdomains"
+              - pattern: "$REQ.files"
+              - pattern: "$REQ.file"
+              - pattern: "$REQ.rawBody"
+              - pattern: "$REQ.payload"
+              - pattern: "$REQ.state"
+              - pattern: "$REQ.get(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.getHeader(...)"
+              - pattern: "$REQ.json()"
+              - pattern: "$REQ.text()"
+              - pattern: "$REQ.formData()"
+              - pattern: "$REQ.blob()"
+              - pattern: "$REQ.arrayBuffer()"
+              - pattern: "$REQ.nextUrl.$K"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "function getServerSideProps($CTX) {...}"
+              - pattern-inside: "async function getServerSideProps($CTX) {...}"
+              - pattern-inside: "function getInitialProps($CTX) {...}"
+              - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
+              - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
+          - pattern-either:
+              - pattern: "$CTX.query"
+              - pattern: "$CTX.params"
+              - pattern: "$CTX.req.url"
+              - pattern: "$CTX.req.headers"
+              - pattern: "$CTX.req.body"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "function getServerSideProps($CTX) {...}"
+              - pattern-inside: "async function getServerSideProps($CTX) {...}"
+              - pattern-inside: "function getInitialProps($CTX) {...}"
+              - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
+              - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
+          - pattern-inside: "$REQ = $CTX.req; ..."
+          - pattern-either:
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.cookies"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "function ($CTX, ...) {...}"
+              - pattern-inside: "async function ($CTX, ...) {...}"
+              - pattern-inside: "async ($CTX, ...) => {...}"
+              - pattern-inside: "($CTX, ...) => {...}"
+              - pattern-inside: "async function $F($CTX, ...) {...}"
+              - pattern-inside: "function $F($CTX, ...) {...}"
+              - pattern-inside: "async ($CTX, $NEXT) => {...}"
+          - metavariable-regex:
+              metavariable: "$CTX"
+              regex: "^(?i:_?(?:ctx|context|koaContext))$"
+          - pattern-either:
+              - pattern: "$CTX.query"
+              - pattern: "$CTX.params"
+              - pattern: "$CTX.headers"
+              - pattern: "$CTX.url"
+              - pattern: "$CTX.originalUrl"
+              - pattern: "$CTX.path"
+              - pattern: "$CTX.href"
+              - pattern: "$CTX.querystring"
+              - pattern: "$CTX.search"
+              - pattern: "$CTX.hostname"
+              - pattern: "$CTX.host"
+              - pattern: "$CTX.origin"
+              - pattern: "$CTX.request.query"
+              - pattern: "$CTX.request.body"
+              - pattern: "$CTX.request.headers"
+              - pattern: "$CTX.request.url"
+              - pattern: "$CTX.request.path"
+              - pattern: "$CTX.request.href"
+              - pattern: "$CTX.request.querystring"
+              - pattern: "$CTX.request.search"
+              - pattern: "$CTX.request.originalUrl"
+              - pattern: "$CTX.request.host"
+              - pattern: "$CTX.request.hostname"
+              - pattern: "$CTX.req.url"
+              - pattern: "$CTX.req.headers"
+              - pattern: "$CTX.request.params"
+              - pattern: "$CTX.cookies"
+              - pattern: "$CTX.get(...)"
+              - pattern: "$CTX.cookies.get(...)"
+              - pattern: "$CTX.request.get(...)"
+              - pattern: "$CTX.header(...)"
+      - patterns:
+          - pattern: "@Body(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Query(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Param(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Headers(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Req(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Request(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Cookies(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@UploadedFile(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@UploadedFiles(...) $X"
+          - focus-metavariable: "$X"
+      - pattern: window.name
+      - patterns:
+          - pattern-either:
+              - pattern: "$L.substr(1)"
+              - pattern: "$L.substring(1)"
+              - pattern: "$L.slice(1)"
+          - metavariable-pattern:
+              metavariable: "$L"
+              pattern-either:
+                - pattern: location.search
+                - pattern: location.hash
+                - pattern: window.location.search
+                - pattern: window.location.hash
+                - pattern: document.location.search
+                - pattern: document.location.hash
+      - pattern: "router.query.$K"
+      - patterns:
+          - pattern: "$ROUTER.query"
+          - pattern-not-inside: "$ROUTER.query(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$($TAG, {..., $ATTR: $X, ...})"
+              - pattern: '$($TAG, {..., "$ATTR": $X, ...})'
+              - pattern: "$J.attr({..., $ATTR: $X, ...})"
+              - pattern: '$J.attr({..., "$ATTR": $X, ...})'
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: "(?i)^(?:action|formaction|href|src|xlink:href|data)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$J.attr($ATTR, $X)"
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: '(?i)^["''](?:action|formaction|href|src|xlink:href|data)["'']$'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.setAttribute($ATTR, $X)"
+              - pattern: "$E.setAttributeNS($NS, $ATTR, $X)"
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: '(?i)^["''](?:action|formaction|href|src|xlink:href|data)["'']$'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "navigation.navigate($X, ...)"
+              - pattern: "window.navigation.navigate($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$H.push($X, ...)"
+              - pattern: "$H.replace($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $H = require("history").$CREATE(...);
+                  ...
+              - pattern-inside: |
+                  import {..., $CREATE, ...} from "history";
+                  ...
+                  $H = $CREATE(...);
+                  ...
+              - pattern-inside: |
+                  function $F(...) {
+                    ...
+                    <... $H.query ...>
+                  }
+          - focus-metavariable: "$X"
+      - pattern: "location = $X"
+      - pattern: "$W.location = $X"
+      - pattern: "location.href = $X"
+      - pattern: "$W.location.href = $X"
+      - pattern: "location.assign($X)"
+      - pattern: "$W.location.assign($X)"
+      - pattern: "location.replace($X)"
+      - pattern: "$W.location.replace($X)"
+      - patterns:
+          - pattern-either:
+              - pattern: "<$EL ... href={$X} ... />"
+              - pattern: "<$EL ... src={$X} ... />"
+              - pattern: "<$EL ... action={$X} ... />"
+              - pattern: "<$EL ... formAction={$X} ... />"
+          - metavariable-regex:
+              metavariable: "$EL"
+              regex: "^[a-z]"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "{..., templateUrl: $X, ...}"
+          - pattern-inside: "$M.directive(..., function () {...})"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - pattern: "escape($X)"
+      - pattern: "escapeString($X)"
+      - pattern: "encodeURIComponent($X)"
+      - pattern: "encodeURI($X)"
+      - pattern: "sanitizeHtml($X, ...)"
+      - pattern: "sanitizeHtml($X)"
+      - pattern: "xss($X)"
+      - pattern: "$L.escape($X)"
+      - pattern: "$L.sanitize($X, ...)"
+      - pattern: "$L.encode($X, ...)"
+      - pattern: "he.escape($X)"
+      - pattern: "DOMPurify.sanitize($X, ...)"
+      - pattern: "parseInt($X, ...)"
+      - pattern: "Number($X)"
+      - pattern: '"$P" + $X'
+      - pattern: "[..., $X, ...].join(...)"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern: |
+                    if ($X.startsWith("https://")) { $...BODY }
+                - focus-metavariable: "$...BODY"
+    options:
+      interfile: true
+  - id: welt-js-xss-angular
+    languages:
+      - typescript
+    severity: WARNING
+    message: "Vulnerabilidade de XSS: um parâmetro da rota do Angular chega ao HTML da página sem escape. Use a interpolação do template ou um sanitizador."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/xss
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$R.snapshot.url"
+              - pattern: "$R.snapshot.params"
+              - pattern: "$R.snapshot.queryParams"
+              - pattern: "$R.snapshot.fragment"
+              - pattern: "$R.snapshot.paramMap"
+              - pattern: "$R.snapshot.queryParamMap"
+          - metavariable-type:
+              metavariable: "$R"
+              types:
+                - ActivatedRoute
+      - patterns:
+          - pattern-either:
+              - pattern: "$S.url"
+              - pattern: "$S.params"
+              - pattern: "$S.queryParams"
+              - pattern: "$S.fragment"
+              - pattern: "$S.paramMap"
+              - pattern: "$S.queryParamMap"
+          - metavariable-type:
+              metavariable: "$S"
+              types:
+                - ActivatedRouteSnapshot
+      - patterns:
+          - pattern: "$ROUTER.url"
+          - metavariable-type:
+              metavariable: "$ROUTER"
+              types:
+                - Router
+      - patterns:
+          - pattern-either:
+              - pattern: "$R.$PROP.subscribe(($V) => {...})"
+              - pattern: "$R.$PROP.subscribe(function ($V) {...})"
+          - metavariable-type:
+              metavariable: "$R"
+              types:
+                - ActivatedRoute
+          - metavariable-regex:
+              metavariable: "$PROP"
+              regex: "^(?:url|params|queryParams|fragment|paramMap|queryParamMap)$"
+          - focus-metavariable: "$V"
+      - pattern: "ɵgetDOM().getLocation()"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.innerHTML = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.outerHTML = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.innerHTML += $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.outerHTML += $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.srcdoc = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "document.write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "document.writeln($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D.write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D.writeln($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.insertAdjacentHTML($P, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.html($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.append($X)"
+              - pattern: "$E.prepend($X)"
+              - pattern: "$E.after($X)"
+              - pattern: "$E.before($X)"
+          - pattern-not: "document.$P.$M($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.wrap($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.wrapAll($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.wrapInner($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.replaceWith($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.appendTo($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.prependTo($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jQuery($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$.parseHTML($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jQuery.parseHTML($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$R.createContextualFragment($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$SCE.trustAsHtml($X)"
+              - pattern: "$SCE.trustAsCss($X)"
+          - metavariable-regex:
+              metavariable: "$SCE"
+              regex: "^\\$sce$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$SCE.trustAs($KIND, $X)"
+          - metavariable-regex:
+              metavariable: "$SCE"
+              regex: "^\\$sce$"
+          - metavariable-regex:
+              metavariable: "$KIND"
+              regex: "^\\$sce\\.(?:HTML|CSS)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "angular.element($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustHtml($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustScript($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustStyle($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustUrl($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustResourceUrl($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setAttribute('srcdoc', $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setAttribute('on$EV', $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "<$C dangerouslySetInnerHTML={{__html: $X}} />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setHTML($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setHTMLUnsafe($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W.document.write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.insertAdjacentHTML($P, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "{__html: $X}"
+          - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.$M(($D) => $X)"
+              - pattern: "$E.$M(function ($D) { ... return $X; })"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|before|after|wrap|wrapAll|wrapInner|replaceWith)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$P.parseFromString($X, ...)"
+          - pattern-inside: |
+              $P = new DOMParser();
+              ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new Handlebars.SafeString($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$J.jGrowl($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "new Element($TAG, {..., html: $X, ...})"
+              - pattern: 'new Element($TAG, {..., "html": $X, ...})'
+              - pattern: "new Element(...).set('html', $X)"
+              - pattern: 'new Element(...).set({..., "html": $X, ...})'
+              - pattern: "new Element(...).setProperty('html', $X)"
+              - pattern: 'new Element(...).setProperties({..., "html": $X, ...})'
+              - pattern: "new Element(...).appendHtml($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "React.createElement($T, {..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+              - pattern: "React.createFactory($T)({..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$W.setInnerHTMLUnsafe($EL, $X)"
+              - pattern: "$W.setOuterHTMLUnsafe($EL, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'new JSDOM($X, {..., runScripts: "dangerously", ...})'
+          - pattern-either:
+              - pattern-inside: |
+                  import { JSDOM } from "jsdom";
+                  ...
+              - pattern-inside: |
+                  const { JSDOM } = require("jsdom");
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$T.sendMail({..., html: $X, ...})"
+          - pattern-inside: |
+              $T = $NM.createTransport(...);
+              ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "return $X;"
+          - pattern-inside: "$J.typeahead(..., {..., templates: {..., suggestion: function (...) {...}, ...}, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<WebView ... html={$X} ... />"
+              - pattern: "<WebView ... source={{..., html: $X, ...}} ... />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: '<$EL ... data-tip={$X} ... data-html="true" ... />'
+              - pattern: "<$EL ... data-tip={$X} ... data-html={true} ... />"
+              - pattern: '<$EL ... data-html="true" ... data-tip={$X} ... />'
+              - pattern: "<$EL ... data-html={true} ... data-tip={$X} ... />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.appendChild($X)"
+              - pattern: "$E.insertBefore($X, ...)"
+              - pattern: "$E.insertAdjacentElement($P, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: '$RENDERER.setProperty($EL, "innerHTML", $X)'
+              - pattern: '$RENDERER.setProperty($EL, "outerHTML", $X)'
+          - metavariable-type:
+              metavariable: "$RENDERER"
+              types:
+                - Renderer2
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - pattern: "escape($X)"
+      - pattern: "escapeString($X)"
+      - pattern: "encodeURIComponent($X)"
+      - pattern: "encodeURI($X)"
+      - pattern: "sanitize($X)"
+      - pattern: "sanitizeHtml($X, ...)"
+      - pattern: "sanitizeHtml($X)"
+      - pattern: "xss($X)"
+      - pattern: "$L.escape($X)"
+      - pattern: "$L.sanitize($X, ...)"
+      - pattern: "$L.encode($X, ...)"
+      - pattern: "he.escape($X)"
+      - pattern: "DOMPurify.sanitize($X, ...)"
+      - pattern: "validator.escape($X)"
+      - pattern: "_.escape($X)"
+      - pattern: "parseInt($X, ...)"
+      - pattern: "parseFloat($X)"
+      - pattern: "Number($X)"
+      - pattern: "Boolean($X)"
+      - pattern: "isNaN($X)"
+      - pattern: "$L.stripTags($X)"
+      - patterns:
+          - pattern: "$F($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  import $F from "escape-html";
+                  ...
+              - pattern-inside: |
+                  $F = require("escape-html");
+                  ...
+              - pattern-inside: |
+                  import $F from "striptags";
+                  ...
+              - pattern-inside: |
+                  $F = require("striptags");
+                  ...
+      - pattern: "$L.filterXSS($X)"
+      - pattern: "filterXSS($X)"
+      - pattern: "escapeHtmlEntities($X)"
+      - pattern: "htmlEscape($X)"
+      - pattern: "$X.toFixed(...)"
+      - pattern: "$L.encodeForHTML($X)"
+      - pattern: "encodeHTML($X)"
+      - pattern: "$X.length"
+      - pattern: "+$X"
+      - pattern: "typeof $X"
+      - patterns:
+          - pattern: '"$P" + $X'
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!\\s*<).+"
+      - pattern: "DOMPurify.sanitize($X, ...)"
+      - pattern: "$D.sanitize($X, ...)"
+      - pattern: "$E.text($X)"
+      - pattern: "document.createTextNode($X)"
+      - pattern: "$T.sanitizeHtml($X)"
+      - pattern: '$X.replace(/[<>&"'']/g, ...)'
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.jquery) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (typeof $X === 'object') {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (typeof $X !== 'string') {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (isElement($X)) {...}"
+      - patterns:
+          - pattern-either:
+              - pattern: "$X.replace(/$RE/g, ...)"
+              - pattern: "$X.replace(/$RE/gi, ...)"
+              - pattern: "$X.replace(/$RE/gm, ...)"
+              - pattern: "$X.replace(/$RE/gu, ...)"
+              - pattern: "$X.replace(/$RE/ig, ...)"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "^(?:[^|]*\\|)*(?:[<'\"]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022)|\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\]|\\[(?!\\^)(?:[^\\]\\\\]|\\\\.)*(?:[<'\"]|\\\\[WSD]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022))(?:[^\\]\\\\]|\\\\.)*\\]|(?:\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\])[*+])(?:\\|.*)?$"
+      - patterns:
+          - pattern-either:
+              - pattern: "$X.replaceAll(/$RE/g, ...)"
+              - pattern: "$X.replaceAll(/$RE/gi, ...)"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "^(?:[^|]*\\|)*(?:[<'\"]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022)|\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\]|\\[(?!\\^)(?:[^\\]\\\\]|\\\\.)*(?:[<'\"]|\\\\[WSD]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022))(?:[^\\]\\\\]|\\\\.)*\\]|(?:\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\])[*+])(?:\\|.*)?$"
+      - patterns:
+          - pattern-either:
+              - pattern: '$X.replace(new RegExp("$RE", $FLAGS), ...)'
+              - pattern: '$X.replaceAll(new RegExp("$RE", $FLAGS), ...)'
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "^(?:[^|]*\\|)*(?:[<'\"]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022)|\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\]|\\[(?!\\^)(?:[^\\]\\\\]|\\\\.)*(?:[<'\"]|\\\\[WSD]|(?:\\\\x3[cC]|\\\\u003[cC]|\\\\x27|\\\\x22|\\\\u0027|\\\\u0022))(?:[^\\]\\\\]|\\\\.)*\\]|(?:\\.|\\\\[WSD]|\\[\\^(?:[^\\]\\\\]|\\\\.)*\\])[*+])(?:\\|.*)?$"
+          - metavariable-regex:
+              metavariable: "$FLAGS"
+              regex: '^(?:["''][^"'']*g[^"'']*["'']|[^"''].*)$'
+      - pattern: "$X.charCodeAt(...)"
+      - pattern: "$X.indexOf(...)"
+      - pattern: "$X.search(...)"
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if ($E.origin === $O) {...}"
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if ($E.origin == $O) {...}"
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if ($E.origin !== $O) { return; } ..."
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if ($E.origin != $O) { return; } ..."
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if (!$E.origin.startsWith($O)) { return; } ..."
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if ($O.includes($E.origin)) {...}"
+      - patterns:
+          - pattern: "$OBJ[$K]"
+          - pattern-inside: |
+              $OBJ = {...};
+              ...
+      - patterns:
+          - pattern: "$K"
+          - pattern-either:
+              - pattern-inside: |
+                  for (var $K in $OBJ) $BODY
+              - pattern-inside: |
+                  for (let $K in $OBJ) $BODY
+              - pattern-inside: |
+                  for (const $K in $OBJ) $BODY
+      - patterns:
+          - pattern-either:
+              - pattern: '$L.split("?")[0]'
+              - pattern: '$L.split("#")[0]'
+          - metavariable-pattern:
+              metavariable: "$L"
+              pattern-either:
+                - pattern: location.href
+                - pattern: window.location.href
+                - pattern: document.location.href
+                - pattern: document.URL
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: "if (/$RE/.test($X)) { $...BODY }"
+                    - pattern: "if (/$RE/.exec($X)) { $...BODY }"
+                    - pattern: "if (($M = /$RE/.exec($X))) { $...BODY }"
+                    - pattern: "if ($X.match(/$RE/)) { $...BODY }"
+                    - pattern: 'if ($X.match("$RE")) { $...BODY }'
+                - metavariable-regex:
+                    metavariable: "$RE"
+                    regex: "^\\^(?!.*(?:\\.|\\\\[WSD]|\\[\\^)).*\\$$"
+                - focus-metavariable: "$...BODY"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: |
+                        if (!(/$RE/.test($X))) return;
+                        $...REST
+                    - pattern: |
+                        if (!(/$RE/.test($X))) { return; }
+                        $...REST
+                - metavariable-regex:
+                    metavariable: "$RE"
+                    regex: "^\\^(?!.*(?:\\.|\\\\[WSD]|\\[\\^)).*\\$$"
+                - focus-metavariable: "$...REST"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: "if (/$RE/.test($X)) {...} else { $...BODY }"
+                    - pattern: "if (/$RE/.exec($X)) {...} else { $...BODY }"
+                    - pattern: "if (/$RE/.exec($X) != null) {...} else { $...BODY }"
+                    - pattern: "if (!/$RE/.test($X)) { $...BODY } else {...}"
+                    - pattern: "if (/$RE/.exec($X) == null) { $...BODY } else {...}"
+                - metavariable-regex:
+                    metavariable: "$RE"
+                    regex: "^\\[(?=[^\\]]*<)(?=[^\\]]*>)(?=[^\\]]*&)(?=[^\\]]*\")[^\\]]*\\]$"
+                - focus-metavariable: "$...BODY"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: |
+                        if ($X.indexOf('"') !== -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf("\"") !== -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf('"') != -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf("\"") != -1) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf('"') >= 0) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.indexOf("\"") >= 0) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.includes('"')) { return; }
+                        $...REST
+                    - pattern: |
+                        if ($X.includes("\"")) { return; }
+                        $...REST
+                - focus-metavariable: "$...REST"
+      - pattern-either:
+          - pattern: "$C ? DOMPurify.sanitize($X) : $X"
+          - pattern: "$C ? $X : DOMPurify.sanitize($X)"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if ($C) {
+                $X = DOMPurify.sanitize($X);
+              }
+              ...
     options:
       interfile: true
