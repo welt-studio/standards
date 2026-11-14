@@ -38,9 +38,9 @@
      (flowbit, nebulai e pg-studio: `CLAUDE.md`/`AGENTS.md`/`docs/INFRASTRUCTURE.md`);
   3. pg-studio: a imagem da API instala pelo `requirements.txt`, fora do `uv.lock` (débito do
      projeto);
-  4. subir o `rev` do `python-base` para `python-v1.1.0` e o do `pnpm-base` para `pnpm-v1.1.0`
-     (as tags das imagens do uv e do pnpm passam a ter trava). No comichub, tirar o passo
-     "Dockerfiles agree with packageManager" do `frontend.yml`, que o `pnpm-base` substitui;
+  4. no comichub, tirar o passo "Dockerfiles agree with packageManager" do `frontend.yml`, que o
+     `pnpm-base` (`pnpm-v1.1.0`) substitui. Os `rev` já estão em `python-v1.1.0` e `pnpm-v1.1.0`
+     nos 6 projetos (`2026-11-08`, sem commit);
   5. ao fim, tirar o gerenciador regex do `uvx` do preset, se nenhum projeto o usar mais.
 
 ## DX (Developer Experience)
