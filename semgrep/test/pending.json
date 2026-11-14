@@ -3,8 +3,7 @@
     "missing": [
       "actions/query-tests/Security/CWE-829/.github/actions/download-artifact-2/action.yaml:6",
       "actions/query-tests/Security/CWE-829/.github/workflows/artifactpoisoning81.yml:28"
-    ],
-    "extra": []
+    ]
   },
   "actions/code-injection/critical": {
     "missing": [
@@ -115,14 +114,12 @@
     ]
   },
   "actions/untrusted-checkout/critical": {
-    "missing": [],
     "extra": [
       "actions/query-tests/Security/CWE-829/.github/workflows/external/TestOrg/TestRepo/.github/workflows/formal.yml:14",
       "actions/query-tests/Security/CWE-829/.github/workflows/test16.yml:221"
     ]
   },
   "actions/untrusted-checkout/high": {
-    "missing": [],
     "extra": [
       "actions/query-tests/Security/CWE-829/.github/workflows/issue_comment_3rd_party_action.yml:16",
       "actions/query-tests/Security/CWE-829/.github/workflows/issue_comment_3rd_party_action.yml:30",
@@ -153,14 +150,13 @@
       "javascript/query-tests/Security/CWE-327/bad-random.js:104",
       "javascript/query-tests/Security/CWE-327/bad-random.js:107",
       "javascript/query-tests/Security/CWE-327/bad-random.js:128"
-    ]
+    ],
+    "overfit": ["secureRandom"]
   },
   "js/build-artifact-leak": {
-    "missing": ["javascript/query-tests/Security/CWE-312/build-leaks.js:34"],
-    "extra": []
+    "missing": ["javascript/query-tests/Security/CWE-312/build-leaks.js:34"]
   },
   "js/clear-text-cookie": {
-    "missing": [],
     "extra": [
       "javascript/query-tests/Security/CWE-614/tst-cleartextCookie.js:130",
       "javascript/query-tests/Security/CWE-614/tst-cleartextCookie.js:203"
@@ -220,7 +216,8 @@
       "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst12.js:4",
       "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst3.js:4",
       "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst8.js:4"
-    ]
+    ],
+    "overfit": ["isLocalUrl"]
   },
   "js/code-injection": {
     "missing": [
@@ -254,7 +251,7 @@
       "javascript/query-tests/Security/CWE-094/CodeInjection/webix/webix.html:4",
       "javascript/query-tests/Security/CWE-094/CodeInjection/webix/webix.html:5"
     ],
-    "extra": []
+    "overfit": ["Hogan"]
   },
   "js/command-line-injection": {
     "missing": [
@@ -284,35 +281,32 @@
     "extra": [
       "javascript/query-tests/Security/CWE-078/CommandInjection/exec-sh.js:20",
       "javascript/query-tests/Security/CWE-078/CommandInjection/exec-sh2.js:15"
-    ]
+    ],
+    "overfit": ["execAsync", "execSh", "promisifiedExec"]
   },
   "js/cors-misconfiguration-for-credentials": {
-    "missing": [],
     "extra": ["javascript/query-tests/Security/CWE-346/tst.js:51"]
   },
   "js/disabling-certificate-validation": {
-    "missing": [],
     "extra": ["javascript/query-tests/Security/CWE-295/tst.js:10"]
   },
   "js/disabling-electron-websecurity": {
     "missing": [
       "javascript/query-tests/Electron/DangerousWebPreferencesSettings/DangerousWebPreferences.js:6"
-    ],
-    "extra": []
+    ]
   },
   "js/enabling-electron-insecure-content": {
     "missing": [
       "javascript/query-tests/Electron/DangerousWebPreferencesSettings/DangerousWebPreferences.js:7"
-    ],
-    "extra": []
+    ]
   },
   "js/exposure-of-private-files": {
-    "missing": [],
     "extra": [
       "javascript/query-tests/Security/CWE-200/private-file-exposure.js:36",
       "javascript/query-tests/Security/CWE-200/private-file-exposure.js:37",
       "javascript/query-tests/Security/CWE-200/private-file-exposure.js:64"
-    ]
+    ],
+    "overfit": ["serveHandler"]
   },
   "js/functionality-from-untrusted-source": {
     "missing": [
@@ -320,8 +314,7 @@
       "javascript/query-tests/Security/CWE-830/DynamicCreationOfUntrustedSourceUse.html:21",
       "javascript/query-tests/Security/CWE-830/DynamicCreationOfUntrustedSourceUse.html:31",
       "javascript/query-tests/Security/CWE-830/DynamicCreationOfUntrustedSourceUse.html:34"
-    ],
-    "extra": []
+    ]
   },
   "js/html-constructed-from-input": {
     "missing": [
@@ -341,7 +334,8 @@
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:94",
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/typed.ts:18",
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/typed.ts:8"
-    ]
+    ],
+    "overfit": ["escapeHTML", "escapeHtml", "striptags"]
   },
   "js/identity-replacement": {
     "missing": [
@@ -355,8 +349,7 @@
       "javascript/query-tests/RegExp/IdentityReplacement/tst.js:16",
       "javascript/query-tests/RegExp/IdentityReplacement/tst.js:3",
       "javascript/query-tests/RegExp/IdentityReplacement/tst.js:9"
-    ],
-    "extra": []
+    ]
   },
   "js/incomplete-hostname-regexp": {
     "missing": [
@@ -374,8 +367,7 @@
     "missing": [
       "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst.js:275",
       "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst.js:309"
-    ],
-    "extra": []
+    ]
   },
   "js/incomplete-multi-character-sanitization": {
     "missing": [
@@ -408,11 +400,12 @@
     "extra": [
       "javascript/query-tests/Security/CWE-338/library2.js:2",
       "javascript/query-tests/Security/CWE-338/tst.js:86"
-    ]
+    ],
+    "overfit": ["secureRandom"]
   },
   "js/insufficient-key-size": {
     "missing": ["javascript/query-tests/Security/CWE-326/tst.xsjs:3"],
-    "extra": []
+    "overfit": ["CryptoJS", "NodeRSA"]
   },
   "js/loop-bound-injection": {
     "missing": ["javascript/query-tests/Security/CWE-834/LoopBoundInjectionExitBad.js:20"],
@@ -450,7 +443,7 @@
       "javascript/query-tests/Security/CWE-352/fastify2.js:7",
       "javascript/query-tests/Security/CWE-352/tst.js:6"
     ],
-    "extra": []
+    "overfit": ["cookieParser", "csrfProtection", "lusca"]
   },
   "js/path-injection": {
     "missing": [
@@ -576,7 +569,8 @@
       "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-string-steps.js:20",
       "javascript/query-tests/Security/CWE-022/TaintedPath/typescript.ts:14",
       "javascript/query-tests/Security/CWE-022/TaintedPath/typescript.ts:17"
-    ]
+    ],
+    "overfit": ["readPkg", "uuid"]
   },
   "js/polynomial-redos": {
     "missing": [
@@ -897,7 +891,8 @@
       "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:51",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:52",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/tst2.js:23"
-    ]
+    ],
+    "overfit": ["escapeHTML", "escapeHtml", "serializeJavaScript", "striptags"]
   },
   "js/regex-injection": {
     "missing": [
@@ -949,12 +944,10 @@
     "missing": [
       "javascript/query-tests/Security/CWE-078/SecondOrderCommandInjection/second-order.js:11",
       "javascript/query-tests/Security/CWE-078/SecondOrderCommandInjection/second-order.js:26"
-    ],
-    "extra": []
+    ]
   },
   "js/sensitive-get-query": {
-    "missing": ["javascript/query-tests/Security/CWE-598/tst.js:50"],
-    "extra": []
+    "missing": ["javascript/query-tests/Security/CWE-598/tst.js:50"]
   },
   "js/server-crash": {
     "missing": [
@@ -963,8 +956,7 @@
       "javascript/query-tests/Security/CWE-730/Threat-models-disabled/server-crash.js:117",
       "javascript/query-tests/Security/CWE-730/Threat-models-disabled/server-crash.js:19",
       "javascript/query-tests/Security/CWE-730/Threat-models-disabled/server-crash.js:94"
-    ],
-    "extra": []
+    ]
   },
   "js/server-side-unvalidated-url-redirection": {
     "missing": [
@@ -985,7 +977,8 @@
       "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:99",
       "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/koa.js:26",
       "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/node.js:22"
-    ]
+    ],
+    "overfit": ["isLocalUrl"]
   },
   "js/shell-command-constructed-from-input": {
     "missing": [
@@ -1058,7 +1051,11 @@
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:637",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:640",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/other.js:4"
-    ]
+    ],
+    "overfit": ["execSh"]
+  },
+  "js/shell-command-injection-from-environment": {
+    "overfit": ["execAsync", "execSh", "promisifiedExec"]
   },
   "js/sql-injection": {
     "missing": [
@@ -1127,15 +1124,15 @@
       "javascript/query-tests/Security/CWE-089/untyped/mysql.js:8",
       "javascript/query-tests/Security/CWE-089/untyped/pg-promise.js:24",
       "javascript/query-tests/Security/CWE-089/untyped/rds-client.js:27"
-    ]
+    ],
+    "overfit": ["myGraphql", "pgp", "withDefaults"]
   },
   "js/stack-trace-exposure": {
-    "missing": ["javascript/query-tests/Security/CWE-209/tst.js:17"],
-    "extra": []
+    "missing": ["javascript/query-tests/Security/CWE-209/tst.js:17"]
   },
   "js/stored-xss": {
     "missing": ["javascript/query-tests/Security/CWE-079/StoredXss/xss-through-torrent.js:7"],
-    "extra": []
+    "overfit": ["escapeHTML", "escapeHtml", "striptags"]
   },
   "js/system-prompt-injection": {
     "missing": [
@@ -1198,9 +1195,11 @@
       "javascript/query-tests/Security/CWE-843/tst.js:97"
     ]
   },
+  "js/unsafe-deserialization": {
+    "overfit": ["jsyaml"]
+  },
   "js/unsafe-dynamic-method-access": {
-    "missing": ["javascript/query-tests/Security/CWE-094/UnsafeDynamicMethodAccess/tst.js:15"],
-    "extra": []
+    "missing": ["javascript/query-tests/Security/CWE-094/UnsafeDynamicMethodAccess/tst.js:15"]
   },
   "js/unsafe-jquery-plugin": {
     "missing": [
@@ -1243,8 +1242,10 @@
       "javascript/query-tests/Security/CWE-754/tst.js:31"
     ]
   },
+  "js/weak-cryptographic-algorithm": {
+    "overfit": ["CryptoJS"]
+  },
   "js/xml-bomb": {
-    "missing": [],
     "extra": ["javascript/query-tests/Security/CWE-776/libxml.noent.js:5"]
   },
   "js/xss": {
@@ -1416,7 +1417,8 @@
       "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:360",
       "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:73",
       "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:99"
-    ]
+    ],
+    "overfit": ["escapeHTML", "escapeHtml", "striptags"]
   },
   "js/xss-through-dom": {
     "missing": [
@@ -1452,7 +1454,8 @@
       "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:68",
       "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:84",
       "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:90"
-    ]
+    ],
+    "overfit": ["escapeHTML", "escapeHtml", "striptags"]
   },
   "js/xss-through-exception": {
     "missing": [
@@ -1472,7 +1475,8 @@
       "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:29",
       "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:64",
       "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:70"
-    ]
+    ],
+    "overfit": ["escapeHTML", "escapeHtml", "striptags"]
   },
   "js/zipslip": {
     "missing": ["javascript/query-tests/Security/CWE-022/ZipSlip/TarSlipBad.js:9"],
@@ -1480,23 +1484,21 @@
       "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipGood.js:10",
       "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipGood.js:16",
       "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipGood.js:29"
-    ]
+    ],
+    "overfit": ["fileName"]
   },
   "py/bad-tag-filter": {
     "missing": [
       "python/query-tests/Security/CWE-116-BadTagFilter/tst.py:23",
       "python/query-tests/Security/CWE-116-BadTagFilter/tst.py:24",
       "python/query-tests/Security/CWE-116-BadTagFilter/tst.py:25"
-    ],
-    "extra": []
+    ]
   },
   "py/clear-text-logging-sensitive-data": {
-    "missing": ["python/query-tests/Security/CWE-312-CleartextLogging/test.py:27"],
-    "extra": []
+    "missing": ["python/query-tests/Security/CWE-312-CleartextLogging/test.py:27"]
   },
   "py/flask-debug": {
-    "missing": ["python/query-tests/Security/CWE-215-FlaskDebug/test.py:43"],
-    "extra": []
+    "missing": ["python/query-tests/Security/CWE-215-FlaskDebug/test.py:43"]
   },
   "py/full-ssrf": {
     "missing": [
@@ -1528,7 +1530,6 @@
     ]
   },
   "py/http-response-splitting": {
-    "missing": [],
     "extra": [
       "python/query-tests/Security/CWE-113-HeaderInjection/Tests1/extra_response_headers.py:30",
       "python/query-tests/Security/CWE-113-HeaderInjection/Tests2-with-wsgi-validator/wsgiref_tests.py:12"
@@ -1539,8 +1540,7 @@
       "python/query-tests/Security/CWE-327-InsecureProtocol/import_use.py:13",
       "python/query-tests/Security/CWE-327-InsecureProtocol/import_use.py:17",
       "python/query-tests/Security/CWE-327-InsecureProtocol/ssl_fluent.py:97"
-    ],
-    "extra": []
+    ]
   },
   "py/nosql-injection": {
     "missing": [
@@ -1557,8 +1557,7 @@
     "missing": [
       "python/query-tests/Security/CWE-020-SuspiciousRegexpRange/test.py:3",
       "python/query-tests/Security/CWE-020-SuspiciousRegexpRange/test.py:31"
-    ],
-    "extra": []
+    ]
   },
   "py/path-injection": {
     "missing": [
@@ -1569,14 +1568,14 @@
       "python/query-tests/Security/CWE-022-PathInjection/flask_path_injection.py:13",
       "python/query-tests/Security/CWE-022-PathInjection/path_injection.py:140",
       "python/query-tests/Security/CWE-022-PathInjection/path_injection.py:55"
-    ]
+    ],
+    "overfit": ["UUID", "uuid"]
   },
   "py/polynomial-redos": {
     "missing": [
       "python/query-tests/Security/CWE-730-PolynomialReDoS/test.py:16",
       "python/query-tests/Security/CWE-730-PolynomialReDoS/test.py:21"
-    ],
-    "extra": []
+    ]
   },
   "py/redos": {
     "missing": [
@@ -1630,14 +1629,12 @@
   },
   "py/sql-injection": {
     "missing": ["python/query-tests/Security/CWE-089-SqlInjection-local-threat-model/test.py:6"],
-    "extra": []
+    "overfit": ["UUID", "uuid"]
   },
   "py/url-redirection": {
-    "missing": [],
     "extra": ["python/query-tests/Security/CWE-601-UrlRedirect/test.py:165"]
   },
   "py/use-of-input": {
-    "missing": ["python/2/query-tests/Expressions/expressions_test.py:6"],
-    "extra": []
+    "missing": ["python/2/query-tests/Expressions/expressions_test.py:6"]
   }
 }

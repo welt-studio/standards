@@ -93,6 +93,7 @@ def test_main_writes_manifest_and_warns(
     monkeypatch.setattr(sync_codeql_tests, "SOURCE", vendor / "SOURCE")
     monkeypatch.setattr(sync_codeql_tests, "VENDOR", vendor)
     monkeypatch.setattr(sync_codeql_tests, "MANIFEST", vendor / "queries.json")
+    monkeypatch.setattr(sync_codeql_tests, "TEST_NAMES", vendor / "test-names.txt")
     monkeypatch.setattr(sync_codeql_tests, "QUERIES", queries)
     assert sync_codeql_tests.main([str(clone)]) == 0
     manifest = json.loads((vendor / "queries.json").read_text(encoding="utf-8"))
@@ -100,6 +101,8 @@ def test_main_writes_manifest_and_warns(
     output = capsys.readouterr()
     assert "py/untested não tem pasta de teste" in output.err
     assert "2 pastas de teste, 1/2 consultas" in output.out
+    # `a` é declarado no teste (`a = 1`) e nenhum modelo do clone de mentira o cita.
+    assert (vendor / "test-names.txt").read_text(encoding="utf-8") == "a\n"
 
 
 def test_main_usage_error(capsys: pytest.CaptureFixture[str]) -> None:

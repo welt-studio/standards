@@ -26,16 +26,25 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from semgrep_files import codeql_ids
+from semgrep_pending import (
+    LIMITS_DIR,
+    PENDING,
+    RULES,
+    TEST_NAMES,
+    Pending,
+    classify,
+    load_pending,
+    overfit_names,
+    read_test_names,
+    render,
+    strings,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
-RULES = ROOT / "semgrep" / "rules"
 VENDOR = ROOT / "semgrep" / "test" / "vendor" / "codeql"
 MANIFEST = VENDOR / "queries.json"
-PENDING = ROOT / "semgrep" / "test" / "pending.json"
 # Folga, em linhas, entre o alerta do CodeQL e o trecho do achado.
 TOLERANCE = 1
-# A largura de linha do Prettier do padrão (`prettier/index.mjs`), a do `pending.json`.
-PRINT_WIDTH = 100
 # Execuções do Semgrep ao mesmo tempo: mais que isso disputa memória e o motor Pro erra resultado.
 WORKERS = 3
 # Os campos da linha de localização do CodeQL: `arquivo:linha:coluna:linha:coluna`.
@@ -50,14 +59,6 @@ class Finding:
     path: str
     start: int
     end: int
-
-
-@dataclass(frozen=True)
-class Pending:
-    """As pendências de uma consulta: o que falta e o que sobra, como `pasta/arquivo:linha`."""
-
-    missing: frozenset[str]
-    extra: frozenset[str]
 
 
 def expected_alerts(text: str) -> set[tuple[str, int]]:
@@ -95,7 +96,7 @@ def rule_files() -> dict[str, list[Path]]:
     return found
 
 
-def parse_findings(output: str) -> list[Finding]:
+def parse_findings(output: str, *, by_query: bool = True) -> list[Finding]:
     """Os achados da saída JSON do Semgrep, pela consulta do `metadata.codeql` de cada regra."""
     document: object = json.loads(output)
     results = document.get("results") if isinstance(document, dict) else None
@@ -109,6 +110,8 @@ def parse_findings(output: str) -> list[Finding]:
         path = result.get("path")
         start_line = start.get("line") if isinstance(start, dict) else None
         end_line = end.get("line") if isinstance(end, dict) else None
+        if not by_query:
+            query = ""
         if (
             isinstance(query, str)
             and isinstance(path, str)
@@ -119,7 +122,7 @@ def parse_findings(output: str) -> list[Finding]:
     return findings
 
 
-def run_semgrep(folder: Path, rules: list[Path]) -> list[Finding]:
+def run_semgrep(folder: Path, rules: list[Path], *, by_query: bool = True) -> list[Finding]:
     """Roda as regras sobre uma pasta de teste, copiada para fora do repo.
 
     Dentro do standards, o ignore padrão do Semgrep (`test/`, `vendor/`) cobriria a pasta inteira.
@@ -141,7 +144,7 @@ def run_semgrep(folder: Path, rules: list[Path]) -> list[Finding]:
     if not result.stdout:
         message = f"o semgrep falhou em {folder.name}: {result.stderr.strip()[-500:]}"
         raise RuntimeError(message)
-    return parse_findings(result.stdout)
+    return parse_findings(result.stdout, by_query=by_query)
 
 
 def near(line: int, start: int, end: int) -> bool:
@@ -179,24 +182,6 @@ def load_manifest(text: str) -> dict[str, dict[str, str]]:
     return manifest
 
 
-def load_pending(text: str) -> dict[str, Pending]:
-    """O `pending.json`: consulta → pendências."""
-    document: object = json.loads(text)
-    pending: dict[str, Pending] = {}
-    for query, entry in document.items() if isinstance(document, dict) else []:
-        if isinstance(query, str) and isinstance(entry, dict):
-            pending[query] = Pending(strings(entry.get("missing")), strings(entry.get("extra")))
-    return pending
-
-
-def strings(value: object) -> frozenset[str]:
-    return (
-        frozenset(item for item in value if isinstance(item, str))
-        if isinstance(value, list)
-        else frozenset()
-    )
-
-
 def folder_result(
     folder: str, queries: dict[str, str], findings: list[Finding]
 ) -> dict[str, tuple[set[str], set[str]]]:
@@ -221,17 +206,17 @@ def problems(
     found: list[str] = []
     prefix = f"{folder}/"
     for query, (missing, extra) in sorted(result.items()):
-        known = pending.get(query, Pending(frozenset(), frozenset()))
-        known_missing = {item for item in known.missing if item.startswith(prefix)}
-        known_extra = {item for item in known.extra if item.startswith(prefix)}
+        known = pending.get(query, Pending())
+        known_missing = {item for item in known.known_missing() if item.startswith(prefix)}
+        known_extra = {item for item in known.known_extra() if item.startswith(prefix)}
         found.extend(f"{query}: deixou de pegar {item}" for item in sorted(missing - known_missing))
         found.extend(f"{query}: acusa a mais {item}" for item in sorted(extra - known_extra))
         found.extend(
-            f"{query}: {item} já é pego; tire do `missing` do pending.json"
+            f"{query}: {item} já é pego; tire do pending.json"
             for item in sorted(known_missing - missing)
         )
         found.extend(
-            f"{query}: {item} não é mais acusado; tire do `extra` do pending.json"
+            f"{query}: {item} não é mais acusado; tire do pending.json"
             for item in sorted(known_extra - extra)
         )
     return found
@@ -245,46 +230,20 @@ def scan_folder(
     return run_semgrep(VENDOR / folder, files) if files else []
 
 
-def pending_document(results: dict[str, dict[str, tuple[set[str], set[str]]]]) -> str:
-    """O `pending.json` a partir dos resultados de todas as pastas, em ordem estável."""
-    merged: dict[str, dict[str, set[str]]] = {}
-    for result in results.values():
-        for query, (missing, extra) in result.items():
-            entry = merged.setdefault(query, {"missing": set(), "extra": set()})
-            entry["missing"] |= missing
-            entry["extra"] |= extra
-    document = {
-        query: {"missing": sorted(entry["missing"]), "extra": sorted(entry["extra"])}
-        for query, entry in sorted(merged.items())
-        if entry["missing"] or entry["extra"]
+def still_missed(name: str, limit: dict[str, object]) -> list[str]:
+    """As linhas que a reprodução de um limite diz que o Semgrep devia acusar e ele ainda não acusa.
+    Vazio quer dizer que o limite caiu: o Semgrep passou a pegar."""
+    folder = LIMITS_DIR / name
+    findings = run_semgrep(folder, [folder / "rule.yaml"], by_query=False)
+    expected = strings(limit.get("should_find"))
+    caught = {
+        item
+        for item in expected
+        for finding in findings
+        if item.rpartition(":")[0] == finding.path
+        and near(int(item.rpartition(":")[2]), finding.start, finding.end)
     }
-    return prettier_json(document)
-
-
-def prettier_json(document: dict[str, dict[str, list[str]]]) -> str:
-    """O JSON no formato que o Prettier deixa: a lista que cabe na linha fica numa linha só.
-
-    O hook do Prettier reformata o `pending.json`; escrito já assim, regravar sem mudança de
-    pendência não muda o arquivo.
-    """
-    lines = ["{"]
-    for index, (query, entry) in enumerate(document.items()):
-        lines.append(f"  {json.dumps(query, ensure_ascii=False)}: {{")
-        for position, (key, items) in enumerate(entry.items()):
-            comma = "," if position < len(entry) - 1 else ""
-            inline = f"    {json.dumps(key)}: {json.dumps(items, ensure_ascii=False)}{comma}"
-            if len(inline) <= PRINT_WIDTH:
-                lines.append(inline)
-                continue
-            lines.append(f"    {json.dumps(key)}: [")
-            lines.extend(
-                f"      {json.dumps(item, ensure_ascii=False)}{',' if n < len(items) - 1 else ''}"
-                for n, item in enumerate(items)
-            )
-            lines.append(f"    ]{comma}")
-        lines.append("  }," if index < len(document) - 1 else "  }")
-    lines.append("}")
-    return "\n".join(lines) + "\n"
+    return sorted(expected - caught)
 
 
 def main(args: list[str]) -> int:
@@ -300,8 +259,24 @@ def main(args: list[str]) -> int:
 
     with ThreadPoolExecutor(WORKERS) as pool:
         measured = list(pool.map(measure, manifest.items()))
-    results = dict(zip(manifest, measured, strict=True))
-    PENDING.write_text(pending_document(results), encoding="utf-8")
+    merged: dict[str, tuple[set[str], set[str]]] = {}
+    for result in measured:
+        for query, (missing, extra) in result.items():
+            all_missing, all_extra = merged.setdefault(query, (set(), set()))
+            all_missing |= missing
+            all_extra |= extra
+    previous = load_pending(PENDING.read_text(encoding="utf-8")) if PENDING.exists() else {}
+    overfit = overfit_names(RULES, read_test_names(TEST_NAMES))
+    queries = set(merged) | set(overfit)
+    pending = {
+        query: classify(
+            *merged.get(query, (set(), set())),
+            overfit.get(query, set()),
+            previous.get(query, Pending()),
+        )
+        for query in queries
+    }
+    PENDING.write_text(render(pending), encoding="utf-8")
     total = sum(len(q) for q in manifest.values())
     sys.stdout.write(f"{len(manifest)} pastas, {total} pares pasta-consulta\n")
     return 0

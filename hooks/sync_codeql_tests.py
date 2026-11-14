@@ -9,8 +9,9 @@ commit do CodeQL é o do `SOURCE`, a única declaração dele.
 
 O script não usa rede: recebe um clone do `github/codeql` já no commit do `SOURCE` (as pastas
 `<linguagem>/ql/src` e `<linguagem>/ql/test`, e o `LICENSE`), e recusa outro commit. Além das
-pastas, escreve o `queries.json` (que consultas cada pasta testa, e o `.expected` de cada uma) e
-copia o `LICENSE` (MIT) do CodeQL.
+pastas, escreve o `queries.json` (que consultas cada pasta testa, e o `.expected` de cada uma), o
+`test-names.txt` (os nomes que o teste inventa e nenhum modelo do CodeQL cita, `<linguagem>/ql/lib`)
+e copia o `LICENSE` (MIT) do CodeQL.
 
 Uso: `sync_codeql_tests.py <clone do github/codeql>`, na raiz do standards.
 """
@@ -22,7 +23,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from semgrep_files import codeql_ids
+from semgrep_files import IDENTIFIER, KEYWORDS, codeql_ids
 
 ROOT = Path(__file__).resolve().parent.parent
 QUERIES = ROOT / "semgrep" / "queries"
@@ -32,7 +33,16 @@ MANIFEST = VENDOR / "queries.json"
 # As linguagens portadas, pelo nome da pasta no clone do CodeQL.
 LANGUAGES = ("python", "javascript", "actions")
 # O que o script escreve e mantém na raiz do vendor, fora das pastas de teste.
-KEPT = frozenset({"SOURCE", "LICENSE", "README.md", "queries.json"})
+KEPT = frozenset({"SOURCE", "LICENSE", "README.md", "queries.json", "test-names.txt"})
+TEST_NAMES = VENDOR / "test-names.txt"
+# Nome que o código de teste declara: variável, função ou classe (JS/TS e Python).
+DECLARED = (
+    re.compile(r"\b(?:const|let|var|function|class|def)\s+([A-Za-z_][A-Za-z0-9_]*)"),
+    re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=[^=]", re.MULTILINE),
+)
+QUOTED = re.compile(r'"([^"\n]*)"')
+# Arquivos de uma pasta de teste que não são código.
+NOT_CODE = frozenset({".expected", ".qlref", ".ql", ".json", ".md"})
 QUERY_ID = re.compile(r"@id\s+(\S+)")
 
 
@@ -72,6 +82,35 @@ def test_folders(clone: Path, language: str, paths: dict[str, str]) -> dict[str,
             folder = qlref.parent.relative_to(test_root).as_posix()
             folders.setdefault(folder, {})[query_id] = qlref.with_suffix(".expected").name
     return folders
+
+
+def model_names(clone: Path) -> set[str]:
+    """Os nomes que os modelos do CodeQL citam: o texto entre aspas dos `.qll` e os dados de modelo
+    (`.yml`) de `<linguagem>/ql/lib`. É o vocabulário de API do CodeQL."""
+    names: set[str] = set()
+    for language in LANGUAGES:
+        for path in sorted((clone / language / "ql" / "lib").rglob("*")):
+            if path.suffix == ".qll":
+                text = path.read_text(encoding="utf-8", errors="replace")
+                names.update(
+                    name for quoted in QUOTED.findall(text) for name in IDENTIFIER.findall(quoted)
+                )
+            elif path.suffix in {".yml", ".yaml"} and path.is_file():
+                names.update(IDENTIFIER.findall(path.read_text(encoding="utf-8", errors="replace")))
+    return names
+
+
+def test_names(vendor: Path, models: set[str]) -> list[str]:
+    """Os nomes que o código de teste do CodeQL inventa: declarados nele e que nenhum modelo do
+    CodeQL cita. Regra que os usa está presa ao teste (`promisifiedExec`, o apelido de um import),
+    e não a uma API."""
+    declared: set[str] = set()
+    for path in sorted(vendor.rglob("*")):
+        if path.is_file() and path.suffix not in NOT_CODE and path.parent != vendor:
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for pattern in DECLARED:
+                declared.update(pattern.findall(text))
+    return sorted(declared - models - KEYWORDS)
 
 
 def clone_commit(clone: Path) -> str | None:
@@ -115,6 +154,8 @@ def main(args: list[str]) -> int:
     manifest = sync(clone, VENDOR, ids)
     covered = {query_id for folder_ids in manifest.values() for query_id in folder_ids}
     MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    names = test_names(VENDOR, model_names(clone))
+    TEST_NAMES.write_text("".join(f"{name}\n" for name in names), encoding="utf-8")
     for query_id in sorted(ids - covered):
         sys.stderr.write(f"aviso: {query_id} não tem pasta de teste no CodeQL\n")
     sys.stdout.write(f"{len(manifest)} pastas de teste, {len(covered)}/{len(ids)} consultas\n")

@@ -56,11 +56,13 @@ known_first_party = [
     "pyproject",
     "repo",
     "semgrep_files",
+    "semgrep_pending",
     "sync_base",
 ]
 # O `yaml` vem do grupo `dev` de propósito: o gerador das regras do Semgrep, a cópia dos testes do
-# CodeQL e a paridade (`generate_semgrep.py`, `sync_codeql_tests.py`, `semgrep_parity.py` e o
-# `semgrep_files.py` deles) rodam só neste repo, não são hooks publicados. Os hooks dos projetos continuam só com a stdlib.
+# CodeQL e a paridade (`generate_semgrep.py`, `sync_codeql_tests.py`, `semgrep_parity.py` e os
+# `semgrep_files.py` e `semgrep_pending.py` deles) rodam só neste repo, não são hooks publicados.
+# Os hooks dos projetos continuam só com a stdlib.
 per_rule_ignores = { DEP004 = ["yaml"] }
 # Os testes do CodeQL copiados (`semgrep/test/vendor/`) importam os frameworks que testam (Flask,
 # Django...): são alvo das regras, não código deste repo.

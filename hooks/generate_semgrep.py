@@ -43,6 +43,8 @@ from pathlib import Path
 
 import yaml
 
+from semgrep_files import KEYWORDS, bare_names
+
 HOOK = "generate-semgrep"
 REGENERATE = "rode `uv run hooks/generate_semgrep.py`"
 ROOT = Path(__file__).resolve().parent.parent / "semgrep"
@@ -59,21 +61,6 @@ ITEM_LISTS = frozenset(
     | {"patterns", "pattern-either"}
 )
 REGEX_KEYS = frozenset({"regex", "pattern-regex"})
-
-# Palavras que não nomeiam API: as da linguagem (Python, JavaScript) e as do que se escreve nos
-# padrões do Semgrep. O que sobra de um padrão, sem metavariável, texto entre aspas e reticências, é
-# nome de API (`request.GET`, `fs.readFile`, `innerHTML`).
-KEYWORDS = frozenset(
-    {"def", "async", "await", "function", "return", "if", "else", "elif", "for", "while", "in"}
-    | {"not", "and", "or", "is", "import", "from", "as", "class", "lambda", "const", "let", "var"}
-    | {"new", "typeof", "instanceof", "this", "self", "true", "false", "null", "None", "True"}
-    | {"False", "try", "except", "finally", "with", "throw", "raise", "yield", "pass", "del"}
-    | {"global", "delete", "void", "do", "switch", "case", "break", "continue", "of", "export"}
-    | {"default"}
-)
-METAVARIABLE = re.compile(r"\$[A-Za-z_][A-Za-z0-9_]*")
-LITERAL = re.compile(r"\"[^\"\n]*\"|'[^'\n]*'|`[^`\n]*`")
-IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 MODEL_KEY = "$model"
 TEXT_KEY = "$text"
@@ -240,8 +227,7 @@ def sharing_errors(models: dict[str, Node], queries: dict[str, Node]) -> list[st
 def names_api_text(text: str) -> bool:
     """O padrão `text` cita ao menos um nome que não é metavariável, palavra da linguagem nem texto
     entre aspas."""
-    bare = METAVARIABLE.sub(" ", LITERAL.sub(" ", text))
-    return any(word not in KEYWORDS for word in IDENTIFIER.findall(bare))
+    return any(word not in KEYWORDS for word in bare_names(text))
 
 
 def names_api(node: Node) -> bool:

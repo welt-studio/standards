@@ -11,7 +11,9 @@ from pathlib import Path
 import pytest
 
 import semgrep_parity
-from semgrep_parity import Finding, Pending
+import semgrep_pending
+from semgrep_parity import Finding
+from semgrep_pending import Pending
 
 PATH_PROBLEM = """#select
 | a.js:3:5:3:9 | x | y | z |
@@ -68,36 +70,30 @@ def test_compare_with_one_line_of_tolerance() -> None:
 
 
 def test_problems_follow_the_pending_list() -> None:
-    result = {"q": ({"js/T/a.js:1", "js/T/a.js:2"}, {"js/T/a.js:9"})}
-    pending = {"q": Pending(frozenset({"js/T/a.js:1", "js/T/a.js:5"}), frozenset({"js/T/a.js:7"}))}
-    assert semgrep_parity.problems("js/T", result, pending) == [
+    result = {"q": ({"js/T/a.js:1", "js/T/a.js:2", "js/T/a.js:3"}, {"js/T/a.js:9"})}
+    known = Pending(
+        missing=frozenset({"js/T/a.js:1", "js/T/a.js:5"}),
+        spurious=frozenset({"js/T/a.js:3"}),
+        limited={"js/T/a.js:6": "promise-callback"},
+        accepted=frozenset({"js/T/a.js:7"}),
+    )
+    assert semgrep_parity.problems("js/T", result, {"q": known}) == [
         "q: deixou de pegar js/T/a.js:2",
         "q: acusa a mais js/T/a.js:9",
-        "q: js/T/a.js:5 já é pego; tire do `missing` do pending.json",
-        "q: js/T/a.js:7 não é mais acusado; tire do `extra` do pending.json",
+        "q: js/T/a.js:5 já é pego; tire do pending.json",
+        "q: js/T/a.js:6 já é pego; tire do pending.json",
+        "q: js/T/a.js:7 não é mais acusado; tire do pending.json",
     ]
 
 
 def test_problems_ignore_pending_of_other_folders() -> None:
-    pending = {"q": Pending(frozenset({"js/Other/a.js:1"}), frozenset())}
+    pending = {"q": Pending(missing=frozenset({"js/Other/a.js:1"}))}
     assert semgrep_parity.problems("js/T", {"q": (set(), set())}, pending) == []
 
 
-def test_manifest_and_pending_loading() -> None:
+def test_manifest_loading() -> None:
     manifest = '{"js/T": {"js/xss": "Xss.expected", "bad": 1}, "x": []}'
     assert semgrep_parity.load_manifest(manifest) == {"js/T": {"js/xss": "Xss.expected"}}
-    pending = '{"q": {"missing": ["a", 1], "extra": "no"}, "r": []}'
-    assert semgrep_parity.load_pending(pending) == {"q": Pending(frozenset({"a"}), frozenset())}
-
-
-def test_pending_document_merges_folders_in_order() -> None:
-    results = {
-        "js/B": {"q": ({"js/B/b.js:1"}, set()), "r": (set(), set())},
-        "js/A": {"q": (set(), {"js/A/a.js:2"})},
-    }
-    assert json.loads(semgrep_parity.pending_document(results)) == {
-        "q": {"missing": ["js/B/b.js:1"], "extra": ["js/A/a.js:2"]}
-    }
 
 
 def test_folder_result_reads_the_expected_of_each_query(
@@ -134,27 +130,22 @@ def _folders() -> list[str]:
 @pytest.mark.parametrize("folder", _folders())
 def test_parity_with_codeql(folder: str) -> None:
     manifest = semgrep_parity.load_manifest(semgrep_parity.MANIFEST.read_text(encoding="utf-8"))
-    pending = semgrep_parity.load_pending(semgrep_parity.PENDING.read_text(encoding="utf-8"))
+    pending = semgrep_pending.load_pending(semgrep_pending.PENDING.read_text(encoding="utf-8"))
     queries = manifest[folder]
     findings = semgrep_parity.scan_folder(folder, queries, semgrep_parity.rule_files())
     result = semgrep_parity.folder_result(folder, queries, findings)
     assert semgrep_parity.problems(folder, result, pending) == []
 
 
-def test_pending_is_written_in_prettier_layout() -> None:
-    long_item = "javascript/query-tests/Security/CWE-079/" + "x" * 60 + ".js:1"
-    document = {"q": {"missing": ["a.js:1"], "extra": [long_item, "b.js:2"]}, "r": {"missing": []}}
-    assert semgrep_parity.prettier_json(document) == (
-        "{\n"
-        '  "q": {\n'
-        '    "missing": ["a.js:1"],\n'
-        '    "extra": [\n'
-        f'      "{long_item}",\n'
-        '      "b.js:2"\n'
-        "    ]\n"
-        "  },\n"
-        '  "r": {\n'
-        '    "missing": []\n'
-        "  }\n"
-        "}\n"
-    )
+def _limits() -> list[str]:
+    return sorted(semgrep_pending.load_limits(semgrep_pending.LIMITS.read_text(encoding="utf-8")))
+
+
+@pytest.mark.semgrep
+@pytest.mark.timeout(300)
+@pytest.mark.parametrize("name", _limits())
+def test_limit_still_holds(name: str) -> None:
+    """A reprodução de cada limite: se o Semgrep passou a pegar, o limite caiu e sai da lista."""
+    limits = semgrep_pending.load_limits(semgrep_pending.LIMITS.read_text(encoding="utf-8"))
+    expected = semgrep_pending.strings(limits[name].get("should_find"))
+    assert semgrep_parity.still_missed(name, limits[name]) == sorted(expected)
