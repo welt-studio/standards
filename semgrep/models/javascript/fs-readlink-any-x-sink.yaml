@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.readlink($X, ...)"
+    - focus-metavariable: "$X"

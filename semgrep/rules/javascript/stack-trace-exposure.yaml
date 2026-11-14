@@ -1,0 +1,44 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-stack-trace-exposure
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "O erro capturado (ou a pilha de chamadas) é devolvido na resposta HTTP e expõe detalhes internos. Registre o erro no servidor e responda com uma mensagem genérica."
+    metadata:
+      category: security
+      cwe: "CWE-209: Generation of Error Message Containing Sensitive Information"
+      codeql: js/stack-trace-exposure
+    patterns:
+      - pattern-either:
+          - pattern-inside: "try { ... } catch ($E) { ... }"
+          - pattern-inside: "$P.catch(($E) => {...})"
+          - pattern-inside: "$P.catch(function($E) {...})"
+      - pattern-either:
+          - pattern: "$RES.send($E, ...)"
+          - pattern: "$RES.status(...).send($E, ...)"
+          - pattern: "$RES.send($E.stack, ...)"
+          - pattern: "$RES.status(...).send($E.stack, ...)"
+          - pattern: "$RES.json($E, ...)"
+          - pattern: "$RES.status(...).json($E, ...)"
+          - pattern: "$RES.json($E.stack, ...)"
+          - pattern: "$RES.status(...).json($E.stack, ...)"
+          - pattern: "$RES.jsonp($E, ...)"
+          - pattern: "$RES.status(...).jsonp($E, ...)"
+          - pattern: "$RES.jsonp($E.stack, ...)"
+          - pattern: "$RES.status(...).jsonp($E.stack, ...)"
+          - pattern: "$RES.end($E, ...)"
+          - pattern: "$RES.status(...).end($E, ...)"
+          - pattern: "$RES.end($E.stack, ...)"
+          - pattern: "$RES.status(...).end($E.stack, ...)"
+          - pattern: "$RES.write($E, ...)"
+          - pattern: "$RES.status(...).write($E, ...)"
+          - pattern: "$RES.write($E.stack, ...)"
+          - pattern: "$RES.status(...).write($E.stack, ...)"
+          - pattern: "$RES.render($E, ...)"
+          - pattern: "$RES.render($E.stack, ...)"
+      - metavariable-regex:
+          metavariable: "$RES"
+          regex: "^(res|response|reply|resp|rsp)$"

@@ -1,0 +1,59 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-regex-injection
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Valor controlado pelo usuário usado para construir uma expressão regular sem escape. Escape o valor (por exemplo com `escapeRegExp`) antes de usá-lo."
+    metadata:
+      category: security
+      cwe: "CWE-730: Regular Expression Denial of Service / CWE-400: Uncontrolled Resource Consumption"
+      codeql: js/regex-injection
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.cookies"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.get(...)"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|ctx\\.request|this\\.request)$"
+      - pattern: process.argv
+    pattern-sanitizers:
+      - pattern: "_.escapeRegExp(...)"
+      - pattern: "escapeRegExp(...)"
+      - pattern: "escapeStringRegexp(...)"
+      - pattern: "escapeRegex(...)"
+      - pattern: "RegExp.escape(...)"
+      - patterns:
+          - pattern: "$S.replace($RE, ...)"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "(?s).*\\\\+[*.$?+^|{}()\\[\\]].*"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "new RegExp($X, ...)"
+              - pattern: "RegExp($X, ...)"
+              - pattern: "$S.match($X)"
+              - pattern: "$S.matchAll($X)"
+              - pattern: "$S.search($X)"
+              - pattern: "$S.split($X)"
+          - pattern-not: "URI(...).search($X)"
+          - pattern-not: "$S.match({...})"
+          - focus-metavariable: "$X"

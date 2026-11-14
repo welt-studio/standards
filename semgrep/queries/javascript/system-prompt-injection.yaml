@@ -1,0 +1,36 @@
+rules:
+  - id: welt-js-system-prompt-injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: 'O prompt de sistema (ou de assistente/desenvolvedor) depende de um valor controlado pelo usuário. Um atacante pode reescrever as instruções do modelo. Mantenha o prompt de sistema fixo e envie o texto do usuário somente em mensagens com `role: "user"`.'
+    metadata:
+      category: security
+      cwe: "CWE-1427: Improper Neutralization of Input Used for LLM Prompting"
+      codeql: js/system-prompt-injection
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/dom-xss-sources
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: '$C.chat.completions.create({..., messages: [..., {..., role: "system", content: $X, ...}, ...], ...})'
+              - pattern: '$C.chat.completions.create({..., messages: [..., {..., role: "developer", content: $X, ...}, ...], ...})'
+              - pattern: '$C.chat.completions.create({..., messages: [..., {..., role: "assistant", content: $X, ...}, ...], ...})'
+              - pattern: '$C.chat.completions.create({..., messages: [..., {..., role: "system", content: [..., {..., text: $X, ...}, ...], ...}, ...], ...})'
+              - pattern: '$C.responses.create({..., input: [..., {..., role: "system", content: $X, ...}, ...], ...})'
+              - pattern: '$C.responses.create({..., input: [..., {..., role: "developer", content: $X, ...}, ...], ...})'
+              - pattern: '$C.responses.create({..., input: [..., {..., role: "assistant", content: $X, ...}, ...], ...})'
+              - pattern: '$C.beta.threads.messages.create($T, {..., role: "system", content: $X, ...})'
+              - pattern: '$C.beta.threads.messages.create($T, {..., role: "developer", content: $X, ...})'
+              - pattern: '$C.messages.create({..., messages: [..., {..., role: "assistant", content: $X, ...}, ...], ...})'
+              - pattern: '$C.messages.create({..., messages: [..., {..., role: "system", content: $X, ...}, ...], ...})'
+              - pattern: "$C.messages.create({..., system: $X, ...})"
+              - pattern: "$C.beta.messages.create({..., system: $X, ...})"
+              - pattern: '$C.models.generateContent({..., contents: [..., {..., role: "model", parts: [..., {..., text: $X, ...}, ...], ...}, ...], ...})'
+              - pattern: '$C.models.generateContentStream({..., contents: [..., {..., role: "model", parts: [..., {..., text: $X, ...}, ...], ...}, ...], ...})'
+          - focus-metavariable: "$X"

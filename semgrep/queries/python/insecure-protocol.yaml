@@ -1,0 +1,99 @@
+rules:
+  - id: welt-py-insecure-protocol
+    message: "Versão insegura de SSL/TLS (SSLv2, SSLv3, TLS 1.0 ou TLS 1.1) pedida explicitamente. Exija TLS 1.2 ou superior."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      codeql: py/insecure-protocol
+      notes: |-
+        Porta do `py/insecure-protocol` (InsecureProtocol.ql + Ssl.qll + PyOpenSSL.qll + FluentApiModel.qll).
+        Parte 1: versão insegura pedida de forma explícita (SSLv2, SSLv3, TLSv1, TLSv1.1).
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern-either:
+          - pattern: ssl.PROTOCOL_SSLv2
+          - pattern: ssl.PROTOCOL_SSLv3
+          - pattern: ssl.PROTOCOL_TLSv1
+          - pattern: ssl.PROTOCOL_TLSv1_1
+          - pattern: SSL.SSLv2_METHOD
+          - pattern: SSL.SSLv3_METHOD
+          - pattern: SSL.TLSv1_METHOD
+          - pattern: SSL.TLSv1_1_METHOD
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "ssl.wrap_socket(..., ssl_version=$V, ...)"
+              - pattern: "ssl.SSLContext(..., protocol=$V, ...)"
+              - pattern: "ssl.SSLContext($V, ...)"
+              - pattern: "SSL.Context($V, ...)"
+              - pattern: "OpenSSL.SSL.Context($V, ...)"
+          - focus-metavariable: "$V"
+  - id: welt-py-insecure-protocol-fluent
+    message: "Contexto SSL/TLS usado na conexão ainda permite TLS 1.0 e/ou 1.1 (não foram desligados com `OP_NO_TLSv1`/`OP_NO_TLSv1_1` nem com `minimum_version`)."
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      codeql: py/insecure-protocol
+      notes: |-
+        Parte 2: contexto que ainda permite TLS 1.0/1.1 (FluentApiModel): criado com a faixa "não específica"
+        (PROTOCOL_TLS*, SSLv23) e usado numa conexão sem desligar TLSv1 e TLSv1_1.
+        Aproximação: `options |= OP_NO_TLSv1_1` ou `minimum_version >= TLSv1_2` é tomado como o contexto restrito.
+        Contexto seguro por padrão que o código reabre (`options &= ~OP_NO_...`) na mesma função.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern-either:
+          - pattern: "ssl.SSLContext(ssl.PROTOCOL_TLS)"
+          - pattern: "ssl.SSLContext(ssl.PROTOCOL_SSLv23)"
+          - pattern: "ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)"
+          - pattern: "ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)"
+          - pattern: "ssl.SSLContext(protocol=ssl.PROTOCOL_TLS)"
+          - pattern: "ssl.SSLContext(protocol=ssl.PROTOCOL_SSLv23)"
+          - pattern: "ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_CLIENT)"
+          - pattern: "ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_SERVER)"
+          - pattern: "ssl.SSLContext()"
+          - pattern: "SSL.Context(SSL.SSLv23_METHOD)"
+          - pattern: "SSL.Context(SSL.TLS_METHOD)"
+          - pattern: "SSL.Context(SSL.TLS_CLIENT_METHOD)"
+          - pattern: "SSL.Context(SSL.TLS_SERVER_METHOD)"
+          - pattern: "OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)"
+          - patterns:
+              - pattern-inside: |
+                  $C = ssl.create_default_context(...)
+                  ...
+                  $C.options &= ~ssl.$FLAG
+              - pattern: "ssl.create_default_context(...)"
+              - metavariable-regex:
+                  metavariable: "$FLAG"
+                  regex: "^OP_NO_(SSLv3|TLSv1|TLSv1_1)$"
+    pattern-sanitizers:
+      - by-side-effect: true
+        patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $C.options |= <... ssl.OP_NO_TLSv1_1 ...>
+              - pattern-inside: |
+                  $C.set_options(<... SSL.OP_NO_TLSv1_1 ...>)
+              - pattern-inside: |
+                  $C.minimum_version = ssl.TLSVersion.TLSv1_2
+              - pattern-inside: |
+                  $C.minimum_version = ssl.TLSVersion.TLSv1_3
+          - pattern: "$C"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$C.wrap_socket(...)"
+              - pattern: "SSL.Connection($C, ...)"
+              - pattern: "OpenSSL.SSL.Connection($C, ...)"
+          - focus-metavariable: "$C"

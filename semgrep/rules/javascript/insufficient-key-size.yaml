@@ -1,0 +1,99 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-insufficient-key-size
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta chave criptográfica é criada com tamanho insuficiente (menos de 128 bits para chaves simétricas ou menos de 2048 bits para RSA, DSA e Diffie-Hellman) e pode ser quebrada. Use pelo menos 256 bits (simétrica) ou 2048 bits (assimétrica)."
+    metadata:
+      category: security
+      cwe: "CWE-326: Inadequate Encryption Strength"
+      codeql: js/insufficient-key-size
+    pattern-either:
+      - patterns:
+          - pattern: "crypto.generateKeyPairSync($A, {..., modulusLength: $N, ...})"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 2048"
+      - patterns:
+          - pattern: "crypto.generateKeyPair($A, {..., modulusLength: $N, ...}, ...)"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 2048"
+      - patterns:
+          - pattern: "crypto.generateKeySync($A, {..., length: $N, ...})"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 128"
+      - patterns:
+          - pattern: "crypto.generateKey($A, {..., length: $N, ...}, ...)"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 128"
+      - patterns:
+          - pattern: "CryptoJS.algo.PBKDF2.create({..., keySize: $N, ...})"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 4"
+      - patterns:
+          - pattern: "CryptoJS.PBKDF2($P, $S, {..., keySize: $N, ...})"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 4"
+      - patterns:
+          - pattern: "CryptoJS.EvpKDF($P, $S, {..., keySize: $N, ...})"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 4"
+      - patterns:
+          - pattern: "forge.rc2.createEncryptionCipher($K, $N)"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 128"
+      - patterns:
+          - pattern: "crypto.createDiffieHellman($N, ...)"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 2048"
+      - patterns:
+          - pattern: "new NodeRSA({..., b: $N, ...})"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 2048"
+      - patterns:
+          - pattern: "$K.generateKeyPair($N, ...)"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 2048"
+          - metavariable-regex:
+              metavariable: "$K"
+              regex: "(?i)key|rsa"
+  - id: welt-js-insufficient-key-size-forge
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Esta cifra do node-forge recebe uma chave com menos de 128 bits (menos de 16 bytes). Gere a chave com pelo menos 16 bytes (AES-128) ou, de preferência, 32 bytes."
+    metadata:
+      category: security
+      cwe: "CWE-326: Inadequate Encryption Strength"
+      codeql: js/insufficient-key-size
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "forge.random.getBytesSync($N)"
+              - pattern: "$B.getBytes($N)"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 16"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "forge.cipher.createCipher($A, $K)"
+              - pattern: "forge.cipher.createDecipher($A, $K)"
+          - focus-metavariable: "$K"

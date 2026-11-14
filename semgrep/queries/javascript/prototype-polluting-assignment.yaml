@@ -1,0 +1,47 @@
+rules:
+  - id: welt-js-prototype-polluting-assignment
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Atribuição a uma propriedade de um objeto obtido com chave controlada pelo usuário. Se a chave for `__proto__` ou `constructor`, o atacante altera `Object.prototype`. Valide a chave, use `hasOwnProperty` ou `Object.create(null)` / `Map`."
+    metadata:
+      category: security
+      cwe: "CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes"
+      codeql: js/prototype-polluting-assignment
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/process-argv-source
+    pattern-propagators:
+      - pattern: "$V = $O[$K]"
+        from: "$K"
+        to: "$V"
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$K"
+          - pattern-inside: |
+              if ($O.hasOwnProperty($K)) {...}
+      - patterns:
+          - pattern: "$K"
+          - pattern-inside: |
+              if ($K === "__proto__" || ...) { return ...; }
+              ...
+      - patterns:
+          - pattern: "$K"
+          - pattern-inside: |
+              if ($K !== "__proto__" && ...) {...}
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$O[$K][$K2] = $V"
+              - pattern: "$O[$K].$P = $V"
+          - focus-metavariable: "$K"
+      - patterns:
+          - pattern-either:
+              - pattern: "$B[$K2] = $V"
+              - pattern: "$B.$P = $V"
+          - pattern-not: "this.$P = $V"
+          - focus-metavariable: "$B"

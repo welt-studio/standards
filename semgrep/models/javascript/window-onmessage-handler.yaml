@@ -1,0 +1,1 @@
+- pattern-inside: "window.onmessage = ($E) => {...}"

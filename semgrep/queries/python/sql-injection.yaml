@@ -1,0 +1,75 @@
+rules:
+  - id: welt-py-sql-injection
+    message: "Dado vindo da requisição é concatenado/interpolado numa consulta SQL (SQL injection). Use consultas parametrizadas."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      codeql: py/sql-injection
+      notes: |-
+        Flask/Werkzeug: atributos do `request` (Flask.qll, Werkzeug.qll).
+        Parâmetros de rota (Flask, FastAPI, Starlette, Bottle...): variáveis da URL e do corpo.
+        Django/DRF: parâmetros da view depois do `request` (vêm da URL).
+        Tornado: argumentos e dados do RequestHandler (Tornado.qll).
+        Construtores do SQLAlchemy ORM/Core parametrizam o valor: o dado não vira SQL.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/flask-request-sources
+    pattern-sanitizers:
+      - "$model": python/int-sanitizer
+      - pattern: "float(...)"
+      - pattern: "bool(...)"
+      - "$model": python/uuid-uuid-sanitizer
+      - pattern: "select(...)"
+      - pattern: "insert(...)"
+      - pattern: "update(...)"
+      - pattern: "delete(...)"
+      - pattern: "$X.where(...)"
+      - "$model": common/x-filter-sanitizer
+      - pattern: "$X.filter_by(...)"
+      - pattern: "$X.values(...)"
+      - pattern: "$X.order_by(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$C.$M($Q, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(execute|executemany|executescript|mogrify|fetch|fetchrow|fetchval|fetchmany|raw|execute_sql|read_sql|read_sql_query|read_sql_table|exec_driver_sql|cursor_execute|query|prepare|copy_expert)$"
+          - focus-metavariable: "$Q"
+      - patterns:
+          - pattern-either:
+              - pattern: "$C.execute(..., query=$Q, ...)"
+              - pattern: "$C.executemany(..., query=$Q, ...)"
+              - pattern: "$C.execute(..., sql=$Q, ...)"
+              - pattern: "$C.raw(..., raw_query=$Q, ...)"
+              - pattern: "$C.extra(..., where=$Q, ...)"
+              - pattern: "$C.extra(..., select=$Q, ...)"
+              - pattern: "$C.extra(..., tables=$Q, ...)"
+              - pattern: "$C.extra(..., order_by=$Q, ...)"
+          - focus-metavariable: "$Q"
+      - patterns:
+          - pattern-either:
+              - pattern: "$C.extra($Q, ...)"
+              - pattern: "RawSQL($Q, ...)"
+              - pattern: "django.db.models.expressions.RawSQL($Q, ...)"
+              - pattern: "sqlalchemy.text($Q, ...)"
+              - pattern: "sqlalchemy.sql.text($Q, ...)"
+              - pattern: "sqlalchemy.sql.expression.text($Q, ...)"
+              - pattern: "sqlalchemy.sql.expression.TextClause($Q, ...)"
+              - pattern: "text($Q)"
+              - pattern: "db.text($Q, ...)"
+              - pattern: "db.text(text=$Q, ...)"
+              - pattern: "sqlalchemy.text(text=$Q, ...)"
+              - pattern: "sqlalchemy.sql.text(text=$Q, ...)"
+              - pattern: "sqlalchemy.sql.expression.text(text=$Q, ...)"
+              - pattern: "sqlalchemy.sql.expression.TextClause(text=$Q, ...)"
+              - pattern: "sqlalchemy.sql.expression.TextClause(text=$Q, ...)"
+              - pattern: "SQL($Q)"
+              - pattern: "psycopg2.sql.SQL($Q)"
+              - pattern: "sql.SQL($Q)"
+          - focus-metavariable: "$Q"

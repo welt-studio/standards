@@ -1,0 +1,135 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-server-side-unvalidated-url-redirection
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Um valor controlado pelo usuário é usado como destino de um redirecionamento sem validação. Um atacante pode mandar a vítima para um site malicioso (open redirect). Valide o destino contra uma lista de permitidos ou aceite apenas caminhos locais."
+    metadata:
+      category: security
+      cwe: "CWE-601: URL Redirection to Untrusted Site (Open Redirect)"
+      codeql: js/server-side-unvalidated-url-redirection
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.cookies"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.get(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.request.body"
+              - pattern: "$REQ.request.query"
+              - pattern: "$REQ.req.url"
+              - pattern: "$REQ.query.$K"
+              - pattern: "$REQ.body.$K"
+              - pattern: "$REQ.params.$K"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$L + $R"
+          - metavariable-regex:
+              metavariable: "$L"
+              regex: "^(?:[\"'`]/[^/\\\\\"'`]|[\"'`][^\"'`]*[?#]|[\"'`]https?://[^/\"'`]+/|[\"'`]//[^/\"'`]+/)"
+      - patterns:
+          - pattern: "$L + $M + $R"
+          - metavariable-regex:
+              metavariable: "$L"
+              regex: "^(?:[\"'`]/[^/\\\\\"'`]|[\"'`][^\"'`]*[?#]|[\"'`]https?://[^/\"'`]+/|[\"'`]//[^/\"'`]+/)"
+      - patterns:
+          - pattern: "`...${$X}...`"
+          - pattern-regex: "`(?:/[^/\\\\`$]|[^`$]*[?#]|https?://[^/`$]+/)[^`]*`"
+      - patterns:
+          - pattern: "`...${$X}...`"
+          - pattern-regex: "`[^`]*\\$\\{[^}]*\\}[^`$]*[?#]"
+      - patterns:
+          - pattern: "$A + $B"
+          - pattern-regex: "\\+\\s*[\"'`][?#]"
+      - patterns:
+          - pattern: "[..., $X, ...].join($J)"
+          - pattern-regex: "\\[\\s*[\"'`][^\"'`]*[?/]"
+      - patterns:
+          - pattern-inside: "if ($T.startsWith($P)) {...}"
+          - pattern: "$T"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: '^["''`](?:https?:)?//[^/"''`]+/'
+      - patterns:
+          - pattern-inside: "if ($T.startsWith($P) && ...) {...}"
+          - pattern: "$T"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: '^["''`](?:https?:)?//[^/"''`]+/'
+      - patterns:
+          - pattern-inside: "if ($T.hasOwnProperty($X)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.hasOwnProperty($T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if (Object.hasOwn($S, $T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($T in $S) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S[$T] != undefined) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S[$T]) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.includes($T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.has($T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.indexOf($T) !== -1) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.indexOf($T) > -1) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.indexOf($T) >= 0) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if (isLocalUrl($T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($T.match(...)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if (/.../.test($T)) {...}"
+          - pattern: "$T"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$R.redirect($X)"
+              - pattern: "$R.redirect($C, $X)"
+              - pattern: "$R.location($X)"
+              - pattern: '$R.header("Location", $X)'
+              - pattern: '$R.setHeader("Location", $X)'
+              - pattern: '$R.set("Location", $X)'
+              - pattern: "$R.writeHead($C, {..., Location: $X, ...})"
+              - pattern: "$R.writeHead($C, {..., location: $X, ...})"
+              - pattern: "$R.set({..., Location: $X, ...})"
+              - pattern: "Response.redirect($X, ...)"
+              - pattern: "NextResponse.redirect($X, ...)"
+              - pattern: "<WebView url={$X} />"
+              - pattern: "<WebView source={{uri: $X}} />"
+              - pattern: "<WebView source={{..., uri: $X, ...}} />"
+          - focus-metavariable: "$X"

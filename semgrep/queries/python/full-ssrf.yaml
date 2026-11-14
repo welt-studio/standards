@@ -1,0 +1,413 @@
+rules:
+  - id: welt-py-full-ssrf
+    message: "A URL inteira da requisição de saída depende de dado controlado pelo usuário (SSRF). Valide o host contra uma lista permitida ou monte a URL a partir de um prefixo fixo."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-918: Server-Side Request Forgery (SSRF)"
+      codeql: py/full-ssrf
+      notes: |-
+        Porta do `py/full-ssrf` (ServerSideRequestForgeryCustomizations.qll + Http::Client::Request de Requests.qll, Httpx.qll,
+        Stdlib/Urllib.qll, Urllib2.qll, Urllib3.qll, Aiohttp.qll, Stdlib.qll http.client, Pycurl.qll).
+        "Full" = o usuário controla a URL inteira. Saneadores (FullUrlControlSanitizer): o operando da direita de
+        `+`, `%`, `.format` e f-string quando ele não é o host logo depois de `http(s)://`; guardas
+        `isalnum()`/`re.fullmatch`. Em Semgrep as guardas viram `if` com o valor dentro.
+        "x" + valor, onde o texto à esquerda não é só o esquema.
+        "..." % valor
+        "...".format(...): texto sem esquema+{} no começo, todos os argumentos; com ele, só do segundo em diante.
+        f-string: valor que não é o primeiro logo depois de `http(s)://` (ou o primeiro de todos).
+        Guardas de restrição de string.
+        SDKs do Azure (Azure.Keyvault.model.yml, Azure.Storage.model.yml): a URL do serviço é o alvo.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/django-view-parameter-sources
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$L + $X"
+          - metavariable-regex:
+              metavariable: "$L"
+              regex: "^(?![\"']\\s*https?://[\"']$)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$L % $X"
+          - metavariable-regex:
+              metavariable: "$L"
+              regex: '^(?!["'']https?://%s[^%]*["'']$)'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$S.format(..., $X, ...)"
+              - pattern: "$S.format(..., $K=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^(?![\"'][hH][tT][tT][pP][sS]?://\\{[^}]*\\})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$S.format($A, ..., $X, ...)"
+              - pattern: "$S.format(..., $K=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^[\"'][hH][tT][tT][pP][sS]?://\\{\\}"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'f"...{$X}..."'
+          - pattern-not: 'f"http://{$X}..."'
+          - pattern-not: 'f"https://{$X}..."'
+          - pattern-not: 'f"{$X}..."'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  if $U.$M():
+                    ...
+              - pattern-inside: |
+                  if re.fullmatch(..., $U):
+                    ...
+              - pattern-inside: |
+                  if re.match(..., $U):
+                    ...
+          - pattern: "$U"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(isalnum|isalpha|isdecimal|isdigit|isidentifier|isnumeric|isspace)$"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  if re.prefixmatch(..., $U):
+                    ...
+              - pattern-inside: |
+                  if re.prefixmatch(..., string=$U):
+                    ...
+              - pattern-inside: |
+                  if re.match(..., string=$U):
+                    ...
+              - pattern-inside: |
+                  if re.fullmatch(..., string=$U):
+                    ...
+              - pattern-inside: |
+                  if $PAT.prefixmatch($U):
+                    ...
+              - pattern-inside: |
+                  if $PAT.match($U):
+                    ...
+              - pattern-inside: |
+                  if $PAT.fullmatch($U):
+                    ...
+          - pattern: "$U"
+      - patterns:
+          - pattern-inside: |
+              if $U in [...]:
+                ...
+          - pattern: "$U"
+      - patterns:
+          - pattern-inside: |
+              if $U == "...":
+                ...
+          - pattern: "$U"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "requests.$M($X, ...)"
+              - pattern: "requests.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get|post|put|patch|delete|head|options)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "requests.$M($A, $X, ...)"
+              - pattern: "requests.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(request|stream)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "httpx.$M($X, ...)"
+              - pattern: "httpx.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get|post|put|patch|delete|head|options)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "httpx.$M($A, $X, ...)"
+              - pattern: "httpx.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(request|stream)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "urllib.request.urlopen($X, ...)"
+              - pattern: "urllib.request.urlopen(url=$X, ...)"
+              - pattern: "urllib.request.Request($X, ...)"
+              - pattern: "urllib.request.Request(url=$X, ...)"
+              - pattern: "urllib2.urlopen($X, ...)"
+              - pattern: "urllib2.Request($X, ...)"
+              - pattern: "urllib3.PoolManager(...).request($A, $X, ...)"
+              - pattern: "http.client.HTTPConnection($X, ...)"
+              - pattern: "http.client.HTTPSConnection($X, ...)"
+              - pattern: "$C.setopt(pycurl.URL, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = requests.Session(...)
+                  ...
+              - pattern-inside: |
+                  with requests.Session(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with requests.Session(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get|post|put|patch|delete|head|options)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = requests.Session(...)
+                  ...
+              - pattern-inside: |
+                  with requests.Session(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with requests.Session(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($A, $X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(request)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = requests.session(...)
+                  ...
+              - pattern-inside: |
+                  with requests.session(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with requests.session(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get|post|put|patch|delete|head|options)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = requests.session(...)
+                  ...
+              - pattern-inside: |
+                  with requests.session(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with requests.session(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($A, $X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(request)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = httpx.Client(...)
+                  ...
+              - pattern-inside: |
+                  with httpx.Client(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with httpx.Client(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get|post|put|patch|delete|head|options)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = httpx.Client(...)
+                  ...
+              - pattern-inside: |
+                  with httpx.Client(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with httpx.Client(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($A, $X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(request|stream)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = httpx.AsyncClient(...)
+                  ...
+              - pattern-inside: |
+                  with httpx.AsyncClient(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with httpx.AsyncClient(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get|post|put|patch|delete|head|options)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = httpx.AsyncClient(...)
+                  ...
+              - pattern-inside: |
+                  with httpx.AsyncClient(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with httpx.AsyncClient(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($A, $X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(request|stream)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = aiohttp.ClientSession(...)
+                  ...
+              - pattern-inside: |
+                  with aiohttp.ClientSession(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with aiohttp.ClientSession(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get|post|put|patch|delete|head|options|ws_connect)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = aiohttp.ClientSession(...)
+                  ...
+              - pattern-inside: |
+                  with aiohttp.ClientSession(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with aiohttp.ClientSession(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($A, $X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(request)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = urllib3.PoolManager(...)
+                  ...
+              - pattern-inside: |
+                  with urllib3.PoolManager(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with urllib3.PoolManager(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(none_)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = urllib3.PoolManager(...)
+                  ...
+              - pattern-inside: |
+                  with urllib3.PoolManager(...) as $S:
+                    ...
+              - pattern-inside: |
+                  async with urllib3.PoolManager(...) as $S:
+                    ...
+          - pattern-either:
+              - pattern: "$S.$M($A, $X, ...)"
+              - pattern: "$S.$M(..., url=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(request|urlopen)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = http.client.HTTPConnection(...)
+                  ...
+              - pattern-inside: |
+                  $S = HTTPConnection(...)
+                  ...
+          - pattern: "$S.request($A, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $S = http.client.HTTPSConnection(...)
+                  ...
+              - pattern-inside: |
+                  $S = HTTPSConnection(...)
+                  ...
+          - pattern: "$S.request($A, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "SecretClient($X, ...)"
+              - pattern: "SecretClient(vault_url=$X, ...)"
+              - pattern: "KeyClient($X, ...)"
+              - pattern: "KeyClient(vault_url=$X, ...)"
+              - pattern: "CertificateClient($X, ...)"
+              - pattern: "CertificateClient(vault_url=$X, ...)"
+              - pattern: "BlobClient($X, ...)"
+              - pattern: "BlobClient(account_url=$X, ...)"
+              - pattern: "BlobServiceClient($X, ...)"
+              - pattern: "BlobServiceClient(account_url=$X, ...)"
+              - pattern: "$C.from_file_url($X, ...)"
+              - pattern: "$C.from_container_url($X, ...)"
+              - pattern: "$C.from_container_url(container_url=$X, ...)"
+              - pattern: "$C.from_blob_url($X, ...)"
+              - pattern: "download_blob_from_url($X, ...)"
+              - pattern: "download_blob_from_url(blob_url=$X, ...)"
+          - focus-metavariable: "$X"

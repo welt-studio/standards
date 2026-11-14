@@ -1,0 +1,4 @@
+- pattern: "$REQ.file"
+- pattern: "$REQ.rawBody"
+- pattern: "$REQ.payload"
+- pattern: "$REQ.state"

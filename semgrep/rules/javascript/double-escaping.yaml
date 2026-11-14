@@ -1,0 +1,288 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-double-escaping
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta substituição pode escapar duas vezes o caractere, pois outra substituição anterior da cadeia já produziu escapes."
+    metadata:
+      category: security
+      cwe: "CWE-116: Improper Encoding or Escaping of Output"
+      codeql: js/double-escaping
+    pattern-either:
+      - patterns:
+          - pattern: '$S.replace(/$C/g, "$E").replace(/&/g, "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^&.+;$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(/$C/g, "$E").replace(new RegExp("&", "g"), "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^&.+;$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(new RegExp("$C", "g"), "$E").replace(/&/g, "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^&.+;$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(new RegExp("$C", "g"), "$E").replace(new RegExp("&", "g"), "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^&.+;$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(/$C/g, "$E").replace(...).replace(/&/g, "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^&.+;$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(/$C/g, "$E").replace(...).replace(new RegExp("&", "g"), "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^&.+;$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(new RegExp("$C", "g"), "$E").replace(...).replace(/&/g, "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^&.+;$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(new RegExp("$C", "g"), "$E").replace(...).replace(new RegExp("&", "g"), "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^&.+;$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S = $S.replace(/$C/g, "$E"); ... $S = $S.replace(/&/g, "$PR");'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^&.+;$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(/$C/g, "$E").replace(/%/g, "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^%.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S.replace(/$C/g, "$E").replace(new RegExp("%", "g"), "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^%.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S.replace(new RegExp("$C", "g"), "$E").replace(/%/g, "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^%.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S.replace(new RegExp("$C", "g"), "$E").replace(new RegExp("%", "g"), "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^%.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S.replace(/$C/g, "$E").replace(...).replace(/%/g, "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^%.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S.replace(/$C/g, "$E").replace(...).replace(new RegExp("%", "g"), "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^%.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S.replace(new RegExp("$C", "g"), "$E").replace(...).replace(/%/g, "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^%.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S.replace(new RegExp("$C", "g"), "$E").replace(...).replace(new RegExp("%", "g"), "$PR")'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^%.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S = $S.replace(/$C/g, "$E"); ... $S = $S.replace(/%/g, "$PR");'
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^%.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: "$S.replace(/$C/g, \"$E\").replace(/\\\\/g, \"$PR\")"
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^\\\\\\\\.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S.replace(/$C/g, \"$E\").replace(new RegExp(\"\\\\\\\\\", \"g\"), \"$PR\")"
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^\\\\\\\\.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S.replace(new RegExp(\"$C\", \"g\"), \"$E\").replace(/\\\\/g, \"$PR\")"
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^\\\\\\\\.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S.replace(new RegExp(\"$C\", \"g\"), \"$E\").replace(new RegExp(\"\\\\\\\\\", \"g\"), \"$PR\")"
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^\\\\\\\\.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S.replace(/$C/g, \"$E\").replace(...).replace(/\\\\/g, \"$PR\")"
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^\\\\\\\\.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S.replace(/$C/g, \"$E\").replace(...).replace(new RegExp(\"\\\\\\\\\", \"g\"), \"$PR\")"
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^\\\\\\\\.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S.replace(new RegExp(\"$C\", \"g\"), \"$E\").replace(...).replace(/\\\\/g, \"$PR\")"
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^\\\\\\\\.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S.replace(new RegExp(\"$C\", \"g\"), \"$E\").replace(...).replace(new RegExp(\"\\\\\\\\\", \"g\"), \"$PR\")"
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^\\\\\\\\.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S = $S.replace(/$C/g, \"$E\"); ... $S = $S.replace(/\\\\/g, \"$PR\");"
+          - metavariable-regex:
+              metavariable: "$E"
+              regex: "^\\\\\\\\.+$"
+          - metavariable-regex:
+              metavariable: "$PR"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: '$S.replace(/$C/g, ($X) => $R[$X]).replace(/&/g, "&amp;")'
+  - id: welt-js-double-escaping-unescape
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta substituição pode gerar caracteres que serão desescapados duas vezes por uma substituição posterior da cadeia."
+    metadata:
+      category: security
+      cwe: "CWE-116: Improper Encoding or Escaping of Output"
+      codeql: js/double-escaping
+    pattern-either:
+      - patterns:
+          - pattern: '$S.replace(/&amp;/g, "&").replace(/$O/g, $R)'
+          - metavariable-regex:
+              metavariable: "$O"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(/&amp;/g, "&").replace(...).replace(/$O/g, $R)'
+          - metavariable-regex:
+              metavariable: "$O"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S = $S.replace(/&amp;/g, "&"); ... $S = $S.replace(/$O/g, $R);'
+          - metavariable-regex:
+              metavariable: "$O"
+              regex: "^&.+;$"
+      - patterns:
+          - pattern: '$S.replace(/%25/g, "%").replace(/$O/g, $R)'
+          - metavariable-regex:
+              metavariable: "$O"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S.replace(/%25/g, "%").replace(...).replace(/$O/g, $R)'
+          - metavariable-regex:
+              metavariable: "$O"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: '$S = $S.replace(/%25/g, "%"); ... $S = $S.replace(/$O/g, $R);'
+          - metavariable-regex:
+              metavariable: "$O"
+              regex: "^%.+$"
+      - patterns:
+          - pattern: "$S.replace(/\\\\\\\\/g, '\\\\').replace(/$O/g, $R)"
+          - metavariable-regex:
+              metavariable: "$O"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S.replace(/\\\\\\\\/g, '\\\\').replace(...).replace(/$O/g, $R)"
+          - metavariable-regex:
+              metavariable: "$O"
+              regex: "^\\\\\\\\.+$"
+      - patterns:
+          - pattern: "$S = $S.replace(/\\\\\\\\/g, '\\\\'); ... $S = $S.replace(/$O/g, $R);"
+          - metavariable-regex:
+              metavariable: "$O"
+              regex: "^\\\\\\\\.+$"

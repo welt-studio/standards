@@ -1,0 +1,85 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-polynomial-redos
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Valor controlado pelo usuário é testado por uma expressão regular com quantificadores ilimitados sobrepostos, cujo tempo cresce de forma polinomial (quadrática ou pior) com o tamanho da entrada. Limite o tamanho da entrada ou reescreva a regex."
+    metadata:
+      category: security
+      cwe: "CWE-1333: Inefficient Regular Expression Complexity"
+      codeql: js/polynomial-redos
+      note: "aproximação sintática; o CodeQL usa análise de autômato"
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.cookies"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.get(...)"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|ctx\\.request|this\\.request)$"
+      - pattern-either:
+          - pattern: location.search
+          - pattern: location.hash
+          - pattern: location.href
+          - pattern: location.pathname
+          - pattern: window.location.search
+          - pattern: window.location.hash
+          - pattern: window.location.href
+          - pattern: document.location.search
+          - pattern: document.location.hash
+          - pattern: document.location.href
+          - pattern: document.URL
+          - pattern: document.documentURI
+          - pattern: document.referrer
+          - pattern: document.cookie
+          - pattern: window.name
+      - patterns:
+          - pattern: "$EV.data"
+          - pattern-either:
+              - pattern-inside: |
+                  $W.addEventListener("message", function ($EV, ...) {...})
+              - pattern-inside: |
+                  $W.addEventListener("message", ($EV, ...) => {...})
+              - pattern-inside: |
+                  addEventListener("message", ($EV, ...) => {...})
+              - pattern-inside: |
+                  $W.onmessage = ($EV) => {...}
+    pattern-sanitizers:
+      - pattern: "$X.slice(0, ...)"
+      - pattern: "$X.substring(0, ...)"
+      - pattern: "$X.substr(0, ...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$RE.test($X)"
+              - pattern: "$RE.exec($X)"
+              - pattern: "$X.match($RE)"
+              - pattern: "$X.matchAll($RE)"
+              - pattern: "$X.replace($RE, ...)"
+              - pattern: "$X.replaceAll($RE, ...)"
+              - pattern: "$X.split($RE)"
+              - pattern: "$X.search($RE)"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "(?s)^/.*/[a-z]*$"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "(?:(?s)^/(?!\\^).*\\.[*+].*/[a-z]*$)|(?:(?s)^/.*\\.[*+].*[*+].*/[a-z]*$)|(?:(?s)^/.*(\\\\[sSdDwW]|\\[[^\\]]+\\])[*+]\\??[^|]{0,40}?\\1[*+].*/[a-z]*$)|(?:(?s)^/.*(\\\\[sSdDwW]|\\[[^\\]]+\\])[*+]\\??(\\(|\\|).*(\\1)[*+].*/[a-z]*$)|(?:(?s)^/.*\\)[*+].*\\)[*+].*/[a-z]*$)"
+          - focus-metavariable: "$X"

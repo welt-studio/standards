@@ -1,0 +1,6 @@
+- patterns:
+    - pattern: "child_process.exec($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "child_process.execSync($X, ...)"
+    - focus-metavariable: "$X"

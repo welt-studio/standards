@@ -1,0 +1,2 @@
+- pattern: "libxmljs.parseXml($X, {..., noent: true, ...})"
+- pattern: "libxmljs.parseXmlString($X, {..., noent: true, ...})"

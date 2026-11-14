@@ -1,0 +1,95 @@
+rules:
+  - id: welt-actions-cache-poisoning-direct-cache
+    message: "O job baixa código ou artefato não confiável (checkout do HEAD de um PR, ref vinda de input) e depois grava no cache do branch padrão. O conteúdo envenenado volta em builds privilegiados. Não grave cache num job que processa código externo, ou use uma chave de cache exclusiva do job."
+    severity: ERROR
+    languages:
+      - yaml
+    metadata:
+      category: security
+      cwe: "CWE-349: Acceptance of Extraneous Untrusted Data With Trusted Data"
+      codeql: actions/cache-poisoning/direct-cache
+      confidence: MEDIUM
+      technology:
+        - github-actions
+    paths:
+      include:
+        - "*.yml"
+        - "*.yaml"
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-workflow-dispatch-regex
+              - pattern-either:
+                  - patterns:
+                      - "$model": actions/uses-step
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/cache(?:/save)?@"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              bundler-cache: true
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:actions|ruby)/setup-ruby@"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout|git[ \\t]+(?:fetch|pull)[^\\n]*\\$\\{?[A-Za-z_]*(?:head|branch|ref|sha|commit|pr_)|actions/download-artifact@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+run-id:[^\\n]*workflow_run\\.id|uses:[ \\t]*[\\\"']?(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@|listWorkflowRunArtifacts\\(|gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url).*?(?:uses:[ \\t]*[\\\"']?actions/cache(?:/save)?@|uses:[ \\t]*[\\\"']?(?:actions|ruby)/setup-ruby@)"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-schedule-regex
+              - pattern-either:
+                  - patterns:
+                      - "$model": actions/uses-step
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/cache(?:/save)?@"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              bundler-cache: true
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:actions|ruby)/setup-ruby@"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout|git[ \\t]+(?:fetch|pull)[^\\n]*\\$\\{?[A-Za-z_]*(?:head|branch|ref|sha|commit|pr_)|actions/download-artifact@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+run-id:[^\\n]*workflow_run\\.id|uses:[ \\t]*[\\\"']?(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@|listWorkflowRunArtifacts\\(|gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url).*?(?:uses:[ \\t]*[\\\"']?actions/cache(?:/save)?@|uses:[ \\t]*[\\\"']?(?:actions|ruby)/setup-ruby@)"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-workflow-call-regex
+              - pattern-either:
+                  - patterns:
+                      - "$model": actions/uses-step
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/cache(?:/save)?@"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              bundler-cache: true
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:actions|ruby)/setup-ruby@"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout|git[ \\t]+(?:fetch|pull)[^\\n]*\\$\\{?[A-Za-z_]*(?:head|branch|ref|sha|commit|pr_)|actions/download-artifact@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+run-id:[^\\n]*workflow_run\\.id|uses:[ \\t]*[\\\"']?(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@|listWorkflowRunArtifacts\\(|gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url).*?(?:uses:[ \\t]*[\\\"']?actions/cache(?:/save)?@|uses:[ \\t]*[\\\"']?(?:actions|ruby)/setup-ruby@)"
+      - "$model": actions/write-permission-or-secret-exclusions

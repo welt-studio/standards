@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.truncate($X, ...)"
+    - focus-metavariable: "$X"

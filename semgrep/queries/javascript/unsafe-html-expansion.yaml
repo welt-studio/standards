@@ -1,0 +1,33 @@
+rules:
+  - id: welt-js-unsafe-html-expansion
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Esta expansão de tags HTML autofechadas (`<x/>` para `<x></x>`) invalida a sanitização feita antes, porque a expressão regular pode casar com parte do valor de um atributo. Use um sanitizador de HTML mantido (por exemplo DOMPurify) em vez de reescrever o HTML."
+    metadata:
+      category: security
+      cwe: "CWE-116: Improper Encoding or Escaping of Output"
+      codeql: js/unsafe-html-expansion
+    pattern-sources:
+      - patterns:
+          - pattern: "/$RE/"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "^<(?:\\(\\?![^)]*\\))?\\(\\((?:\\[(?:\\\\.|[^\\]\\\\])*\\][*+]?){1,2}\\)\\[\\^>\\]\\*\\)\\\\/>$"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$S.replace($SINK, $R)"
+          - focus-metavariable: "$SINK"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "^[\"'`]<\\$1></\\$2>[\"'`]$"
+      - patterns:
+          - pattern-inside: |
+              $E = "<$1></$2>";
+              ...
+          - pattern: "$S.replace($SINK, $E)"
+          - focus-metavariable: "$SINK"

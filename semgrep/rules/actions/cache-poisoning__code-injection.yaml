@@ -1,0 +1,65 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-actions-cache-poisoning-code-injection
+    message: "Entrada controlável (mensagem de commit, autor) é interpolada no script de um job que pode escrever no cache do branch padrão. Quem injeta código consegue envenenar o cache usado por builds privilegiados. Passe o valor por `env:` e use a variável do shell."
+    severity: ERROR
+    languages:
+      - yaml
+    metadata:
+      category: security
+      cwe: "CWE-349: Acceptance of Extraneous Untrusted Data With Trusted Data"
+      codeql: actions/cache-poisoning/code-injection
+      confidence: MEDIUM
+      technology:
+        - github-actions
+    paths:
+      include:
+        - "*.yml"
+        - "*.yaml"
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside:
+                  pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^(?<pi>[ \\t]+)push:[ \\t]*(?:\\#[^\\n]*)?\\n(?:(?:\\k<pi>[ \\t]+[^\\n]*\\n|[ \\t]*\\n)*?\\k<pi>[ \\t]+branches:[^\\n]*?\\b(?:main|master)\\b|(?:\\k<pi>[ \\t]+[^\\n]*\\n|[ \\t]*\\n)*?\\k<pi>[ \\t]+branches:[ \\t]*(?:\\#[^\\n]*)?\\n(?:\\k<pi>[ \\t]+[^\\n]*\\n)*?\\k<pi>[ \\t]+-[ \\t]*[\\\"']?(?:main|master)[\\\"']?[ \\t]*(?:\\#[^\\n]*)?$).*\\z"
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          run: $S
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*?\\$\\{\\{(?:\\s*(?:github\\.event\\.changes\\.title\\.from|github\\.event\\.commits\\[[0-9]+\\]\\.message|github\\.event\\.head_commit\\.message|github\\.event\\.changes\\.body\\.from|github\\.event\\.changes\\.head\\.ref\\.from|github\\.event\\.head_commit\\.author\\.email|github\\.event\\.head_commit\\.committer\\.email|github\\.event\\.commits\\[[0-9]+\\]\\.author\\.email|github\\.event\\.commits\\[[0-9]+\\]\\.committer\\.email|github\\.event\\.head_commit\\.author\\.name|github\\.event\\.head_commit\\.committer\\.name|github\\.event\\.commits\\[[0-9]+\\]\\.author\\.name|github\\.event\\.commits\\[[0-9]+\\]\\.committer\\.name)\\b|(?:(?!\\}\\}).)*?(?:from|to)json\\(\\s*(?:github\\.event\\.commits|github\\.event\\.head_commit|github\\.event\\.head_commit\\.author|github\\.event\\.head_commit\\.committer|github\\.event\\.changes|github\\.event)\\s*\\))(?:(?!\\}\\}).)*\\}\\}"
+                  - patterns:
+                      - pattern: |
+                          script: $S
+                      - pattern-inside: |
+                          - uses: $ACTION
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$ACTION"
+                          regex: "^actions/github-script@"
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^(?!.*\\btojson\\().*?\\$\\{\\{(?:\\s*(?:github\\.event\\.changes\\.title\\.from|github\\.event\\.commits\\[[0-9]+\\]\\.message|github\\.event\\.head_commit\\.message|github\\.event\\.changes\\.body\\.from|github\\.event\\.changes\\.head\\.ref\\.from|github\\.event\\.head_commit\\.author\\.email|github\\.event\\.head_commit\\.committer\\.email|github\\.event\\.commits\\[[0-9]+\\]\\.author\\.email|github\\.event\\.commits\\[[0-9]+\\]\\.committer\\.email|github\\.event\\.head_commit\\.author\\.name|github\\.event\\.head_commit\\.committer\\.name|github\\.event\\.commits\\[[0-9]+\\]\\.author\\.name|github\\.event\\.commits\\[[0-9]+\\]\\.committer\\.name)\\b|(?:(?!\\}\\}).)*?(?:from|to)json\\(\\s*(?:github\\.event\\.commits|github\\.event\\.head_commit|github\\.event\\.head_commit\\.author|github\\.event\\.head_commit\\.committer|github\\.event\\.changes|github\\.event)\\s*\\))(?:(?!\\}\\}).)*\\}\\}"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:(?:(?:[ \\t]*(?:workflow_call)[ \\t]*(?:\\#.*)?$)|(?:[ \\t]*\\[[^\\]\\n]*\\b(?:workflow_call)\\b)|(?:[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^[ \\t]+(?:-[ \\t]+)?(?:workflow_call)[ \\t]*:?[ \\t]*(?:\\#.*)?$)).*\\z"
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          run: $S
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*?\\$\\{\\{(?:\\s*(?:github\\.event\\.changes\\.title\\.from|github\\.event\\.commits\\[[0-9]+\\]\\.message|github\\.event\\.head_commit\\.message|github\\.event\\.changes\\.body\\.from|github\\.event\\.changes\\.head\\.ref\\.from|github\\.event\\.head_commit\\.author\\.email|github\\.event\\.head_commit\\.committer\\.email|github\\.event\\.commits\\[[0-9]+\\]\\.author\\.email|github\\.event\\.commits\\[[0-9]+\\]\\.committer\\.email|github\\.event\\.head_commit\\.author\\.name|github\\.event\\.head_commit\\.committer\\.name|github\\.event\\.commits\\[[0-9]+\\]\\.author\\.name|github\\.event\\.commits\\[[0-9]+\\]\\.committer\\.name)\\b|(?:(?!\\}\\}).)*?(?:from|to)json\\(\\s*(?:github\\.event\\.commits|github\\.event\\.head_commit|github\\.event\\.head_commit\\.author|github\\.event\\.head_commit\\.committer|github\\.event\\.changes|github\\.event)\\s*\\))(?:(?!\\}\\}).)*\\}\\}"
+                  - patterns:
+                      - pattern: |
+                          script: $S
+                      - pattern-inside: |
+                          - uses: $ACTION
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$ACTION"
+                          regex: "^actions/github-script@"
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^(?!.*\\btojson\\().*?\\$\\{\\{(?:\\s*(?:github\\.event\\.changes\\.title\\.from|github\\.event\\.commits\\[[0-9]+\\]\\.message|github\\.event\\.head_commit\\.message|github\\.event\\.changes\\.body\\.from|github\\.event\\.changes\\.head\\.ref\\.from|github\\.event\\.head_commit\\.author\\.email|github\\.event\\.head_commit\\.committer\\.email|github\\.event\\.commits\\[[0-9]+\\]\\.author\\.email|github\\.event\\.commits\\[[0-9]+\\]\\.committer\\.email|github\\.event\\.head_commit\\.author\\.name|github\\.event\\.head_commit\\.committer\\.name|github\\.event\\.commits\\[[0-9]+\\]\\.author\\.name|github\\.event\\.commits\\[[0-9]+\\]\\.committer\\.name)\\b|(?:(?!\\}\\}).)*?(?:from|to)json\\(\\s*(?:github\\.event\\.commits|github\\.event\\.head_commit|github\\.event\\.head_commit\\.author|github\\.event\\.head_commit\\.committer|github\\.event\\.changes|github\\.event)\\s*\\))(?:(?!\\}\\}).)*\\}\\}"

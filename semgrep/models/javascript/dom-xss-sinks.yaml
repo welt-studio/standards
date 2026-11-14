@@ -1,0 +1,121 @@
+- patterns:
+    - pattern: "$E.innerHTML = $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.outerHTML = $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.innerHTML += $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.outerHTML += $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.srcdoc = $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "document.write($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "document.writeln($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$D.write($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$D.writeln($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.insertAdjacentHTML($P, $X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.html($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.append($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.prepend($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.after($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.before($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.wrap($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.wrapAll($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.wrapInner($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.replaceWith($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.appendTo($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.prependTo($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - "$model": javascript/jquery-call
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$.parseHTML($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "jQuery.parseHTML($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$R.createContextualFragment($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$S.trustAsHtml($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$S.bypassSecurityTrustHtml($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$S.bypassSecurityTrustScript($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$S.bypassSecurityTrustStyle($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$S.bypassSecurityTrustUrl($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$S.bypassSecurityTrustResourceUrl($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.setAttribute('srcdoc', $X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.setAttribute('on$EV', $X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "<$C dangerouslySetInnerHTML={{__html: $X}} />"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.setHTML($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.setHTMLUnsafe($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$W.document.write($X)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$E.insertAdjacentHTML($P, $X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "{__html: $X}"
+    - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
+    - focus-metavariable: "$X"

@@ -1,0 +1,33 @@
+rules:
+  - id: welt-py-incomplete-url-substring-sanitization
+    message: "A verificação procura o domínio como substring da URL, então ele pode aparecer em qualquer posição (por exemplo evil.com/example.com). Compare o hostname extraído com urlparse contra uma lista de permitidos."
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-20: Improper Input Validation"
+      codeql: py/incomplete-url-substring-sanitization
+    pattern-either:
+      - patterns:
+          - pattern: '"$URL" in $X'
+          - metavariable-regex:
+              metavariable: "$URL"
+              regex: "(?i)^(([a-z]*:?//)?\\.?([a-z0-9-]+\\.)+(com|org|edu|gov|uk|net|io)(:[0-9]+)?/?|https?://([a-z0-9-]+\\.)+([a-z]+)(:[0-9]+)?/?)$"
+      - patterns:
+          - pattern: '$X.startswith("$URL")'
+          - metavariable-regex:
+              metavariable: "$URL"
+              regex: "(?i)^(([a-z]*:?//)?\\.?([a-z0-9-]+\\.)+(com|org|edu|gov|uk|net|io)(:[0-9]+)?/?|https?://([a-z0-9-]+\\.)+([a-z]+)(:[0-9]+)?/?)$"
+          - metavariable-regex:
+              metavariable: "$URL"
+              regex: "(?i)^(?!https?://[.a-z0-9-]+/.*$)"
+      - patterns:
+          - pattern: '$X.endswith("$URL")'
+          - metavariable-regex:
+              metavariable: "$URL"
+              regex: "(?i)^(([a-z]*:?//)?\\.?([a-z0-9-]+\\.)+(com|org|edu|gov|uk|net|io)(:[0-9]+)?/?|https?://([a-z0-9-]+\\.)+([a-z]+)(:[0-9]+)?/?)$"
+          - metavariable-regex:
+              metavariable: "$URL"
+              regex: "(?i)^(?!\\.([a-z0-9-]+)(\\.[a-z0-9-]+)+$)"

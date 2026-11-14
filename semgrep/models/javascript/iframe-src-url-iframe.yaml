@@ -1,0 +1,1 @@
+- pattern: '<iframe src="$URL" ...></iframe>'

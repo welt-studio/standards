@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.createWriteStream($X, ...)"
+    - focus-metavariable: "$X"

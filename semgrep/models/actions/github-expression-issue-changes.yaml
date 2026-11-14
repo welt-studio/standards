@@ -1,0 +1,1 @@
+"(?is)^.*?\\$\\{\\{(?:\\s*(?:github\\.event\\.issue\\.title|github\\.event\\.changes\\.title\\.from|github\\.event\\.issue\\.body|github\\.event\\.changes\\.body\\.from|github\\.event\\.changes\\.head\\.ref\\.from)\\b|(?:(?!\\}\\}).)*?(?:from|to)json\\(\\s*(?:github\\.event\\.issue|github\\.event\\.changes|github\\.event)\\s*\\))(?:(?!\\}\\}).)*\\}\\}"

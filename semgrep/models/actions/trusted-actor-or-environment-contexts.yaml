@@ -1,0 +1,28 @@
+- pattern-inside:
+    pattern-either:
+      - patterns:
+          - pattern: |
+              $KEY:
+                ...
+                if: $COND
+                ...
+          - metavariable-regex:
+              metavariable: "$COND"
+              regex:
+                "$text": actions/actor-condition-issue-pr-author-association-regex
+      - patterns:
+          - pattern: |
+              - ...
+                if: $COND
+                ...
+          - metavariable-regex:
+              metavariable: "$COND"
+              regex:
+                "$text": actions/actor-condition-issue-pr-author-association-regex
+      - pattern: |
+          $JOB:
+            runs-on: ...
+            environment: ...
+            ...
+      - pattern-regex:
+          "$text": actions/permission-check-actions

@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.readJson($X, ...)"
+    - focus-metavariable: "$X"

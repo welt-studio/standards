@@ -1,0 +1,27 @@
+rules:
+  - id: welt-py-client-exposed-cookie
+    message: "Cookie sensível enviado sem o atributo `httponly`; scripts do navegador conseguem lê-lo (XSS vira roubo de sessão)."
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-1004: Sensitive Cookie Without 'HttpOnly' Flag"
+      codeql: py/client-exposed-cookie
+      notes: |-
+        Porta do `py/client-exposed-cookie` (CookieWrite de Concepts.qll + modelos Flask.qll, Django.qll, Aiohttp.qll).
+        Sensível = nome do cookie pelo regex de SensitiveDataHeuristics.qll (notSensitive incluído).
+    patterns:
+      - pattern-either:
+          - patterns:
+              - "$model": python/set-cookie-name-calls
+              - pattern-not: "$R.set_cookie(..., httponly=$S, ...)"
+              - "$model": python/set-cookie-without-kwargs
+          - patterns:
+              - "$model": python/set-cookie-name-calls
+              - pattern: "$R.set_cookie(..., httponly=False, ...)"
+      - metavariable-regex:
+          metavariable: "$NAME"
+          regex:
+            "$text": python/sensitive-names

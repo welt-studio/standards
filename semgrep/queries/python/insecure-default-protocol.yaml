@@ -1,0 +1,15 @@
+rules:
+  - id: welt-py-insecure-default-protocol
+    message: "`ssl.wrap_socket` sem `ssl_version` usa o protocolo padrão, que pode ser inseguro (função também descontinuada). Crie um `ssl.SSLContext` com versão mínima TLS 1.2."
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      codeql: py/insecure-default-protocol
+      notes: "Porta do `py/insecure-default-protocol` (InsecureDefaultProtocol.ql): ssl.wrap_socket sem ssl_version."
+    patterns:
+      - pattern: "ssl.wrap_socket(...)"
+      - pattern-not: "ssl.wrap_socket(..., ssl_version=$V, ...)"

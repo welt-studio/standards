@@ -1,0 +1,4 @@
+- patterns:
+    - pattern: "$X"
+    - pattern-inside: |
+        if (Array.isArray($X)) {...}

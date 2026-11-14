@@ -1,0 +1,9 @@
+- pattern: |
+    script: $S
+- pattern-inside: |
+    - uses: $ACTION
+      ...
+- metavariable-regex:
+    metavariable: "$ACTION"
+    regex:
+      "$text": actions/github-script-action-ref

@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "$X"
+    - pattern-inside: "if ($X.jquery) {...}"

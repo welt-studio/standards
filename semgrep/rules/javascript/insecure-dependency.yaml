@@ -1,0 +1,24 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-insecure-dependency
+    languages:
+      - json
+    severity: ERROR
+    message: "Esta dependência é baixada por um canal sem criptografia (`http://` ou `ftp://`), o que permite que um atacante na rede troque o pacote. Use `https://` ou o registro padrão do npm."
+    metadata:
+      category: security
+      cwe: "CWE-300: Channel Accessible by Non-Endpoint"
+      codeql: js/insecure-dependency
+    paths:
+      include:
+        - package.json
+    patterns:
+      - pattern-inside: '{..., "$SECTION": {...}, ...}'
+      - metavariable-regex:
+          metavariable: "$SECTION"
+          regex: '^"(dependencies|devDependencies)"$'
+      - pattern: '"$NAME": "$URL"'
+      - metavariable-regex:
+          metavariable: "$URL"
+          regex: "^(http|ftp)://"

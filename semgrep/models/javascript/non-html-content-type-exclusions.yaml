@@ -1,0 +1,82 @@
+- pattern-not-inside:
+    patterns:
+      - pattern-inside: '$RES.set("$K", "$CT"); ...'
+      - metavariable-regex:
+          metavariable: "$K"
+          regex:
+            "$text": javascript/content-type-header-name-regex
+      - metavariable-regex:
+          metavariable: "$CT"
+          regex: "(?i)^(?!.*html).*$"
+- pattern-not-inside:
+    patterns:
+      - pattern-inside: '$RES.setHeader("$K", "$CT"); ...'
+      - metavariable-regex:
+          metavariable: "$K"
+          regex:
+            "$text": javascript/content-type-header-name-regex
+      - metavariable-regex:
+          metavariable: "$CT"
+          regex: "(?i)^(?!.*html).*$"
+- pattern-not-inside:
+    patterns:
+      - pattern-inside: '$RES.header("$K", "$CT"); ...'
+      - metavariable-regex:
+          metavariable: "$K"
+          regex:
+            "$text": javascript/content-type-header-name-regex
+      - metavariable-regex:
+          metavariable: "$CT"
+          regex: "(?i)^(?!.*html).*$"
+- pattern-not-inside:
+    patterns:
+      - pattern-inside: '$RES.append("$K", "$CT"); ...'
+      - metavariable-regex:
+          metavariable: "$K"
+          regex:
+            "$text": javascript/content-type-header-name-regex
+      - metavariable-regex:
+          metavariable: "$CT"
+          regex: "(?i)^(?!.*html).*$"
+- pattern-not-inside:
+    patterns:
+      - pattern-inside: '$RES.set({"$K": "$CT"}); ...'
+      - metavariable-regex:
+          metavariable: "$K"
+          regex:
+            "$text": javascript/content-type-header-name-regex
+      - metavariable-regex:
+          metavariable: "$CT"
+          regex: "(?i)^(?!.*html).*$"
+- pattern-not-inside:
+    patterns:
+      - pattern-inside: '$RES.header({"$K": "$CT"}); ...'
+      - metavariable-regex:
+          metavariable: "$K"
+          regex:
+            "$text": javascript/content-type-header-name-regex
+      - metavariable-regex:
+          metavariable: "$CT"
+          regex: "(?i)^(?!.*html).*$"
+- pattern-not-inside:
+    patterns:
+      - pattern-inside: '$RES.writeHead($S, {"$K": "$CT"}); ...'
+      - metavariable-regex:
+          metavariable: "$K"
+          regex:
+            "$text": javascript/content-type-header-name-regex
+      - metavariable-regex:
+          metavariable: "$CT"
+          regex: "(?i)^(?!.*html).*$"
+- pattern-not-inside:
+    patterns:
+      - pattern-inside: '$RES.type("$CT"); ...'
+      - metavariable-regex:
+          metavariable: "$CT"
+          regex: "(?i)^(?!.*html).*$"
+- pattern-not-inside:
+    patterns:
+      - pattern-inside: '$RES.contentType("$CT"); ...'
+      - metavariable-regex:
+          metavariable: "$CT"
+          regex: "(?i)^(?!.*html).*$"

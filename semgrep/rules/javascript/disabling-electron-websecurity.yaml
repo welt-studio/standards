@@ -1,0 +1,27 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-disabling-electron-websecurity
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "A opção `webSecurity: false` desliga a política de mesma origem do Electron. Remova a opção (o padrão é seguro)."
+    metadata:
+      category: security
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation"
+      codeql: js/disabling-electron-websecurity
+    pattern-either:
+      - pattern: "new BrowserWindow({..., webPreferences: {..., webSecurity: false, ...}, ...})"
+      - pattern: "new electron.BrowserWindow({..., webPreferences: {..., webSecurity: false, ...}, ...})"
+      - pattern: |
+          $P = {..., webSecurity: false, ...};
+          ...
+          new BrowserWindow({..., webPreferences: $P, ...})
+      - pattern: "new BrowserView({..., webPreferences: {..., webSecurity: false, ...}, ...})"
+      - pattern: "new electron.BrowserView({..., webPreferences: {..., webSecurity: false, ...}, ...})"
+      - pattern: |
+          $P = {..., webSecurity: false, ...};
+          ...
+          new BrowserView({..., webPreferences: $P, ...})
+      - pattern: "$W.webPreferences = {..., webSecurity: false, ...}"

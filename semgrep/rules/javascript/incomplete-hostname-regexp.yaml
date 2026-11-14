@@ -1,0 +1,68 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-incomplete-hostname-regexp
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta expressão regular tem um '.' sem escape antes do domínio, então pode casar mais hosts do que o esperado (ou um curinga '.+' deixa o domínio casar fora do host). Escape o ponto (`\\.`) e ancore a expressão."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incomplete-hostname-regexp
+    pattern-either:
+      - patterns:
+          - pattern: "/$RE/"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "(?s)^(?:.*?(?<!\\\\)\\.(?=[)?(]*(?:[A-Za-z0-9][A-Za-z0-9-]*|\\((?:\\?:)?[A-Za-z0-9][A-Za-z0-9-]*(?:\\|[A-Za-z0-9][A-Za-z0-9-]*)*\\))(?:\\\\*\\.[A-Za-z0-9][A-Za-z0-9-]*)*\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9]))|.*?(?:https?|protos?)\\??:(?:\\\\?/){2}\\(?(?:\\?:)?\\.[+*].*?\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9])).*"
+      - patterns:
+          - pattern: 'new RegExp("$STR")'
+          - metavariable-regex:
+              metavariable: "$STR"
+              regex: "(?s)^(?:.*?(?:^|[^\\\\])(?:\\\\{4})*\\\\?\\.(?=[)?(]*(?:[A-Za-z0-9][A-Za-z0-9-]*|\\((?:\\?:)?[A-Za-z0-9][A-Za-z0-9-]*(?:\\|[A-Za-z0-9][A-Za-z0-9-]*)*\\))(?:\\\\*\\.[A-Za-z0-9][A-Za-z0-9-]*)*\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9]))|.*?(?:https?|protos?)\\??:(?:\\\\?/){2}\\(?(?:\\?:)?\\.[+*].*?\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9])).*"
+      - patterns:
+          - pattern: 'RegExp("$STR")'
+          - metavariable-regex:
+              metavariable: "$STR"
+              regex: "(?s)^(?:.*?(?:^|[^\\\\])(?:\\\\{4})*\\\\?\\.(?=[)?(]*(?:[A-Za-z0-9][A-Za-z0-9-]*|\\((?:\\?:)?[A-Za-z0-9][A-Za-z0-9-]*(?:\\|[A-Za-z0-9][A-Za-z0-9-]*)*\\))(?:\\\\*\\.[A-Za-z0-9][A-Za-z0-9-]*)*\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9]))|.*?(?:https?|protos?)\\??:(?:\\\\?/){2}\\(?(?:\\?:)?\\.[+*].*?\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9])).*"
+      - patterns:
+          - pattern: '$S.match("$STR")'
+          - metavariable-regex:
+              metavariable: "$STR"
+              regex: "(?s)^(?:.*?(?:^|[^\\\\])(?:\\\\{4})*\\\\?\\.(?=[)?(]*(?:[A-Za-z0-9][A-Za-z0-9-]*|\\((?:\\?:)?[A-Za-z0-9][A-Za-z0-9-]*(?:\\|[A-Za-z0-9][A-Za-z0-9-]*)*\\))(?:\\\\*\\.[A-Za-z0-9][A-Za-z0-9-]*)*\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9]))|.*?(?:https?|protos?)\\??:(?:\\\\?/){2}\\(?(?:\\?:)?\\.[+*].*?\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9])).*"
+          - pattern-not: 'sinon.match("$STR")'
+      - patterns:
+          - pattern: '$S.matchAll("$STR")'
+          - metavariable-regex:
+              metavariable: "$STR"
+              regex: "(?s)^(?:.*?(?:^|[^\\\\])(?:\\\\{4})*\\\\?\\.(?=[)?(]*(?:[A-Za-z0-9][A-Za-z0-9-]*|\\((?:\\?:)?[A-Za-z0-9][A-Za-z0-9-]*(?:\\|[A-Za-z0-9][A-Za-z0-9-]*)*\\))(?:\\\\*\\.[A-Za-z0-9][A-Za-z0-9-]*)*\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9]))|.*?(?:https?|protos?)\\??:(?:\\\\?/){2}\\(?(?:\\?:)?\\.[+*].*?\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9])).*"
+          - pattern-not: 'sinon.match("$STR")'
+  - id: welt-js-incomplete-hostname-regexp-flow
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta expressão regular tem um '.' sem escape antes do domínio, então pode casar mais hosts do que o esperado (ou um curinga '.+' deixa o domínio casar fora do host). Escape o ponto (`\\.`) e ancore a expressão."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incomplete-hostname-regexp
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: '"$STR"'
+          - metavariable-regex:
+              metavariable: "$STR"
+              regex: "(?s)^(?:.*?(?:^|[^\\\\])(?:\\\\{4})*\\\\?\\.(?=[)?(]*(?:[A-Za-z0-9][A-Za-z0-9-]*|\\((?:\\?:)?[A-Za-z0-9][A-Za-z0-9-]*(?:\\|[A-Za-z0-9][A-Za-z0-9-]*)*\\))(?:\\\\*\\.[A-Za-z0-9][A-Za-z0-9-]*)*\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9]))|.*?(?:https?|protos?)\\??:(?:\\\\?/){2}\\(?(?:\\?:)?\\.[+*].*?\\\\*\\.(?:com|org|edu|gov|uk|net|io)(?![a-z0-9])).*"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "new RegExp($X)"
+              - pattern: "RegExp($X)"
+          - focus-metavariable: "$X"
+          - pattern-not: 'new RegExp("...")'
+          - pattern-not: 'RegExp("...")'
+    options:
+      interfile: true

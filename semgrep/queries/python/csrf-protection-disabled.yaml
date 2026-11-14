@@ -1,0 +1,28 @@
+rules:
+  - id: welt-py-csrf-protection-disabled
+    message: "A lista MIDDLEWARE do Django usa autenticação por sessão, mas não inclui `django.middleware.csrf.CsrfViewMiddleware`; os formulários ficam sem proteção contra CSRF."
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-352: Cross-Site Request Forgery (CSRF)"
+      codeql: py/csrf-protection-disabled
+      notes: |-
+        Porta do `py/csrf-protection-disabled` (CSRFProtectionDisabled.ql + DjangoSettingsMiddlewareStack em Django.qll).
+        O CodeQL só considera a lista MIDDLEWARE do Django com o AuthenticationMiddleware (há sessão a proteger) e
+        sem CsrfViewMiddleware, fora de arquivos de teste, e exige que TODAS as listas do projeto estejam assim
+        ("forall"): o Semgrep olha uma lista por vez, então um settings de base sem a proteção e um de produção
+        com ela aparecem como um achado a mais.
+    paths:
+      exclude:
+        - "*test*"
+    patterns:
+      - pattern-either:
+          - pattern: 'MIDDLEWARE = [..., "django.contrib.auth.middleware.AuthenticationMiddleware", ...]'
+          - pattern: 'MIDDLEWARE = (..., "django.contrib.auth.middleware.AuthenticationMiddleware", ...)'
+      - pattern-not: 'MIDDLEWARE = [..., "django.middleware.csrf.CsrfViewMiddleware", ...]'
+      - pattern-not: 'MIDDLEWARE = [..., "session_csrf.CsrfMiddleware", ...]'
+      - pattern-not: 'MIDDLEWARE = (..., "django.middleware.csrf.CsrfViewMiddleware", ...)'
+      - pattern-not: 'MIDDLEWARE = (..., "session_csrf.CsrfMiddleware", ...)'

@@ -1,0 +1,65 @@
+rules:
+  - id: welt-py-unsafe-deserialization
+    message: "Dado controlado pelo usuário é desserializado por um formato que pode executar código (pickle, marshal, YAML inseguro, dill...). Use um formato só de dados, como JSON, ou `yaml.safe_load`."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-502: Deserialization of Untrusted Data"
+      codeql: py/unsafe-deserialization
+      notes: |-
+        Porta do `py/unsafe-deserialization` (UnsafeDeserializationCustomizations.qll + Decoding com
+        mayExecuteInput de Stdlib.qll, Yaml.qll, RuamelYaml.qll, Dill.qll, JsonPickle.qll, Joblib.qll,
+        Pandas.qll, Numpy.qll, Torch.qll).
+        yaml.load com Loader que não é o seguro (SafeLoader/BaseLoader e as versões C).
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/django-view-parameter-sources
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "pickle.load($X, ...)"
+              - pattern: "pickle.loads($X, ...)"
+              - pattern: "pickle.Unpickler($X, ...)"
+              - pattern: "cPickle.load($X, ...)"
+              - pattern: "cPickle.loads($X, ...)"
+              - pattern: "_pickle.load($X, ...)"
+              - pattern: "_pickle.loads($X, ...)"
+              - pattern: "dill.load($X, ...)"
+              - pattern: "dill.loads($X, ...)"
+              - pattern: "marshal.load($X)"
+              - pattern: "marshal.loads($X)"
+              - pattern: "shelve.open($X, ...)"
+              - pattern: "jsonpickle.decode($X, ...)"
+              - pattern: "jsonpickle.unpickler.decode($X, ...)"
+              - pattern: "joblib.load($X, ...)"
+              - pattern: "pandas.read_pickle($X, ...)"
+              - pattern: "numpy.load($X, ..., allow_pickle=True, ...)"
+              - pattern: "torch.jit.load($X, ...)"
+              - pattern: "torch.load($X, ...)"
+              - pattern: "yaml.full_load($X, ...)"
+              - pattern: "yaml.full_load_all($X, ...)"
+              - pattern: "yaml.unsafe_load($X, ...)"
+              - pattern: "yaml.unsafe_load_all($X, ...)"
+              - pattern: "yaml.load($X)"
+              - pattern: "yaml.load_all($X)"
+              - pattern: "ruamel.yaml.load($X)"
+              - pattern: "ruamel.yaml.load_all($X)"
+          - pattern-not: "torch.load($X, ..., pickle_module=$PM, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "yaml.load($X, $L, ...)"
+              - pattern: "yaml.load($X, ..., Loader=$L, ...)"
+              - pattern: "yaml.load_all($X, $L, ...)"
+              - pattern: "yaml.load_all($X, ..., Loader=$L, ...)"
+              - pattern: "ruamel.yaml.load($X, $L, ...)"
+              - pattern: "ruamel.yaml.load($X, ..., Loader=$L, ...)"
+          - metavariable-regex:
+              metavariable: "$L"
+              regex: "^(?!(yaml\\.|ruamel\\.yaml\\.)?C?(Safe|Base)Loader$)"
+          - focus-metavariable: "$X"

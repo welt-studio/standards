@@ -1,0 +1,68 @@
+rules:
+  - id: welt-js-xxe
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: "Um XML controlado pelo usuário é analisado com resolução de entidades externas habilitada (`noent: true`, parser SAX do libxmljs, ActiveX), o que permite XXE: leitura de arquivos locais e requisições internas (SSRF). Desligue a expansão de entidades."
+    metadata:
+      category: security
+      cwe: "CWE-611: Improper Restriction of XML External Entity Reference"
+      codeql: js/xxe
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-or-context
+      - patterns:
+          - "$model": javascript/req-files
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex:
+                "$text": javascript/request-or-context-variable-name-regex
+      - "$model": javascript/document-location-hash
+      - "$model": javascript/document-location-search
+      - "$model": javascript/document-location-href
+      - "$model": javascript/document-location-pathname-source
+      - "$model": javascript/window-location-hash
+      - "$model": javascript/window-location-search
+      - "$model": javascript/window-location-href
+      - "$model": javascript/window-location-pathname-source
+      - "$model": javascript/location-hash
+      - "$model": javascript/location-search
+      - "$model": javascript/location-href-and-pathname-sources
+      - "$model": javascript/document-url-sources
+      - "$model": javascript/document-referrer
+      - "$model": javascript/window-name
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - "$model": javascript/libxmljs-noent-calls
+              - pattern: 'require("libxmljs").parseXml($X, {..., noent: true, ...})'
+              - pattern: "libxmljs.parseHtml($X, {..., noent: true, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $P = new libxmljs.SaxParser(...);
+              ...
+          - pattern-either:
+              - pattern: "$P.parseString($X, ...)"
+              - pattern: "$P.parseFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $P = new libxmljs.SaxPushParser(...);
+              ...
+          - pattern: "$P.push($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: '(new ActiveXObject("Microsoft.XMLDOM")).loadXML($X)'
+              - pattern: '(new ActiveXObject("Msxml2.DOMDocument")).loadXML($X)'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$P.loadXML($X)"
+          - pattern-inside: |
+              $P = new ActiveXObject(...);
+              ...
+          - focus-metavariable: "$X"

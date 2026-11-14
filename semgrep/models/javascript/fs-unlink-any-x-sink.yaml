@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.unlink($X, ...)"
+    - focus-metavariable: "$X"

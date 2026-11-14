@@ -1,0 +1,22 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-angular-insecure-url-whitelist
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Entrada insegura na lista de URLs permitidas do AngularJS (`resourceUrlWhitelist`): o esquema, o domínio ou o TLD usa curinga de forma a permitir origens não confiáveis. Liste URLs exatas."
+    metadata:
+      category: security
+      cwe: "CWE-183: Permissive List of Allowed Inputs"
+      codeql: js/angular/insecure-url-whitelist
+      notes: "esquema com `*`, domínio com `**`, ou TLD igual a `*`"
+    patterns:
+      - pattern: '$SD.resourceUrlWhitelist([..., "$ENTRY", ...])'
+      - metavariable-regex:
+          metavariable: "$SD"
+          regex: "^\\$?sceDelegateProvider$"
+      - metavariable-regex:
+          metavariable: "$ENTRY"
+          regex: "^([^:/]*\\*[^:/]*://.*|[^:/]+://[^/]*\\*\\*[^/]*(/.*)?|[^:/]+://[^/:]*\\.\\*(:\\d+)?(/.*)?)$"

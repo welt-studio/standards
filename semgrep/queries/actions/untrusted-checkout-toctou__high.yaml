@@ -1,0 +1,143 @@
+rules:
+  - id: welt-actions-untrusted-checkout-toctou-high
+    message: "A verificação de acesso antes do checkout (environment ou comentário autorizado) não cobre mudanças feitas no PR depois dela (TOCTOU) num workflow privilegiado. Faça o checkout de um SHA fixo (o `head.sha` registrado na aprovação) e confira a data do commit contra a do comentário."
+    severity: ERROR
+    languages:
+      - yaml
+    metadata:
+      category: security
+      cwe: "CWE-367: Time-of-check Time-of-use (TOCTOU) Race Condition"
+      codeql: actions/untrusted-checkout-toctou/high
+      confidence: MEDIUM
+      technology:
+        - github-actions
+      notes: "Job sem privilégio: permissões só de leitura e sem segredos (hasExplicitSecretAccess)."
+    paths:
+      include:
+        - "*.yml"
+        - "*.yaml"
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-pull-request-target-regex
+              - "$model": actions/job-with-environment
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $KEY:
+                          ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-pr-head-repository-regex
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-pr-head-repository-regex
+              - "$model": actions/job-with-needs-exclusion
+              - pattern-either:
+                  - patterns:
+                      - "$model": actions/step-checkout-with-ref
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex:
+                            "$text": actions/checkout-action-ref-regex
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex:
+                            "$text": actions/pr-head-ref-regex
+                  - patterns:
+                      - "$model": actions/run-step
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A(?!.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace))))"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-workflow-run-without-branches-regex
+              - "$model": actions/job-with-environment
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $KEY:
+                          ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-workflow-run-head-repository-regex
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-workflow-run-head-repository-regex
+              - "$model": actions/job-with-needs-exclusion
+              - pattern-either:
+                  - patterns:
+                      - "$model": actions/step-checkout-with-ref
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex:
+                            "$text": actions/checkout-action-ref-regex
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex:
+                            "$text": actions/pr-head-ref-regex
+                  - patterns:
+                      - "$model": actions/run-step
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A(?!.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace))))"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-issue-comment-regex
+              - "$model": actions/trusted-actor-or-environment-contexts
+              - pattern-not-inside:
+                  pattern-regex:
+                    "$text": actions/date-d-commit-time-regex
+              - pattern-either:
+                  - patterns:
+                      - "$model": actions/step-checkout-with-ref
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex:
+                            "$text": actions/checkout-action-ref-regex
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex:
+                            "$text": actions/pr-head-ref-regex
+                  - patterns:
+                      - "$model": actions/run-step
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A(?!.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace))))"
+      - "$model": actions/job-without-write-permission-or-secret-exclusion

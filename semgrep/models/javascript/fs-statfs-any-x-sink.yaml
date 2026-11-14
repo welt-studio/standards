@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.statfs($X, ...)"
+    - focus-metavariable: "$X"

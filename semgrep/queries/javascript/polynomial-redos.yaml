@@ -1,0 +1,40 @@
+rules:
+  - id: welt-js-polynomial-redos
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Valor controlado pelo usuário é testado por uma expressão regular com quantificadores ilimitados sobrepostos, cujo tempo cresce de forma polinomial (quadrática ou pior) com o tamanho da entrada. Limite o tamanho da entrada ou reescreva a regex."
+    metadata:
+      category: security
+      cwe: "CWE-1333: Inefficient Regular Expression Complexity"
+      codeql: js/polynomial-redos
+      note: "aproximação sintática; o CodeQL usa análise de autômato"
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/dom-xss-sources
+    pattern-sanitizers:
+      - pattern: "$X.slice(0, ...)"
+      - pattern: "$X.substring(0, ...)"
+      - pattern: "$X.substr(0, ...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$RE.test($X)"
+              - pattern: "$RE.exec($X)"
+              - pattern: "$X.match($RE)"
+              - pattern: "$X.matchAll($RE)"
+              - pattern: "$X.replace($RE, ...)"
+              - pattern: "$X.replaceAll($RE, ...)"
+              - pattern: "$X.split($RE)"
+              - pattern: "$X.search($RE)"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "(?s)^/.*/[a-z]*$"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: "(?:(?s)^/(?!\\^).*\\.[*+].*/[a-z]*$)|(?:(?s)^/.*\\.[*+].*[*+].*/[a-z]*$)|(?:(?s)^/.*(\\\\[sSdDwW]|\\[[^\\]]+\\])[*+]\\??[^|]{0,40}?\\1[*+].*/[a-z]*$)|(?:(?s)^/.*(\\\\[sSdDwW]|\\[[^\\]]+\\])[*+]\\??(\\(|\\|).*(\\1)[*+].*/[a-z]*$)|(?:(?s)^/.*\\)[*+].*\\)[*+].*/[a-z]*$)"
+          - focus-metavariable: "$X"

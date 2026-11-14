@@ -1,0 +1,1 @@
+- pattern-not: "$R.set_cookie(..., **$KW)"

@@ -1,0 +1,50 @@
+rules:
+  - id: welt-js-functionality-from-untrusted-source-html
+    languages:
+      - html
+    severity: WARNING
+    message: "Script ou iframe carregado por conexão sem criptografia (`http`), ou script de CDN sem o atributo `integrity`. Use `https` e, para CDNs, um hash de integridade (SRI)."
+    metadata:
+      category: security
+      cwe: "CWE-830: Inclusion of Web Functionality from an Untrusted Source"
+      codeql: js/functionality-from-untrusted-source
+    patterns:
+      - pattern-either:
+          - "$model": javascript/script-src-url-script
+          - "$model": javascript/iframe-src-url-iframe
+      - "$model": javascript/script-without-integrity
+      - metavariable-regex:
+          metavariable: "$URL"
+          regex: "(?i)^(http:(?!//(\\[?::1\\]?|localhost|127\\.0\\.0\\.1)([:/]|$))|https?://(cdnjs\\.cloudflare\\.com|cdn\\.jsdelivr\\.net|unpkg\\.com|ajax\\.googleapis\\.com|code\\.jquery\\.com|stackpath\\.bootstrapcdn\\.com|maxcdn\\.bootstrapcdn\\.com).*)"
+  - id: welt-js-functionality-from-untrusted-source-dynamic
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Script ou iframe criado dinamicamente com URL sem criptografia (`http`). Use `https`."
+    metadata:
+      category: security
+      cwe: "CWE-830: Inclusion of Web Functionality from an Untrusted Source"
+      codeql: js/functionality-from-untrusted-source
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern: '"$S"'
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "(?s)^http://(?!(\\[?::1\\]?|localhost|127\\.0\\.0\\.1)([:/]|$)).*"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.src = $X"
+              - pattern: '$E.setAttribute("src", $X)'
+          - pattern-not:
+              patterns:
+                - pattern: "$E.src = ($C ? $A : $B) + ..."
+                - metavariable-regex:
+                    metavariable: "$A"
+                    regex: '^["''`]https:'
+          - "$model": javascript/integrity-assignment-exclusions
+          - focus-metavariable: "$X"

@@ -1,0 +1,53 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-identity-replacement
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "A substituição troca o texto por ele mesmo (`replace(x, x)`): a chamada não tem efeito. Provavelmente faltou escapar o caractere na substituição (por exemplo, `\"\\\\\\\\\"` em vez de `\"\\\\\"`)."
+    metadata:
+      category: security
+      cwe: "CWE-116: Improper Encoding or Escaping of Output"
+      codeql: js/identity-replacement
+    pattern-either:
+      - pattern: '$S.replace("$A", "$A")'
+      - pattern: "$S.replace('$A', '$A')"
+      - pattern: '$S.replaceAll("$A", "$A")'
+      - pattern: '$S.replace(/$A/, "$A")'
+      - pattern: '$S.replace(/$A/g, "$A")'
+      - pattern: '$S.replace(/$A/gi, "$A")'
+      - pattern: '$S.replace(/$A/i, "$A")'
+      - pattern: '$S.replace(/($A)/, "$A")'
+      - pattern: '$S.replace(/($A)/g, "$A")'
+      - pattern: '$S.replace(/($A)/gi, "$A")'
+      - pattern: '$S.replace(/($A)/i, "$A")'
+      - pattern: '$S.replace(/[$A]/, "$A")'
+      - pattern: '$S.replace(/[$A]/g, "$A")'
+      - pattern: '$S.replace(/[$A]/gi, "$A")'
+      - pattern: '$S.replace(/[$A]/i, "$A")'
+      - pattern: '$S.replace(/^$A/, "$A")'
+      - pattern: '$S.replace(/^$A/g, "$A")'
+      - pattern: '$S.replace(/^$A/gi, "$A")'
+      - pattern: '$S.replace(/^$A/i, "$A")'
+      - pattern: '$S.replace(/$A$/, "$A")'
+      - pattern: '$S.replace(/$A$/g, "$A")'
+      - pattern: '$S.replace(/$A$/gi, "$A")'
+      - pattern: '$S.replace(/$A$/i, "$A")'
+      - pattern: "$S.replace(/\\b$A/, \"$A\")"
+      - pattern: "$S.replace(/\\b$A/g, \"$A\")"
+      - pattern: "$S.replace(/\\b$A/gi, \"$A\")"
+      - pattern: "$S.replace(/\\b$A/i, \"$A\")"
+      - pattern: "$S.replace(/\\B$A/, \"$A\")"
+      - pattern: "$S.replace(/\\B$A/g, \"$A\")"
+      - pattern: "$S.replace(/\\B$A/gi, \"$A\")"
+      - pattern: "$S.replace(/\\B$A/i, \"$A\")"
+      - pattern: '$S.replace(/$A(?!$A)/, "$A")'
+      - pattern: '$S.replace(/$A(?!$A)/g, "$A")'
+      - pattern: '$S.replace(/$A(?!$A)/gi, "$A")'
+      - pattern: '$S.replace(/$A(?!$A)/i, "$A")'
+      - pattern: '$S.replace(/(?<!$A)$A/, "$A")'
+      - pattern: '$S.replace(/(?<!$A)$A/g, "$A")'
+      - pattern: '$S.replace(/(?<!$A)$A/gi, "$A")'
+      - pattern: '$S.replace(/(?<!$A)$A/i, "$A")'

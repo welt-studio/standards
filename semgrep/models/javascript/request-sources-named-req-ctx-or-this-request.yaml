@@ -1,0 +1,19 @@
+- patterns:
+    - pattern-either:
+        - "$model": javascript/req-query
+        - "$model": javascript/req-body
+        - "$model": javascript/req-params
+        - "$model": javascript/req-headers
+        - "$model": javascript/req-cookies
+        - "$model": javascript/req-url
+        - "$model": javascript/req-original-url
+        - "$model": javascript/req-path
+        - "$model": javascript/req-hostname
+        - "$model": javascript/req-host
+        - "$model": javascript/req-param
+        - "$model": javascript/req-header
+        - "$model": javascript/req-get
+    - metavariable-regex:
+        metavariable: "$REQ"
+        regex:
+          "$text": javascript/request-variable-name-regex

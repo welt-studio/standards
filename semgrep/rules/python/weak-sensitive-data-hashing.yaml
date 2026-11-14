@@ -1,0 +1,254 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-weak-sensitive-data-hashing
+    message: "Dado sensível (senha, segredo, certificado...) entra num hash inadequado. Para senha use bcrypt, scrypt, argon2 ou PBKDF2; para outros dados, SHA-256 ou superior."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+        - "CWE-328: Use of Weak Hash"
+        - "CWE-916: Use of Password Hash With Insufficient Computational Effort"
+      codeql: py/weak-sensitive-data-hashing
+      notes: |-
+        Porta do `py/weak-sensitive-data-hashing` (WeakSensitiveDataHashingCustomizations.qll + SensitiveDataSources.qll
+        + Cryptography::HashingAlgorithm de Cryptodome.qll, Cryptography.qll, Stdlib hashlib).
+        Dois fluxos, como no CodeQL: senha (rótulo PW) em qualquer hash simples (SHA-256 incluído, pois não é
+        custoso); outro dado sensível (rótulo SENS) só em hash fraco (MD5, SHA-1...). Sensível = pelo NOME
+        (SensitiveDataHeuristics.qll), em variável, parâmetro, atributo, chave ou chamada.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - label: PW
+        patterns:
+          - pattern-either:
+              - pattern: "$V = $E"
+              - pattern: "$V: $T = $E"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b))"
+          - focus-metavariable: "$E"
+      - label: PW
+        patterns:
+          - pattern-inside: |
+              def $F(..., $P, ...):
+                ...
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b))"
+          - focus-metavariable: "$P"
+      - label: PW
+        patterns:
+          - pattern-inside: |
+              def $F(..., $P: $T, ...):
+                ...
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b))"
+          - focus-metavariable: "$P"
+      - label: PW
+        patterns:
+          - pattern: "$O.$A"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b))"
+      - label: PW
+        patterns:
+          - pattern-either:
+              - pattern: '$O["$K"]'
+              - pattern: '$O.get("$K", ...)'
+          - metavariable-regex:
+              metavariable: "$K"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b))"
+      - label: PW
+        patterns:
+          - pattern: "$FN(...)"
+          - metavariable-regex:
+              metavariable: "$FN"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b))"
+      - label: SENS
+        patterns:
+          - pattern-either:
+              - pattern: "$V = $E"
+              - pattern: "$V: $T = $E"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b)|(?<!is)(?<!is_)secret|(?<!un)(?<!un_)(?<!is)(?<!is_)trusted|confidential|acc(?:ou)?nt|puid|user.?(?:name|id)|session.?(?:id|key)|(?:^|_)uid|cert(?!.*(?:format|name|ification))|social.?security|passport.?(?:num|no)|(?:[_-]|\\b)ssn(?:[_-]|\\b)|post.?code|zip.?code|home.?addr|(?:mob(?:ile)?|home).?(?:num|no|tel|phone)|(?:tel|fax|phone).?(?:num|no)|telephone|emergency.?contact|(?:credit|debit|bank|visa).?(?:card|num|no|acc(?:ou)?nt)|(?:card|acc(?:ou)?nt).?(?:no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(?:rating|score)|(?:[_-]|\\b)(?:ccn|cvv|iban)(?:[_-]|\\b)|security.?code|birth.?da(?:te|y)|da(?:te|y).?(?:of.?)?birth|gender|medical|(?:health|care).?plan|patient.?(?:id|record)|employ(?:er|ee)|spouse|maiden.?name|mac.?addr)"
+          - focus-metavariable: "$E"
+      - label: SENS
+        patterns:
+          - pattern-inside: |
+              def $F(..., $P, ...):
+                ...
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b)|(?<!is)(?<!is_)secret|(?<!un)(?<!un_)(?<!is)(?<!is_)trusted|confidential|acc(?:ou)?nt|puid|user.?(?:name|id)|session.?(?:id|key)|(?:^|_)uid|cert(?!.*(?:format|name|ification))|social.?security|passport.?(?:num|no)|(?:[_-]|\\b)ssn(?:[_-]|\\b)|post.?code|zip.?code|home.?addr|(?:mob(?:ile)?|home).?(?:num|no|tel|phone)|(?:tel|fax|phone).?(?:num|no)|telephone|emergency.?contact|(?:credit|debit|bank|visa).?(?:card|num|no|acc(?:ou)?nt)|(?:card|acc(?:ou)?nt).?(?:no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(?:rating|score)|(?:[_-]|\\b)(?:ccn|cvv|iban)(?:[_-]|\\b)|security.?code|birth.?da(?:te|y)|da(?:te|y).?(?:of.?)?birth|gender|medical|(?:health|care).?plan|patient.?(?:id|record)|employ(?:er|ee)|spouse|maiden.?name|mac.?addr)"
+          - focus-metavariable: "$P"
+      - label: SENS
+        patterns:
+          - pattern-inside: |
+              def $F(..., $P: $T, ...):
+                ...
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b)|(?<!is)(?<!is_)secret|(?<!un)(?<!un_)(?<!is)(?<!is_)trusted|confidential|acc(?:ou)?nt|puid|user.?(?:name|id)|session.?(?:id|key)|(?:^|_)uid|cert(?!.*(?:format|name|ification))|social.?security|passport.?(?:num|no)|(?:[_-]|\\b)ssn(?:[_-]|\\b)|post.?code|zip.?code|home.?addr|(?:mob(?:ile)?|home).?(?:num|no|tel|phone)|(?:tel|fax|phone).?(?:num|no)|telephone|emergency.?contact|(?:credit|debit|bank|visa).?(?:card|num|no|acc(?:ou)?nt)|(?:card|acc(?:ou)?nt).?(?:no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(?:rating|score)|(?:[_-]|\\b)(?:ccn|cvv|iban)(?:[_-]|\\b)|security.?code|birth.?da(?:te|y)|da(?:te|y).?(?:of.?)?birth|gender|medical|(?:health|care).?plan|patient.?(?:id|record)|employ(?:er|ee)|spouse|maiden.?name|mac.?addr)"
+          - focus-metavariable: "$P"
+      - label: SENS
+        patterns:
+          - pattern: "$O.$A"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b)|(?<!is)(?<!is_)secret|(?<!un)(?<!un_)(?<!is)(?<!is_)trusted|confidential|acc(?:ou)?nt|puid|user.?(?:name|id)|session.?(?:id|key)|(?:^|_)uid|cert(?!.*(?:format|name|ification))|social.?security|passport.?(?:num|no)|(?:[_-]|\\b)ssn(?:[_-]|\\b)|post.?code|zip.?code|home.?addr|(?:mob(?:ile)?|home).?(?:num|no|tel|phone)|(?:tel|fax|phone).?(?:num|no)|telephone|emergency.?contact|(?:credit|debit|bank|visa).?(?:card|num|no|acc(?:ou)?nt)|(?:card|acc(?:ou)?nt).?(?:no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(?:rating|score)|(?:[_-]|\\b)(?:ccn|cvv|iban)(?:[_-]|\\b)|security.?code|birth.?da(?:te|y)|da(?:te|y).?(?:of.?)?birth|gender|medical|(?:health|care).?plan|patient.?(?:id|record)|employ(?:er|ee)|spouse|maiden.?name|mac.?addr)"
+      - label: SENS
+        patterns:
+          - pattern-either:
+              - pattern: '$O["$K"]'
+              - pattern: '$O.get("$K", ...)'
+          - metavariable-regex:
+              metavariable: "$K"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b)|(?<!is)(?<!is_)secret|(?<!un)(?<!un_)(?<!is)(?<!is_)trusted|confidential|acc(?:ou)?nt|puid|user.?(?:name|id)|session.?(?:id|key)|(?:^|_)uid|cert(?!.*(?:format|name|ification))|social.?security|passport.?(?:num|no)|(?:[_-]|\\b)ssn(?:[_-]|\\b)|post.?code|zip.?code|home.?addr|(?:mob(?:ile)?|home).?(?:num|no|tel|phone)|(?:tel|fax|phone).?(?:num|no)|telephone|emergency.?contact|(?:credit|debit|bank|visa).?(?:card|num|no|acc(?:ou)?nt)|(?:card|acc(?:ou)?nt).?(?:no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(?:rating|score)|(?:[_-]|\\b)(?:ccn|cvv|iban)(?:[_-]|\\b)|security.?code|birth.?da(?:te|y)|da(?:te|y).?(?:of.?)?birth|gender|medical|(?:health|care).?plan|patient.?(?:id|record)|employ(?:er|ee)|spouse|maiden.?name|mac.?addr)"
+      - label: SENS
+        patterns:
+          - pattern: "$FN(...)"
+          - metavariable-regex:
+              metavariable: "$FN"
+              regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b)|(?<!is)(?<!is_)secret|(?<!un)(?<!un_)(?<!is)(?<!is_)trusted|confidential|acc(?:ou)?nt|puid|user.?(?:name|id)|session.?(?:id|key)|(?:^|_)uid|cert(?!.*(?:format|name|ification))|social.?security|passport.?(?:num|no)|(?:[_-]|\\b)ssn(?:[_-]|\\b)|post.?code|zip.?code|home.?addr|(?:mob(?:ile)?|home).?(?:num|no|tel|phone)|(?:tel|fax|phone).?(?:num|no)|telephone|emergency.?contact|(?:credit|debit|bank|visa).?(?:card|num|no|acc(?:ou)?nt)|(?:card|acc(?:ou)?nt).?(?:no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(?:rating|score)|(?:[_-]|\\b)(?:ccn|cvv|iban)(?:[_-]|\\b)|security.?code|birth.?da(?:te|y)|da(?:te|y).?(?:of.?)?birth|gender|medical|(?:health|care).?plan|patient.?(?:id|record)|employ(?:er|ee)|spouse|maiden.?name|mac.?addr)"
+    pattern-sinks:
+      - requires: PW or SENS
+        patterns:
+          - pattern-either:
+              - pattern: "hashlib.$A($X, ...)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(md2|md4|md5|sha1|sha)$"
+          - focus-metavariable: "$X"
+      - requires: PW or SENS
+        patterns:
+          - pattern-either:
+              - pattern: "$A.new($X, ...)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(md2|md4|md5|sha1|sha)$"
+          - focus-metavariable: "$X"
+      - requires: PW or SENS
+        patterns:
+          - pattern-inside: |
+              $H = hashlib.$A(...)
+              ...
+          - pattern-either:
+              - pattern: "$H.update($X)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(md2|md4|md5|sha1|sha)$"
+          - focus-metavariable: "$X"
+      - requires: PW or SENS
+        patterns:
+          - pattern-inside: |
+              $H = $A.new(...)
+              ...
+          - pattern-either:
+              - pattern: "$H.update($X)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(md2|md4|md5|sha1|sha)$"
+          - focus-metavariable: "$X"
+      - requires: PW or SENS
+        patterns:
+          - pattern-inside: |
+              $H = hashes.Hash(hashes.$A(), ...)
+              ...
+          - pattern-either:
+              - pattern: "$H.update($X)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(md2|md4|md5|sha1|sha)$"
+          - focus-metavariable: "$X"
+      - requires: PW or SENS
+        patterns:
+          - pattern-inside: |
+              $H = hashes.Hash(cryptography.hazmat.primitives.hashes.$A(), ...)
+              ...
+          - pattern-either:
+              - pattern: "$H.update($X)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(md2|md4|md5|sha1|sha)$"
+          - focus-metavariable: "$X"
+      - requires: PW or SENS
+        patterns:
+          - pattern: 'hashlib.new("$A", $X, ...)'
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(md2|md4|md5|sha1|sha)$"
+          - focus-metavariable: "$X"
+      - requires: PW
+        patterns:
+          - pattern-either:
+              - pattern: "hashlib.$A($X, ...)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|blake2b|blake2s|ripemd160|whirlpool)$"
+          - focus-metavariable: "$X"
+      - requires: PW
+        patterns:
+          - pattern-either:
+              - pattern: "$A.new($X, ...)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|blake2b|blake2s|ripemd160|whirlpool)$"
+          - focus-metavariable: "$X"
+      - requires: PW
+        patterns:
+          - pattern-inside: |
+              $H = hashlib.$A(...)
+              ...
+          - pattern-either:
+              - pattern: "$H.update($X)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|blake2b|blake2s|ripemd160|whirlpool)$"
+          - focus-metavariable: "$X"
+      - requires: PW
+        patterns:
+          - pattern-inside: |
+              $H = $A.new(...)
+              ...
+          - pattern-either:
+              - pattern: "$H.update($X)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|blake2b|blake2s|ripemd160|whirlpool)$"
+          - focus-metavariable: "$X"
+      - requires: PW
+        patterns:
+          - pattern-inside: |
+              $H = hashes.Hash(hashes.$A(), ...)
+              ...
+          - pattern-either:
+              - pattern: "$H.update($X)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|blake2b|blake2s|ripemd160|whirlpool)$"
+          - focus-metavariable: "$X"
+      - requires: PW
+        patterns:
+          - pattern-inside: |
+              $H = hashes.Hash(cryptography.hazmat.primitives.hashes.$A(), ...)
+              ...
+          - pattern-either:
+              - pattern: "$H.update($X)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|blake2b|blake2s|ripemd160|whirlpool)$"
+          - focus-metavariable: "$X"
+      - requires: PW
+        patterns:
+          - pattern: 'hashlib.new("$A", $X, ...)'
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?i)^(sha224|sha256|sha384|sha512|sha512_224|sha512_256|sha3_224|sha3_256|sha3_384|sha3_512|blake2b|blake2s|ripemd160|whirlpool)$"
+          - focus-metavariable: "$X"

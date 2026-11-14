@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "execa($X, ...)"
+    - focus-metavariable: "$X"

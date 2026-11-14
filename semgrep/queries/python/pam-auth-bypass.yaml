@@ -1,0 +1,48 @@
+rules:
+  - id: welt-py-pam-auth-bypass
+    message: "A autenticação PAM depende de um valor vindo da requisição e `pam_acct_mgmt` não é chamado em seguida, então contas expiradas ou bloqueadas passam. Chame pam_acct_mgmt depois de pam_authenticate."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-285: Improper Authorization"
+      codeql: py/pam-auth-bypass
+      notes: |-
+        Flask/Werkzeug: atributos do `request` (Flask.qll, Werkzeug.qll).
+        Parâmetros de rota (Flask, FastAPI, Starlette, Bottle...): variáveis da URL e do corpo.
+        Django/DRF: parâmetros da view depois do `request` (vêm da URL).
+        Tornado: argumentos e dados do RequestHandler (Tornado.qll).
+        O usuário entra no `handle` pelo `pam_start(service, username, conv, byref(handle))`.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/flask-request-sources
+    pattern-propagators:
+      - pattern: "$PAMSTART($SERVICE, $U, $CONV, byref($H))"
+        from: "$U"
+        to: "$H"
+      - pattern: "$PAMSTART($SERVICE, $U, $CONV, ctypes.byref($H))"
+        from: "$U"
+        to: "$H"
+      - pattern: "$PAMSTART($SERVICE, $U, $CONV, pointer($H))"
+        from: "$U"
+        to: "$H"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "pam_authenticate($H, ...)"
+              - pattern: "$LIB.pam_authenticate($H, ...)"
+          - pattern-not-inside: |
+              def $F(...):
+                ...
+                pam_acct_mgmt(...)
+                ...
+          - pattern-not-inside: |
+              def $F(...):
+                ...
+                $LIB.pam_acct_mgmt(...)
+                ...
+          - focus-metavariable: "$H"

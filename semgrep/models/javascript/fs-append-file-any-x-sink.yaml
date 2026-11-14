@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.appendFile($X, ...)"
+    - focus-metavariable: "$X"

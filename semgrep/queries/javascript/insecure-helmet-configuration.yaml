@@ -1,0 +1,22 @@
+rules:
+  - id: welt-js-insecure-helmet-configuration
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "O middleware Helmet foi configurado com a proteção importante `$PROP` desligada (`false`), o que desativa o envio desse cabeçalho de segurança."
+    metadata:
+      category: security
+      cwe: "CWE-693: Protection Mechanism Failure"
+      codeql: js/insecure-helmet-configuration
+    patterns:
+      - pattern-either:
+          - pattern: "helmet({..., $PROP: false, ...})"
+          - patterns:
+              - pattern: |
+                  $OPTS = {..., $PROP: false, ...};
+                  ...
+                  helmet($OPTS);
+      - metavariable-regex:
+          metavariable: "$PROP"
+          regex: "^(contentSecurityPolicy|crossOriginEmbedderPolicy|crossOriginOpenerPolicy|crossOriginResourcePolicy|frameguard|hsts|noSniff|referrerPolicy|xssFilter|originAgentCluster|dnsPrefetchControl|hidePoweredBy|ieNoOpen|permittedCrossDomainPolicies)$"

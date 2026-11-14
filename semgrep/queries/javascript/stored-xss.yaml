@@ -1,0 +1,70 @@
+rules:
+  - id: welt-js-stored-xss
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "XSS armazenado: nomes de arquivo (ou outros dados lidos do sistema) são enviados na resposta HTTP sem escape. Escape para HTML antes de escrever na resposta."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/stored-xss
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: "$F"
+          - pattern-inside: "fs.readdir($P, function($E, $F) {...})"
+      - patterns:
+          - pattern: "$F"
+          - pattern-inside: "fs.readdir($P, ($E, $F) => {...})"
+      - patterns:
+          - pattern: "$F"
+          - pattern-inside: "fs.readdir($P, $O, function($E, $F) {...})"
+      - pattern: "fs.readdirSync(...)"
+      - pattern: "fs.promises.readdir(...)"
+      - pattern: "$FS.readdirSync(...)"
+      - patterns:
+          - pattern: "$T.name"
+          - pattern-inside: "$C.on('torrent', function($T) {...})"
+      - patterns:
+          - pattern: "$T.files"
+          - pattern-inside: "$C.on('torrent', function($T) {...})"
+      - patterns:
+          - pattern: "$F.name"
+          - pattern-inside: "$T.files.forEach(function($F) {...})"
+      - patterns:
+          - pattern: "$F.path"
+          - pattern-inside: "$T.files.forEach(function($F) {...})"
+      - pattern: "glob.sync(...)"
+      - pattern: "klaw.sync(...)"
+      - pattern: "readdirp.promise(...)"
+    pattern-sinks:
+      - patterns:
+          - "$model": javascript/response-write-call
+          - metavariable-regex:
+              metavariable: "$RES"
+              regex:
+                "$text": javascript/response-variable-name-regex
+          - focus-metavariable: "$X"
+          - "$model": javascript/non-html-content-type-exclusions
+    pattern-sanitizers:
+      - "$model": javascript/escape-function-sanitizers
+      - "$model": javascript/encode-uri-component-x-sanitizer
+      - "$model": javascript/encode-uri-x-sanitizer
+      - "$model": javascript/sanitize-x-sanitizer
+      - "$model": javascript/html-sanitizer-library-sanitizers
+      - "$model": javascript/dom-purify-sanitize-x-sanitizer
+      - "$model": javascript/validator-escape-sanitizers
+      - "$model": javascript/parse-int-x-sanitizer
+      - "$model": javascript/parse-float-x-sanitizer
+      - "$model": javascript/number-x-sanitizer
+      - "$model": javascript/boolean-x-sanitizer
+      - "$model": javascript/numeric-and-strip-tags-sanitizers
+      - "$model": javascript/striptags-x-sanitizer
+      - "$model": javascript/html-encoding-sanitizers
+      - "$model": javascript/x-length
+      - "$model": javascript/json-stringify-x-sanitizer
+      - pattern: "+$X"
+      - pattern: "typeof $X"
+    options:
+      interfile: true

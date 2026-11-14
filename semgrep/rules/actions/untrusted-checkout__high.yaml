@@ -1,0 +1,361 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-actions-untrusted-checkout-high
+    message: "Checkout do código de um pull request (ou comentário) não confiável num workflow privilegiado. Mesmo sem um passo de execução óbvio depois, o código fica disponível para passos seguintes com o token e os segredos do workflow. Prefira `pull_request`, ou valide autor e data do commit antes do checkout."
+    severity: ERROR
+    languages:
+      - yaml
+    metadata:
+      category: security
+      cwe: "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+      codeql: actions/untrusted-checkout/high
+      confidence: MEDIUM
+      technology:
+        - github-actions
+      notes: "Job sem privilégio: permissões só de leitura e sem segredos (hasExplicitSecretAccess)."
+    paths:
+      include:
+        - "*.yml"
+        - "*.yaml"
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside:
+                  pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:(?:(?:[ \\t]*(?:pull_request_target)[ \\t]*(?:\\#.*)?$)|(?:[ \\t]*\\[[^\\]\\n]*\\b(?:pull_request_target)\\b)|(?:[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^[ \\t]+(?:-[ \\t]+)?(?:pull_request_target)[ \\t]*:?[ \\t]*(?:\\#.*)?$)).*\\z"
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              ref: $REF
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/checkout@"
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit))"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              ref: $REF
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/checkout@"
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex: "(?is)^.*\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit)"
+                      - pattern-inside:
+                          pattern-regex: "(?ims)\\A.*?^[ \\t]+[\\w-]+:[ \\t]*[\\\"']?\\$\\{\\{[ \\t]*[^}\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)).*\\z"
+                  - patterns:
+                      - pattern: |
+                          - run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+                  - patterns:
+                      - pattern: |
+                          - env:
+                              ...
+                              $K: $V
+                              ...
+                            run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$V"
+                          regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))"
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+              - pattern-inside: |
+                  $JOB:
+                    ...
+                    steps: $BODY
+                    ...
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A(?!.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout|git[ \\t]+(?:fetch|pull)[^\\n]*\\$\\{?[A-Za-z_]*(?:head|branch|ref|sha|commit|pr_)).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace))))"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $KEY:
+                          ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.pull_request\\.user\\.login\\b|\\bgithub\\.event\\.pull_request\\.author_association\\b|\\bgithub\\.repository(?:_owner)?\\b|\\bgithub\\.event\\.pull_request\\.head\\.repo\\.(?:full_name|owner\\.name)\\b)"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.pull_request\\.user\\.login\\b|\\bgithub\\.event\\.pull_request\\.author_association\\b|\\bgithub\\.repository(?:_owner)?\\b|\\bgithub\\.event\\.pull_request\\.head\\.repo\\.(?:full_name|owner\\.name)\\b)"
+              - pattern-not-inside: |
+                  $JOB:
+                    runs-on: ...
+                    environment: ...
+                    ...
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $JOB:
+                          ...
+                          needs: ...
+                          ...
+                    - pattern-inside:
+                        pattern-regex: "(?ims)\\A.*?(?:uses:[ \\t]*[\\\"']?(?:TheModdingInquisition/actions-team-membership|actions-cool/check-user-permission|sushichop/action-repository-permission|prince-chrismc/check-actor-permissions-action|lannonbr/repo-permission-check-action|xt0rted/slash-command-action)@|getMembershipForUserInOrg|getCollaboratorPermissionLevel|route:[ \\t]*[\\\"']?GET[^\\n]*(?:memberships|collaborators|permission)).*\\z"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:(?:(?:[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^(?<wi>[ \\t]+)workflow_run:[ \\t]*(?:\\#[^\\n]*)?\\n(?!(?:\\k<wi>[ \\t]+(?!branches:)[^\\n]*\\n|[ \\t]*\\n)*\\k<wi>[ \\t]+branches:))|(?:[ \\t]*workflow_run[ \\t]*(?:\\#.*)?$)|(?:[ \\t]*\\[[^\\]\\n]*\\bworkflow_run\\b)).*\\z"
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              ref: $REF
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/checkout@"
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit))"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              ref: $REF
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/checkout@"
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex: "(?is)^.*\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit)"
+                      - pattern-inside:
+                          pattern-regex: "(?ims)\\A.*?^[ \\t]+[\\w-]+:[ \\t]*[\\\"']?\\$\\{\\{[ \\t]*[^}\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)).*\\z"
+                  - patterns:
+                      - pattern: |
+                          - run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+                  - patterns:
+                      - pattern: |
+                          - env:
+                              ...
+                              $K: $V
+                              ...
+                            run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$V"
+                          regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))"
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+              - pattern-inside: |
+                  $JOB:
+                    ...
+                    steps: $BODY
+                    ...
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A(?!.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout|git[ \\t]+(?:fetch|pull)[^\\n]*\\$\\{?[A-Za-z_]*(?:head|branch|ref|sha|commit|pr_)).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace))))"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $KEY:
+                          ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.workflow_run\\.head_repository\\.(?:full_name|owner\\.name)\\b)"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.workflow_run\\.head_repository\\.(?:full_name|owner\\.name)\\b)"
+              - pattern-not-inside: |
+                  $JOB:
+                    runs-on: ...
+                    environment: ...
+                    ...
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $JOB:
+                          ...
+                          needs: ...
+                          ...
+                    - pattern-inside:
+                        pattern-regex: "(?ims)\\A.*?(?:uses:[ \\t]*[\\\"']?(?:TheModdingInquisition/actions-team-membership|actions-cool/check-user-permission|sushichop/action-repository-permission|prince-chrismc/check-actor-permissions-action|lannonbr/repo-permission-check-action|xt0rted/slash-command-action)@|getMembershipForUserInOrg|getCollaboratorPermissionLevel|route:[ \\t]*[\\\"']?GET[^\\n]*(?:memberships|collaborators|permission)).*\\z"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:(?:(?:[ \\t]*(?:workflow_call)[ \\t]*(?:\\#.*)?$)|(?:[ \\t]*\\[[^\\]\\n]*\\b(?:workflow_call)\\b)|(?:[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^[ \\t]+(?:-[ \\t]+)?(?:workflow_call)[ \\t]*:?[ \\t]*(?:\\#.*)?$)).*\\z"
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              ref: $REF
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/checkout@"
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit))"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              ref: $REF
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/checkout@"
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex: "(?is)^.*\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit)"
+                      - pattern-inside:
+                          pattern-regex: "(?ims)\\A.*?^[ \\t]+[\\w-]+:[ \\t]*[\\\"']?\\$\\{\\{[ \\t]*[^}\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)).*\\z"
+                  - patterns:
+                      - pattern: |
+                          - run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+                  - patterns:
+                      - pattern: |
+                          - env:
+                              ...
+                              $K: $V
+                              ...
+                            run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$V"
+                          regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))"
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+              - pattern-inside: |
+                  $JOB:
+                    ...
+                    steps: $BODY
+                    ...
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A(?!.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout|git[ \\t]+(?:fetch|pull)[^\\n]*\\$\\{?[A-Za-z_]*(?:head|branch|ref|sha|commit|pr_)).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace))))"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:(?:(?:[ \\t]*(?:issue_comment)[ \\t]*(?:\\#.*)?$)|(?:[ \\t]*\\[[^\\]\\n]*\\b(?:issue_comment)\\b)|(?:[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^[ \\t]+(?:-[ \\t]+)?(?:issue_comment)[ \\t]*:?[ \\t]*(?:\\#.*)?$)).*\\z"
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              ref: $REF
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/checkout@"
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit))"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              ref: $REF
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/checkout@"
+                      - metavariable-regex:
+                          metavariable: "$REF"
+                          regex: "(?is)^.*\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit)"
+                      - pattern-inside:
+                          pattern-regex: "(?ims)\\A.*?^[ \\t]+[\\w-]+:[ \\t]*[\\\"']?\\$\\{\\{[ \\t]*[^}\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)).*\\z"
+                  - patterns:
+                      - pattern: |
+                          - run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+                  - patterns:
+                      - pattern: |
+                          - env:
+                              ...
+                              $K: $V
+                              ...
+                            run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$V"
+                          regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))"
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:git[ \\t]+(?:fetch|pull)|(?:gh|hub)[ \\t]+pr[ \\t]+checkout)"
+              - pattern-inside: |
+                  $JOB:
+                    ...
+                    steps: $BODY
+                    ...
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A(?!.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|sha|label)|github\\.event\\.pull_request\\.merge_commit_sha|github\\.event\\.pull_request\\.head\\.repo\\.(?:default_branch|description|homepage)|github\\.head_ref|github\\.event\\.workflow_run\\.(?:head_branch|head_sha|head_commit\\.id)|github\\.event\\.check_suite\\.(?:after|head_commit\\.id|head_sha|pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.check_run\\.(?:head_sha|check_suite\\.(?:after|head_commit\\.id|head_sha)|(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.(?:ref|sha))|github\\.event\\.merge_group\\.(?:head_ref|head_sha|head_commit\\.id)|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bhead\\.sha\\b|\\bhead_sha\\b|\\bmerge_sha\\b|\\bpr_head_sha\\b|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref|sha|commit)|\\benv\\.[^}\\n]*?(?:head|branch|ref|sha|commit))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout|git[ \\t]+(?:fetch|pull)[^\\n]*\\$\\{?[A-Za-z_]*(?:head|branch|ref|sha|commit|pr_)).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace))))"
+              - pattern-not-inside:
+                  pattern-regex: "(?ims)\\A(?=(?:.*?date[ \\t]+-d[^\\n]*?(?:commit|pushed|comment|commented)_at){2}).*\\z"
+      - pattern-not-inside:
+          patterns:
+            - pattern: |
+                $JOB:
+                  ...
+                  permissions: $P
+                  ...
+                  steps: $BODY
+                  ...
+            - metavariable-regex:
+                metavariable: "$P"
+                regex: "(?is)^(?!.*write).*$"
+            - metavariable-regex:
+                metavariable: "$BODY"
+                regex: "(?is)^(?!.*\\bsecrets(?:\\.(?!GITHUB_TOKEN\\b)|\\[)).*$"
+            - pattern-inside:
+                pattern-regex: "(?ms)\\A(?!.*^env:[^\\n]*\\n(?:[ \\t]+[^\\n]*\\n)*?[ \\t]+[^\\n]*\\bsecrets(?:\\.(?!GITHUB_TOKEN\\b)|\\[)).*\\z"
+      - pattern-not-inside:
+          pattern-regex: "(?ms)\\A(?!.*\\bsecrets(?:\\.(?!GITHUB_TOKEN\\b)|\\[))(?!.*\\bwrite)(?=.*^[ \\t]*permissions:).*\\z"

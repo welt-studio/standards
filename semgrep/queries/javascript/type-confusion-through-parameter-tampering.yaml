@@ -1,0 +1,75 @@
+rules:
+  - id: welt-js-type-confusion-through-parameter-tampering
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: 'Parâmetro HTTP usado como string sem verificar o tipo. Um atacante pode enviar um array ou objeto (`?foo[]=x`) e quebrar a lógica de `indexOf`, `concat`, `slice` ou `length`. Verifique `typeof valor === "string"` antes de usar.'
+    metadata:
+      category: security
+      cwe: "CWE-843: Access of Resource Using Incompatible Type ('Type Confusion')"
+      codeql: js/type-confusion-through-parameter-tampering
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$REQ.query.$P"
+              - pattern: "$REQ.query[$P]"
+              - pattern: "$REQ.body.$P"
+              - pattern: "$REQ.body[$P]"
+              - "$model": javascript/req-query
+              - "$model": javascript/req-body
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex:
+                "$text": javascript/request-variable-name-regex
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (typeof $X === "string") {...}
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (typeof $X === "string") {...} else {...}
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if ($X instanceof Array) {...} else {...}
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (typeof $X === "string" && ...) {...}
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (typeof $X !== "string") { return ...; }
+              ...
+      - "$model": javascript/array-isarray-check-sanitizer
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if ($X instanceof Array) {...}
+      - "$model": javascript/string-conversion-sanitizers
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - "$model": javascript/indexof-call
+              - pattern: "$X.concat(...)"
+              - pattern: "$X.slice(...)"
+              - "$model": javascript/x-length
+          - pattern-not-inside: "$X.indexOf(...) === 0"
+          - pattern-not-inside: "$X.indexOf(...) == 0"
+          - pattern-not-inside: "$X.indexOf(...) !== 0"
+          - pattern-not-inside: "$X.indexOf(...) != 0"
+          - pattern-not-inside: "$X.slice(-1) === $Y"
+          - pattern-not-inside: "$X.slice(-1) == $Y"
+          - pattern-not-inside: "if ($X.length) {...}"
+          - pattern-not-inside: "while ($X.length) {...}"
+          - pattern-not-inside: "!$X.length"
+          - pattern-not-inside: "$X.length == 0"
+          - pattern-not-inside: "$X.length > 0"
+          - pattern-not-inside: "$X.length < 1"
+          - focus-metavariable: "$X"

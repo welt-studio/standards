@@ -1,0 +1,49 @@
+rules:
+  - id: welt-py-ldap-injection
+    message: "Dado vindo da requisição monta o DN ou o filtro de uma consulta LDAP sem escape (LDAP injection). Use escape_filter_chars e escape_dn_chars."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-90: Improper Neutralization of Special Elements used in an LDAP Query ('LDAP Injection')"
+      codeql: py/ldap-injection
+      notes: |-
+        Flask/Werkzeug: atributos do `request` (Flask.qll, Werkzeug.qll).
+        Parâmetros de rota (Flask, FastAPI, Starlette, Bottle...): variáveis da URL e do corpo.
+        Django/DRF: parâmetros da view depois do `request` (vêm da URL).
+        Tornado: argumentos e dados do RequestHandler (Tornado.qll).
+        python-ldap: search_s/search/search_st/search_ext/search_ext_s (DN base e filtro).
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/flask-request-sources
+    pattern-sanitizers:
+      - pattern: "ldap3.utils.dn.escape_rdn(...)"
+      - pattern: "escape_rdn(...)"
+      - pattern: "ldap3.utils.conv.escape_filter_chars(...)"
+      - pattern: "escape_filter_chars(...)"
+      - pattern: "ldap.filter.escape_filter_chars(...)"
+      - pattern: "ldap.dn.escape_dn_chars(...)"
+      - pattern: "escape_dn_chars(...)"
+      - pattern: "ldap.filter.filter_format(...)"
+      - pattern: "filter_format(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$C.$M($DN, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(search_s|search|search_st|search_ext|search_ext_s)$"
+          - focus-metavariable: "$DN"
+      - patterns:
+          - pattern-either:
+              - pattern: "$C.$M($DN, $S, $F, ...)"
+              - pattern: "$C.$M($DN, $F, ...)"
+              - pattern: "$C.$M(..., filterstr=$F, ...)"
+              - pattern: "$C.$M(..., search_filter=$F, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(search_s|search|search_st|search_ext|search_ext_s)$"
+          - focus-metavariable: "$F"

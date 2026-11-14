@@ -1,0 +1,2 @@
+- pattern: document.URL
+- pattern: document.documentURI

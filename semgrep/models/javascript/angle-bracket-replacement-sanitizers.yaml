@@ -1,0 +1,11 @@
+- patterns:
+    - "$model": javascript/replace-with-regex-literal
+    - metavariable-regex:
+        metavariable: "$RE"
+        regex: ".*(?:<|\\\\x3[cC]|\\\\u003[cC]).*"
+- patterns:
+    - pattern: '$X.replace(new RegExp("$RE", ...), ...)'
+    - metavariable-regex:
+        metavariable: "$RE"
+        regex: ".*<.*"
+- pattern: "$X.charCodeAt(...)"

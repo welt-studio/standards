@@ -1,0 +1,2 @@
+- pattern: "markupsafe.escape(...)"
+- pattern: "html.escape(...)"

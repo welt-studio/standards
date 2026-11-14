@@ -1,0 +1,16 @@
+rules:
+  - id: welt-js-angular-disabling-sce
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Desabilitar o SCE (Strict Contextual Escaping) do AngularJS com `$sceProvider.enabled(false)` é fortemente desaconselhado: remove a proteção contra XSS nos bindings."
+    metadata:
+      category: security
+      cwe: "CWE-116: Improper Encoding or Escaping of Output"
+      codeql: js/angular/disabling-sce
+    patterns:
+      - pattern: "$SCE.enabled(false)"
+      - metavariable-regex:
+          metavariable: "$SCE"
+          regex: "^\\$?sceProvider$"

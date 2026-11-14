@@ -1,0 +1,68 @@
+rules:
+  - id: welt-js-request-forgery
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: "A URL (ou parte dela, como host ou caminho) de uma requisição feita pelo servidor é controlada pelo usuário: risco de SSRF (server-side request forgery). Valide o destino contra uma lista de hosts permitidos."
+    metadata:
+      category: security
+      cwe: "CWE-918: Server-Side Request Forgery (SSRF)"
+      codeql: js/request-forgery
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/process-argv-source
+      - patterns:
+          - pattern: "$P"
+          - pattern-inside: |
+              $APP.$M($PATH, ($CTX, ..., $P, ...) => {...})
+          - metavariable-regex:
+              metavariable: "$CTX"
+              regex: "^(context|ctx)$"
+    pattern-sanitizers:
+      - pattern: "encodeURIComponent(...)"
+      - pattern: "encodeURI(...)"
+      - pattern: "parseInt(...)"
+      - pattern: "Number(...)"
+      - pattern: "$V.isURL(...)"
+      - pattern: "$V.isInt(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "request($X, ...)"
+              - pattern: "request.$M($X, ...)"
+              - pattern: "axios($X, ...)"
+              - pattern: "axios.$M($X, ...)"
+              - pattern: "axios({..., url: $X, ...})"
+              - pattern: "$AX.get($X, ...)"
+              - pattern: "$AX.post($X, ...)"
+              - pattern: "$AX.put($X, ...)"
+              - pattern: "$AX.delete($X, ...)"
+              - pattern: "$AX.head($X, ...)"
+              - pattern: "$AX.patch($X, ...)"
+              - pattern: "$AX.request($X, ...)"
+              - pattern: "http.get($U, {..., host: $X, ...})"
+              - pattern: "http.get($X, ...)"
+              - pattern: "http.request($X, ...)"
+              - pattern: "https.get($X, ...)"
+              - pattern: "https.request($X, ...)"
+              - pattern: "fetch($X, ...)"
+              - pattern: "got($X, ...)"
+              - pattern: "got.$M($X, ...)"
+              - pattern: "needle($M, $X, ...)"
+              - pattern: "needle.$M($X, ...)"
+              - pattern: "superagent.$M($X, ...)"
+              - pattern: "$XHR.send(new Uri($X))"
+              - pattern: "new WebSocket($X, ...)"
+              - pattern: "new ws($X, ...)"
+              - pattern: "new WebSocket.WebSocket($X, ...)"
+              - pattern: "JSDOM.fromURL($X, ...)"
+              - pattern: "$C.Page.navigate({..., url: $X, ...})"
+              - pattern: "$.ajax({..., url: $X, ...})"
+              - pattern: "$.get($X, ...)"
+              - pattern: "$.post($X, ...)"
+              - pattern: "$CFG.url = $X"
+          - focus-metavariable: "$X"

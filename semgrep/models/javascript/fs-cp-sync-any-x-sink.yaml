@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.cpSync($X, ...)"
+    - focus-metavariable: "$X"

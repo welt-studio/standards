@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.realpath($X, ...)"
+    - focus-metavariable: "$X"

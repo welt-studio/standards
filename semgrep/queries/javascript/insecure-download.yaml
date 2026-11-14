@@ -1,0 +1,41 @@
+rules:
+  - id: welt-js-insecure-download
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: "Recurso executável ou instalável baixado por conexão sem criptografia (`http`/`ftp`). Um atacante na rede pode trocar o conteúdo. Use `https`."
+    metadata:
+      category: security
+      cwe: "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+      codeql: js/insecure-download
+    pattern-sources:
+      - patterns:
+          - pattern: "$S"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "(?is)^[\"'`](http|ftp)://[^\"'`]*\\.(exe|dmg|pkg|msi|apk|deb|rpm|zip|gz|tgz|tar|jar|bat|sh|ps1|app)[\"'`]$"
+      - patterns:
+          - pattern: "$S"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: '(?is)^["''`](http|ftp)://[^"''`]*["''`]$'
+          - pattern-inside: |
+              $F($S, {..., target: $T, ...}, ...)
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "(?is)^[\"'`][^\"'`]*\\.(exe|dmg|pkg|msi|apk|deb|rpm|zip|gz|tgz|tar|jar|bat|sh|ps1|app)[\"'`]$"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "nugget($X, ...)"
+              - pattern: "$CP.exec($X, ...)"
+              - pattern: "$CP.execSync($X, ...)"
+              - pattern: "$CP.execFile($C, [..., $X, ...], ...)"
+              - pattern: "$CP.spawn($C, [..., $X, ...], ...)"
+              - pattern: "download($X, ...)"
+              - "$model": javascript/get-call
+          - focus-metavariable: "$X"

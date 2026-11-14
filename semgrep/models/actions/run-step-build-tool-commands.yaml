@@ -1,0 +1,11 @@
+- pattern-either:
+    - patterns:
+        - "$model": actions/run-step
+        - metavariable-regex:
+            metavariable: "$S"
+            regex: "(?ims)^.*?(?:^[ \\t]*|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))"
+    - patterns:
+        - "$model": actions/uses-step
+        - metavariable-regex:
+            metavariable: "$U"
+            regex: "^(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action)@|^\\./"

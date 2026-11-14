@@ -1,0 +1,12 @@
+rules:
+  - id: welt-js-bad-code-sanitization
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Sanitização inadequada de código: JSON.stringify/htmlescape não escapam tudo que é necessário para inserir um valor em código JavaScript gerado (ex.: U+2028/U+2029, '</script>'). Use uma biblioteca própria para serializar em JS."
+    metadata:
+      category: security
+      cwe: "CWE-094: Improper Control of Generation of Code ('Code Injection')"
+      codeql: js/bad-code-sanitization
+    pattern-regex: "`[^`]*(?:\\(function|function\\s*\\(|\\(\\)\\s*=>|\\(\\s*\\w*\\s*\\)\\s*=>|=>\\s*\\{)[^`]*\\$\\{\\s*(?:JSON\\.stringify|htmlescape|safeProp|JSON\\.stringify)\\([^`]*`|`[^`]*\\$\\{\\s*(?:JSON\\.stringify|htmlescape|safeProp|JSON\\.stringify)\\([^`]*(?:\\(function|function\\s*\\(|\\(\\)\\s*=>|\\(\\s*\\w*\\s*\\)\\s*=>|=>\\s*\\{)[^`]*`"

@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.ensureDirSync($X, ...)"
+    - focus-metavariable: "$X"

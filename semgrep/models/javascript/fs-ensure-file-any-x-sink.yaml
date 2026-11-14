@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.ensureFile($X, ...)"
+    - focus-metavariable: "$X"

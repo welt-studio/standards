@@ -1,0 +1,940 @@
+rules:
+  - id: welt-js-sql-injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Injeção de SQL: esta consulta é montada a partir de dados controlados pelo usuário. Use consultas parametrizadas (placeholders) em vez de concatenar valores no texto SQL."
+    metadata:
+      category: security
+      cwe: "CWE-089: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      codeql: js/sql-injection
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/express-request-sources-signed-cookies
+      - "$model": javascript/nextjs-server-side-sources
+    pattern-sinks:
+      - patterns:
+          - pattern: "$DB.query($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.query($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.execute($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.execute($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.exec($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.exec($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.all($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.all($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.get($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.get($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.run($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.run($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.each($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.each($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.raw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.raw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.any($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.any($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.one($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.one($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.many($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.many($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.none($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.none($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.oneOrNone($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.oneOrNone($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.manyOrNone($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.manyOrNone($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.result($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.result($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.multi($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.multi($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.multiResult($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.multiResult($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.map($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.map($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.task($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.task($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.prepare($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.prepare($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.batch($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.batch($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.queryRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.queryRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.queryRawUnsafe($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.queryRawUnsafe($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.executeRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.executeRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.$queryRawUnsafe($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.$queryRawUnsafe($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.$executeRawUnsafe($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.$executeRawUnsafe($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.$queryRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.$queryRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.unsafe($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.unsafe($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.sql($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.sql($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.queryAsync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.queryAsync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.execSql($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.execSql($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.executeSql($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.executeSql($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.queryStream($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.queryStream($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.queryArray($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.queryArray($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.queryObject($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.queryObject($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.select($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.select($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.selectRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.selectRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.whereRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.whereRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.havingRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.havingRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.orderByRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.orderByRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.joinRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.joinRaw($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.execQuery($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.execQuery($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.runSql($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.runSql($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.executeUpdate($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.executeUpdate($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.executeQuery($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.executeQuery($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$DB.send($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "$A.$DB.send($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$DB"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:db|database|conn|connection|client|pool|sequelize|knex|pg|mysql|mysql2|sqlite|sqlite3|trx|tx|transaction|stmt|statement|pgp|session|dbh|cnx|orm|athena|dynamodb|hana|ldap|rds|snowflake|mssql|oracledb|odbc|cursor|request|query)\\w*)$"
+      - patterns:
+          - pattern: "sequelize.query($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "knex.raw($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new pg.Client().query($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$Q.input($N, $T, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "mysql.createConnection(...).query($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "pgp.any($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$M.query($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$PG.query($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new sql.Request().query($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$CLIENT.send(new $CMD({..., QueryString: $X, ...}))"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$ATHENA.startQueryExecution({..., QueryString: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D.executeStatement({..., Sql: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D.query({..., KeyConditionExpression: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D.scan({..., FilterExpression: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$G.graphql($S, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "graphql($S, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$LDAP.search($B, {..., filter: $X, ...}, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$LDAP.search($B, {..., filter: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$R.eval($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$R.sendCommand($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$M.find($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.findOne($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.findById($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.count($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.countDocuments($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.estimatedDocumentCount($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.update($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.updateOne($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.updateMany($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.deleteOne($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.deleteMany($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.remove($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.findOneAndUpdate($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.findOneAndDelete($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.findOneAndRemove($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.findOneAndReplace($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.replaceOne($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.distinct($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.aggregate($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.where($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.$where($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.findByIdAndUpdate($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.findByIdAndDelete($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.findByIdAndRemove($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.geoSearch($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$M.exists($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "(?i)^_?(?:this\\.)?(?:\\w*(?:model|doc|docs|collection|coll|mongoose|mongo|schema|user|users|post|posts|item|items|todo|todos|repo|repository|dao|store|table|col)\\w*)$"
+      - patterns:
+          - pattern: "$A.collection($N).$M($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:find|findOne|count|countDocuments|updateOne|updateMany|deleteOne|deleteMany|aggregate|distinct)$"
+      - patterns:
+          - pattern: "graphql($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$K.graphql($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$G.request($ROUTE, {..., query: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$G($ROUTE, {..., query: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$K.request($ROUTE, {..., query: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "myGraphql($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "withDefaults($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "withDefaults($ROUTE, {..., query: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$R.set($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - "$model": javascript/get-call
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.hset($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.hget($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.hmset($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.hmget($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.del($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.incr($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.decr($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.sadd($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.smembers($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.lpush($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.rpush($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.expire($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.exists($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.setex($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+      - patterns:
+          - pattern: "$R.getset($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "(?i)^_?(?:\\w*(?:redis|client|cache|rc)\\w*)$"
+    pattern-sanitizers:
+      - pattern: "$DB.escape($X)"
+      - pattern: "mysql.escape($X)"
+      - pattern: "sqlstring.escape($X)"
+      - pattern: "SqlString.escape($X)"
+      - pattern: "pg.escapeLiteral($X)"
+      - pattern: "$C.escapeLiteral($X)"
+      - pattern: "$C.escapeIdentifier($X)"
+      - "$model": javascript/parse-int-x-sanitizer
+      - "$model": javascript/number-x-sanitizer
+      - "$model": javascript/parse-float-x-sanitizer
+      - pattern: "+$X"
+      - "$model": javascript/x-length
+      - pattern: "format.literal($X)"
+      - pattern: "$S.escape($X)"
+      - "$model": javascript/sanitize-x-sanitizer
+      - pattern: "escapeSql($X)"
+      - "$model": javascript/boolean-x-sanitizer
+      - pattern: "mysql2.escape($X)"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: 'if (typeof $X === "string") {...}'
+    options:
+      interfile: true

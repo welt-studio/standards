@@ -1,0 +1,44 @@
+rules:
+  - id: welt-js-clear-text-logging
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Dado sensível (senha, chave ou variáveis de ambiente) é escrito em um log em texto puro. Remova o valor do log ou mascare-o antes de registrar."
+    metadata:
+      category: security
+      cwe: "CWE-312: Cleartext Storage of Sensitive Information"
+      codeql: js/clear-text-logging
+    pattern-sources:
+      - "$model": javascript/sensitive-data-sources
+    pattern-sanitizers:
+      - "$model": javascript/sensitive-function-name-sanitizers
+    pattern-sinks:
+      - patterns:
+          - pattern: "console.$M(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(log|info|warn|error|debug|trace|dir|table|assert)$"
+      - patterns:
+          - pattern: "console.$M.apply(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(log|info|warn|error|debug|trace)$"
+      - patterns:
+          - pattern: "$L.$M(...)"
+          - metavariable-regex:
+              metavariable: "$L"
+              regex: "^(log|logger|LOG|Logger|logging|winston|bunyan|log4js|loglevel|npmlog|pino|fancyLog|debug|signale)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(log|info|warn|warning|error|debug|trace|fatal|verbose|silly|notice|critical)$"
+      - patterns:
+          - pattern: "$L(...)"
+          - metavariable-regex:
+              metavariable: "$L"
+              regex: "^(debug|fancyLog)$"
+      - patterns:
+          - pattern: "require('debug')(...)(...)"

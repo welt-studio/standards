@@ -1,0 +1,32 @@
+- pattern-either:
+    - pattern-inside: |
+        @$D
+        def $V(request, ..., $P, ...):
+          ...
+    - pattern-inside: |
+        @$D(...)
+        def $V(request, ..., $P, ...):
+          ...
+    - pattern-inside: |
+        @$D
+        async def $V(request, ..., $P, ...):
+          ...
+    - pattern-inside: |
+        @$D(...)
+        async def $V(request, ..., $P, ...):
+          ...
+    - pattern-inside: |
+        def $V(request, ..., $P, ...):
+          ...
+    - pattern-inside: |
+        async def $V(request, ..., $P, ...):
+          ...
+- pattern-not-inside: |
+    def $V2(request: $T, ...):
+      ...
+- pattern-not-inside: |
+    async def $V2(request: $T, ...):
+      ...
+- metavariable-regex:
+    metavariable: "$V"
+    regex: "^(?!_)"

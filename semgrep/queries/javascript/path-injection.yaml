@@ -1,0 +1,952 @@
+rules:
+  - id: welt-js-path-injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Injeção de caminho: este caminho de arquivo é construído a partir de dados controlados pelo usuário e pode acessar arquivos fora do diretório pretendido. Valide e normalize (path.resolve + verificação de prefixo) antes de usar."
+    metadata:
+      category: security
+      cwe: "CWE-022: Improper Limitation of a Pathname to a Restricted Directory"
+      codeql: js/path-injection
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/express-request-sources-cookies
+      - "$model": javascript/nextjs-server-side-sources
+    pattern-sinks:
+      - "$model": javascript/any-fs-read-file-any-x-sink
+      - "$model": javascript/fs-read-file-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.readFile($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-read-file-sync-any-x-sink
+      - "$model": javascript/fs-read-file-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.readFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-write-file-any-x-sink
+      - "$model": javascript/fs-write-file-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.writeFile($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-write-file-sync-any-x-sink
+      - "$model": javascript/fs-write-file-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.writeFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-append-file-any-x-sink
+      - "$model": javascript/fs-append-file-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.appendFile($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-append-file-sync-any-x-sink
+      - "$model": javascript/fs-append-file-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.appendFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-create-read-stream-any-x-sink
+      - "$model": javascript/fs-create-read-stream-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.createReadStream($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-create-write-stream-any-x-sink
+      - "$model": javascript/fs-create-write-stream-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.createWriteStream($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-open-any-x-sink
+      - "$model": javascript/fs-open-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.open($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-open-sync-any-x-sink
+      - "$model": javascript/fs-open-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.openSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-readdir-any-x-sink
+      - "$model": javascript/fs-readdir-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.readdir($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-readdir-sync-any-x-sink
+      - "$model": javascript/fs-readdir-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.readdirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-stat-any-x-sink
+      - "$model": javascript/fs-stat-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.stat($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-stat-sync-any-x-sink
+      - "$model": javascript/fs-stat-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.statSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-lstat-any-x-sink
+      - "$model": javascript/fs-lstat-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.lstat($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-lstat-sync-any-x-sink
+      - "$model": javascript/fs-lstat-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.lstatSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-access-any-x-sink
+      - "$model": javascript/fs-access-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.access($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-access-sync-any-x-sink
+      - "$model": javascript/fs-access-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.accessSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-unlink-any-x-sink
+      - "$model": javascript/fs-unlink-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.unlink($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-unlink-sync-any-x-sink
+      - "$model": javascript/fs-unlink-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.unlinkSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-rmdir-any-x-sink
+      - "$model": javascript/fs-rmdir-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.rmdir($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-rmdir-sync-any-x-sink
+      - "$model": javascript/fs-rmdir-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.rmdirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-rm-any-x-sink
+      - "$model": javascript/fs-rm-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.rm($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-rm-sync-any-x-sink
+      - "$model": javascript/fs-rm-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.rmSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-mkdir-any-x-sink
+      - "$model": javascript/fs-mkdir-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.mkdir($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-mkdir-sync-any-x-sink
+      - "$model": javascript/fs-mkdir-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.mkdirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-truncate-any-x-sink
+      - "$model": javascript/fs-truncate-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.truncate($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-truncate-sync-any-x-sink
+      - "$model": javascript/fs-truncate-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.truncateSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-chmod-any-x-sink
+      - "$model": javascript/fs-chmod-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.chmod($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-chmod-sync-any-x-sink
+      - "$model": javascript/fs-chmod-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.chmodSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-chown-any-x-sink
+      - "$model": javascript/fs-chown-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.chown($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-chown-sync-any-x-sink
+      - "$model": javascript/fs-chown-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.chownSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-readlink-any-x-sink
+      - "$model": javascript/fs-readlink-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.readlink($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-readlink-sync-any-x-sink
+      - "$model": javascript/fs-readlink-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.readlinkSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-realpath-any-x-sink
+      - "$model": javascript/fs-realpath-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.realpath($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-realpath-sync-any-x-sink
+      - "$model": javascript/fs-realpath-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.realpathSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-exists-any-x-sink
+      - "$model": javascript/fs-exists-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.exists($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-exists-sync-any-x-sink
+      - "$model": javascript/fs-exists-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.existsSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-watch-any-x-sink
+      - "$model": javascript/fs-watch-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.watch($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-watch-file-any-x-sink
+      - "$model": javascript/fs-watch-file-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.watchFile($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-opendir-any-x-sink
+      - "$model": javascript/fs-opendir-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.opendir($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-opendir-sync-any-x-sink
+      - "$model": javascript/fs-opendir-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.opendirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-utimes-any-x-sink
+      - "$model": javascript/fs-utimes-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.utimes($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-utimes-sync-any-x-sink
+      - "$model": javascript/fs-utimes-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.utimesSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-mkdtemp-any-x-sink
+      - "$model": javascript/fs-mkdtemp-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.mkdtemp($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-mkdtemp-sync-any-x-sink
+      - "$model": javascript/fs-mkdtemp-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.mkdtempSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-ensure-dir-any-x-sink
+      - "$model": javascript/fs-ensure-dir-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.ensureDir($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-ensure-file-any-x-sink
+      - "$model": javascript/fs-ensure-file-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.ensureFile($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-ensure-dir-sync-any-x-sink
+      - "$model": javascript/fs-ensure-dir-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.ensureDirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-ensure-file-sync-any-x-sink
+      - "$model": javascript/fs-ensure-file-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.ensureFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-empty-dir-any-x-sink
+      - "$model": javascript/fs-empty-dir-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.emptyDir($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-empty-dir-sync-any-x-sink
+      - "$model": javascript/fs-empty-dir-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.emptyDirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-output-file-any-x-sink
+      - "$model": javascript/fs-output-file-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.outputFile($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-output-file-sync-any-x-sink
+      - "$model": javascript/fs-output-file-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.outputFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-output-json-any-x-sink
+      - "$model": javascript/fs-output-json-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.outputJson($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-output-json-sync-any-x-sink
+      - "$model": javascript/fs-output-json-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.outputJsonSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-read-json-any-x-sink
+      - "$model": javascript/fs-read-json-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.readJson($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-read-json-sync-any-x-sink
+      - "$model": javascript/fs-read-json-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.readJsonSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-write-json-any-x-sink
+      - "$model": javascript/fs-write-json-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.writeJson($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-write-json-sync-any-x-sink
+      - "$model": javascript/fs-write-json-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.writeJsonSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-remove-any-x-sink
+      - "$model": javascript/fs-remove-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.remove($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-remove-sync-any-x-sink
+      - "$model": javascript/fs-remove-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.removeSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-path-exists-any-x-sink
+      - "$model": javascript/fs-path-exists-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.pathExists($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-path-exists-sync-any-x-sink
+      - "$model": javascript/fs-path-exists-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.pathExistsSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-create-file-any-x-sink
+      - "$model": javascript/fs-create-file-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.createFile($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-create-file-sync-any-x-sink
+      - "$model": javascript/fs-create-file-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.createFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-mkdirs-any-x-sink
+      - "$model": javascript/fs-mkdirs-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.mkdirs($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-mkdirs-sync-any-x-sink
+      - "$model": javascript/fs-mkdirs-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.mkdirsSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-mkdirp-any-x-sink
+      - "$model": javascript/fs-mkdirp-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.mkdirp($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-mkdirp-sync-any-x-sink
+      - "$model": javascript/fs-mkdirp-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.mkdirpSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-read-json-any-x-sink-upper
+      - "$model": javascript/fs-read-json-any-x-sink-upper
+      - patterns:
+          - pattern: "fs.promises.readJSON($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-read-json-sync-any-x-sink-upper
+      - "$model": javascript/fs-read-json-sync-any-x-sink-upper
+      - patterns:
+          - pattern: "fs.promises.readJSONSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-write-json-any-x-sink-upper
+      - "$model": javascript/fs-write-json-any-x-sink-upper
+      - patterns:
+          - pattern: "fs.promises.writeJSON($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-write-json-sync-any-x-sink-upper
+      - "$model": javascript/fs-write-json-sync-any-x-sink-upper
+      - patterns:
+          - pattern: "fs.promises.writeJSONSync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-output-json-any-x-sink-upper
+      - "$model": javascript/fs-output-json-any-x-sink-upper
+      - patterns:
+          - pattern: "fs.promises.outputJSON($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-lutimes-any-x-sink
+      - "$model": javascript/fs-lutimes-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.lutimes($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-statfs-any-x-sink
+      - "$model": javascript/fs-statfs-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.statfs($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-cp-any-x-sink
+      - "$model": javascript/fs-cp-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.cp($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/any-fs-cp-sync-any-x-sink
+      - "$model": javascript/fs-cp-sync-any-x-sink
+      - patterns:
+          - pattern: "fs.promises.cpSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.rename($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.rename($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.rename($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.rename($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.renameSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.renameSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.renameSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.renameSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.copyFile($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.copyFile($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.copyFile($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.copyFile($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.copyFileSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.copyFileSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.copyFileSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.copyFileSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.symlink($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.symlink($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.symlink($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.symlink($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.symlinkSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.symlinkSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.symlinkSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.symlinkSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.link($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.link($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.link($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.link($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.linkSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.linkSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.linkSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.linkSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.copy($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.copy($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.copy($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.copy($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.copySync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.copySync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.copySync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.copySync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.move($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.move($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.move($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.move($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.moveSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.moveSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.moveSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.moveSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.cp($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.cp($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.cp($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.cp($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.cpSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.cpSync($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.cpSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.cpSync($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.ensureSymlink($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.ensureSymlink($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.ensureSymlink($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.ensureSymlink($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.ensureLink($X, $Y, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.ensureLink($X, $Y, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$FS.ensureLink($Y, $X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex:
+                "$text": javascript/fs-module-name-regex
+      - patterns:
+          - pattern: "fs.ensureLink($Y, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "mkdirp($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "mkdirp.sync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "rimraf($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "rimraf.sync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "del($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "del.sync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "touch($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "touch.sync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "makeDir($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "makeDir.sync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "readPkg($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "readPkgUp($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - "$model": common/open-call
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "opn($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "readFileAsync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "rmfr($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "trash($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "require($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$RES.sendFile($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$RES.download($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$RES.render($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$RES.sendfile($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$REPLY.sendFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$RES.attachment($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - "$model": common/open-call
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "resolve($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "resolve.sync($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/execa-x-sink
+      - patterns:
+          - pattern: "$CP.execFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "puppeteer.launch({executablePath: $X})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$P.screenshot({path: $X})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$P.pdf({path: $X})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "send($REQ, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$APP.use(express.static($X))"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "express.static($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "serveStatic($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$H.file($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$P.readFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "prettier.resolveConfig($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "prettier.resolveConfig.sync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "prettier.getFileInfo($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "prettier.getFileInfo.sync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$HB.compile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "mkdirp($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "tmp.file($X)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - "$model": javascript/filename-sanitizers
+      - "$model": javascript/parse-int-x-sanitizer
+      - "$model": javascript/number-x-sanitizer
+      - pattern: "path.parse($X).name"
+      - "$model": javascript/encode-uri-component-x-sanitizer
+      - pattern: "uuid()"
+      - pattern: "path.extname($X)"
+      - "$model": javascript/x-length
+      - pattern: "slug($X)"
+      - pattern: "slugify($X, ...)"
+      - pattern: "sanitize_filename($X)"
+      - patterns:
+          - "$model": javascript/replace-with-regex-literal
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: ".*(?:\\\\\\.|\\[[^\\]]*[./][^\\]]*\\]|\\\\/).*"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.startsWith($P)) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.startsWith($P, ...)) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.indexOf('..') === -1) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.indexOf('..') == -1) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!$X.includes('..')) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.indexOf('..') < 0) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!$X.startsWith($P)) { return ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!$X.startsWith($P)) { throw ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.includes('..')) { return ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.includes('..')) { throw ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.indexOf('..') !== -1) { return ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.indexOf('..') != -1) { return ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.indexOf('..') !== -1) { throw ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (path.isAbsolute($X)) { return ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!/$RE/.test($X)) { return ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!/$RE/.test($X)) { throw ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (/$RE/.test($X)) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!$X.startsWith($P)) { return; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$X.startsWith($P) && ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "!$X.includes('..') && ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "$X.startsWith($P) ? ... : ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (isInside($X, ...)) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!isInside($X, ...)) { return ...; } ..."
+    options:
+      interfile: true

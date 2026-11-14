@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.watch($X, ...)"
+    - focus-metavariable: "$X"

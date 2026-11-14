@@ -1,0 +1,4 @@
+- pattern-either:
+    - pattern: "$R.set_cookie($NAME, ...)"
+    - pattern: "$R.set_cookie(..., key=$NAME, ...)"
+    - pattern: "$R.set_cookie(..., name=$NAME, ...)"

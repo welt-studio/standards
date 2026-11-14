@@ -1,0 +1,73 @@
+rules:
+  - id: welt-py-xpath-injection
+    message: 'Consulta XPath montada com dado controlado pelo usuário (injeção de XPath). Passe o valor como variável da consulta (`tree.xpath("//a[@id=$v]", v=valor)`) em vez de concatená-lo.'
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-643: Improper Neutralization of Data within XPath Expressions ('XPath Injection')"
+      codeql: py/xpath-injection
+      notes: |-
+        Porta do `py/xpath-injection` (XpathInjectionCustomizations.qll + XPathConstruction/XPathExecution de
+        Lxml.qll, Libxml2.qll e ElementTreeFindCall em Stdlib.qll). Sem tipos, os métodos `.xpath`, `.xpathEval`,
+        `.find*` só valem em arquivos que importam a biblioteca XML correspondente.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/django-view-parameter-sources
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "etree.XPath($X, ...)"
+              - pattern: "etree.ETXPath($X, ...)"
+              - pattern: "lxml.etree.XPath($X, ...)"
+              - pattern: "lxml.etree.ETXPath($X, ...)"
+              - pattern: "etree.XPathEvaluator(...)($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  import lxml
+                  ...
+              - pattern-inside: |
+                  import lxml.etree
+                  ...
+              - pattern-inside: |
+                  import lxml.html
+                  ...
+              - pattern-inside: |
+                  from lxml import $A
+                  ...
+              - pattern-inside: |
+                  from lxml.etree import $A
+                  ...
+          - pattern: "$T.xpath($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              import libxml2
+              ...
+          - pattern: "$D.xpathEval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  import xml.etree.ElementTree
+                  ...
+              - pattern-inside: |
+                  import xml.etree.cElementTree
+                  ...
+              - pattern-inside: |
+                  from xml.etree import $A
+                  ...
+              - pattern-inside: |
+                  from xml.etree.ElementTree import $A
+                  ...
+          - pattern-either:
+              - pattern: "$T.find($X, ...)"
+              - pattern: "$T.findall($X, ...)"
+              - pattern: "$T.findtext($X, ...)"
+          - focus-metavariable: "$X"

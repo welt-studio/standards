@@ -1,0 +1,12 @@
+- patterns:
+    - pattern-inside: "$.fn.$N = function ($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "jQuery.fn.$N = function ($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "$.fn.$N = function $F($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"

@@ -1,0 +1,94 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-insecure-randomness
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Um valor sensível (senha, segredo, identificador de sessão ou chave) é gerado com um gerador de números pseudoaleatórios que não é criptograficamente seguro (`Math.random`). Use `crypto.randomBytes`, `crypto.randomInt` ou `crypto.getRandomValues`."
+    metadata:
+      category: security
+      cwe: "CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)"
+      codeql: js/insecure-randomness
+    pattern-sources:
+      - patterns:
+          - pattern: "Math.random()"
+          - pattern-not-inside: "function $F(...) { ... crypto.getRandomValues(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... window.crypto.getRandomValues(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... crypto.randomBytes(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... crypto.randomFillSync(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... crypto.randomInt(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... secureRandom(...); ... }"
+      - patterns:
+          - pattern: "$R(...)"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "^(randomNumber|randomInt|randomFloat|uniqueRandom\\(\\))$"
+          - pattern-not-inside: "function $F(...) { ... crypto.getRandomValues(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... window.crypto.getRandomValues(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... crypto.randomBytes(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... crypto.randomFillSync(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... crypto.randomInt(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... secureRandom(...); ... }"
+      - patterns:
+          - pattern: "crypto.pseudoRandomBytes(...)"
+          - pattern-not-inside: "function $F(...) { ... crypto.getRandomValues(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... window.crypto.getRandomValues(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... crypto.randomBytes(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... crypto.randomFillSync(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... crypto.randomInt(...); ... }"
+          - pattern-not-inside: "function $F(...) { ... secureRandom(...); ... }"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "var $N = $V"
+              - pattern: "let $N = $V"
+              - pattern: "const $N = $V"
+              - pattern: "$N = $V"
+              - pattern: "$N += $V"
+              - pattern: "$O.$N = $V"
+              - pattern: "{..., $N: $V, ...}"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))"
+          - focus-metavariable: "$V"
+      - patterns:
+          - pattern-either:
+              - pattern: "crypto.createHmac($A, $V, ...)"
+              - pattern: "crypto.createCipheriv($A, $V, ...)"
+              - pattern: "crypto.createDecipheriv($A, $V, ...)"
+              - pattern: "jwt.sign($P, $V, ...)"
+              - pattern: "jsonwebtoken.sign($P, $V, ...)"
+          - focus-metavariable: "$V"
+  - id: welt-js-insecure-randomness-react-state
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "O estado de senha/segredo deste componente é preenchido por uma função local que usa `Math.random`, que não é criptograficamente seguro. Gere o valor com `crypto.getRandomValues` ou no servidor."
+    metadata:
+      category: security
+      cwe: "CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)"
+      codeql: js/insecure-randomness
+    patterns:
+      - pattern: |-
+          function $G(...) {
+            ...
+            Math.random()
+            ...
+          }
+          ...
+          function $F(...) {
+            ...
+            const [$S, $SET] = useState(...);
+            ...
+            $SET($G(...));
+            ...
+          }
+      - metavariable-regex:
+          metavariable: "$S"
+          regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))"

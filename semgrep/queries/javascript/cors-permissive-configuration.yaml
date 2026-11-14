@@ -1,0 +1,40 @@
+rules:
+  - id: welt-js-cors-permissive-configuration
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "A origem CORS aceita acesso amplo demais: o valor é permissivo (`*`, `true`, `null`) ou controlado pelo usuário. Liste explicitamente as origens confiáveis."
+    metadata:
+      category: security
+      cwe: "CWE-942: Permissive Cross-domain Policy with Untrusted Domains"
+      codeql: js/cors-permissive-configuration
+    pattern-sources:
+      - pattern: "'*'"
+      - pattern: '"*"'
+      - pattern: "true"
+      - pattern: "null"
+      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/dom-xss-sources
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "cors({..., origin: $X, ...})"
+              - pattern: "new ApolloServer({..., cors: {..., origin: $X, ...}, ...})"
+              - pattern: |
+                  $O = {..., origin: $X, ...};
+                  ...
+                  cors($O)
+              - pattern: |
+                  $O = {..., origin: $X, ...};
+                  ...
+                  new ApolloServer({..., cors: $O, ...})
+          - pattern-not: |
+              $O = {..., credentials: false, ...};
+              ...
+              cors($O)
+          - pattern-not: "cors({..., credentials: false, ...})"
+          - focus-metavariable: "$X"

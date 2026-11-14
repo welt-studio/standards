@@ -1,0 +1,81 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-system-prompt-injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: 'O prompt de sistema (ou de assistente/desenvolvedor) depende de um valor controlado pelo usuário. Um atacante pode reescrever as instruções do modelo. Mantenha o prompt de sistema fixo e envie o texto do usuário somente em mensagens com `role: "user"`.'
+    metadata:
+      category: security
+      cwe: "CWE-1427: Improper Neutralization of Input Used for LLM Prompting"
+      codeql: js/system-prompt-injection
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.cookies"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.get(...)"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|ctx\\.request|this\\.request)$"
+      - pattern-either:
+          - pattern: location.search
+          - pattern: location.hash
+          - pattern: location.href
+          - pattern: location.pathname
+          - pattern: window.location.search
+          - pattern: window.location.hash
+          - pattern: window.location.href
+          - pattern: document.location.search
+          - pattern: document.location.hash
+          - pattern: document.location.href
+          - pattern: document.URL
+          - pattern: document.documentURI
+          - pattern: document.referrer
+          - pattern: document.cookie
+          - pattern: window.name
+      - patterns:
+          - pattern: "$EV.data"
+          - pattern-either:
+              - pattern-inside: |
+                  $W.addEventListener("message", function ($EV, ...) {...})
+              - pattern-inside: |
+                  $W.addEventListener("message", ($EV, ...) => {...})
+              - pattern-inside: |
+                  addEventListener("message", ($EV, ...) => {...})
+              - pattern-inside: |
+                  $W.onmessage = ($EV) => {...}
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: '$C.chat.completions.create({..., messages: [..., {..., role: "system", content: $X, ...}, ...], ...})'
+              - pattern: '$C.chat.completions.create({..., messages: [..., {..., role: "developer", content: $X, ...}, ...], ...})'
+              - pattern: '$C.chat.completions.create({..., messages: [..., {..., role: "assistant", content: $X, ...}, ...], ...})'
+              - pattern: '$C.chat.completions.create({..., messages: [..., {..., role: "system", content: [..., {..., text: $X, ...}, ...], ...}, ...], ...})'
+              - pattern: '$C.responses.create({..., input: [..., {..., role: "system", content: $X, ...}, ...], ...})'
+              - pattern: '$C.responses.create({..., input: [..., {..., role: "developer", content: $X, ...}, ...], ...})'
+              - pattern: '$C.responses.create({..., input: [..., {..., role: "assistant", content: $X, ...}, ...], ...})'
+              - pattern: '$C.beta.threads.messages.create($T, {..., role: "system", content: $X, ...})'
+              - pattern: '$C.beta.threads.messages.create($T, {..., role: "developer", content: $X, ...})'
+              - pattern: '$C.messages.create({..., messages: [..., {..., role: "assistant", content: $X, ...}, ...], ...})'
+              - pattern: '$C.messages.create({..., messages: [..., {..., role: "system", content: $X, ...}, ...], ...})'
+              - pattern: "$C.messages.create({..., system: $X, ...})"
+              - pattern: "$C.beta.messages.create({..., system: $X, ...})"
+              - pattern: '$C.models.generateContent({..., contents: [..., {..., role: "model", parts: [..., {..., text: $X, ...}, ...], ...}, ...], ...})'
+              - pattern: '$C.models.generateContentStream({..., contents: [..., {..., role: "model", parts: [..., {..., text: $X, ...}, ...], ...}, ...], ...})'
+          - focus-metavariable: "$X"

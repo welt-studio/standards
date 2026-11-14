@@ -1,0 +1,169 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-shell-command-constructed-from-input
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Comando de shell montado a partir de um parâmetro de função exportada: se o valor tiver caracteres especiais do shell, o comando pode ser injetado. Use execFile/spawn com lista de argumentos ou escape o valor."
+    metadata:
+      category: security
+      cwe: "CWE-078: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      codeql: js/shell-command-constructed-from-input
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-inside: "module.exports.$F = function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "module.exports.$F = ($P, ...) => {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "module.exports = function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "module.exports = ($P, ...) => {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "exports.$F = function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "exports.$F = ($P, ...) => {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "module.exports.$F.$G = function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "$C.prototype.$M = function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "export function $F($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "export default function $F($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "export default function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "export const $F = ($P, ...) => {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "export const $F = function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "export async function $F($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "class $C { constructor($P, ...) {...} }"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "class $C { static $M($P, ...) {...} }"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "class $C { $M($P, ...) {...} }"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "module.exports = { $F: function ($P, ...) {...} }"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "module.exports = { $F($P, ...) {...} }"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "module.exports = { $F: ($P, ...) => {...} }"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "module.exports = { ..., $F: function ($P, ...) {...}, ... }"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+    pattern-sinks:
+      - patterns:
+          - pattern: 'child_process.exec("...$X...", ...)'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.exec($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.exec(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.exec($A + $X + ..., ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'child_process.execSync("...$X...", ...)'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.execSync($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.execSync(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.execSync($A + $X + ..., ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "shelljs.exec($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "shelljs.exec(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.shell($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.shell(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.shellSync($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.shellSync(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.command($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.command(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "require('mz/child_process').exec($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "require('mz/child_process').exec(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execSh($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execSh(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - pattern: "shellEscape($X)"
+      - pattern: "shellescape($X)"
+      - pattern: "$L.quote($X)"
+      - pattern: "JSON.stringify($X)"
+      - pattern: "parseInt($X, ...)"
+      - pattern: "Number($X)"
+    options:
+      interfile: true

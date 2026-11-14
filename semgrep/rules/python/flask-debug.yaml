@@ -1,0 +1,35 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-flask-debug
+    message: "A aplicação Flask roda em modo debug, o que permite a um atacante executar código arbitrário pelo depurador (Werkzeug). Desligue o debug em produção."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-215: Insertion of Sensitive Information Into Debugging Code"
+        - "CWE-489: Active Debug Code"
+      codeql: py/flask-debug
+    patterns:
+      - pattern-either:
+          - pattern: "$APP.run(..., debug=True, ...)"
+          - pattern: "$APP.run(..., debug=1, ...)"
+          - pattern: "$APP.run($H, $P, True, ...)"
+          - pattern: "$APP.run($H, $P, 1, ...)"
+          - patterns:
+              - pattern: "$R(..., debug=True, ...)"
+              - pattern-inside: |
+                  $R = $APP.run
+                  ...
+      - pattern-either:
+          - pattern-inside: |
+              from flask import $X
+              ...
+          - pattern-inside: |
+              import flask
+              ...
+      - pattern-not-inside: |
+          if False:
+            ...

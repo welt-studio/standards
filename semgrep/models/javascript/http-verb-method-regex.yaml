@@ -1,0 +1,1 @@
+"^(?:get|post|put|delete|patch|all|use|route|head|options|on|createServer|handle|addHook|register)$"

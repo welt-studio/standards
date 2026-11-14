@@ -1,0 +1,108 @@
+rules:
+  - id: welt-js-loop-bound-injection
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "O limite do laço vem do `length` de um objeto controlado pelo usuário, sem checagem de tipo ou de tamanho. Um atacante pode enviar um objeto com `length` enorme e travar o servidor (DoS). Valide o tipo (`Array.isArray`) e limite o tamanho antes do laço."
+    metadata:
+      category: security
+      cwe: "CWE-834: Excessive Iteration"
+      codeql: js/loop-bound-injection
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - "$model": javascript/req-body
+              - "$model": javascript/req-query
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex:
+                "$text": javascript/request-variable-name-regex
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if ($X.length > $N) { return ...; }
+              ...
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if ($X.length > $N) { throw ...; }
+              ...
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (!Array.isArray($X)) { return ...; }
+              ...
+      - "$model": javascript/array-isarray-check-sanitizer
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (typeof $X === "string") {...}
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (typeof $X === "object") { return ...; }
+              ...
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (!($X instanceof Array)) { return ...; }
+              ...
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if (!$F($X)) { return ...; }
+              ...
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - "$model": javascript/x-length
+              - pattern: "_.chunk($X, ...)"
+              - pattern: "_.map($X, ...)"
+              - pattern: "_.each($X, ...)"
+              - pattern: "_.forEach($X, ...)"
+              - pattern: "_.reduce($X, ...)"
+              - pattern: "_.filter($X, ...)"
+          - pattern-not-inside: "$X.length > $N"
+          - pattern-not-inside: "$X.length >= $N"
+          - pattern-not-inside: |
+              for (...;...;...) {
+                ...
+                if (...) { break; }
+                ...
+              }
+          - pattern-not-inside: |
+              while (...) {
+                ...
+                if (...) { break; }
+                ...
+              }
+          - pattern-not-inside: |
+              for (...;...;...) {
+                ...
+                if (...) { throw ...; }
+                ...
+              }
+          - pattern-not-inside: |
+              while (...) {
+                ...
+                if (...) { throw ...; }
+                ...
+              }
+          - pattern-not-inside: |
+              for (...;...;...) {
+                ...
+                if (...) { return ...; }
+                ...
+              }
+          - pattern-not-inside: |
+              while (...) {
+                ...
+                if (...) { return ...; }
+                ...
+              }
+          - focus-metavariable: "$X"

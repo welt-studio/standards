@@ -1,0 +1,284 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-unsafe-dynamic-method-access
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Acesso dinâmico a método com nome vindo de dados não confiáveis: o atacante pode chamar métodos inesperados (eval, o construtor Function, etc.). Use uma lista de nomes permitidos."
+    metadata:
+      category: security
+      cwe: "CWE-094: Improper Control of Generation of Code ('Code Injection')"
+      codeql: js/unsafe-dynamic-method-access
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "function ($REQ, $RES, ...) {...}"
+              - pattern-inside: "function $F($REQ, $RES, ...) {...}"
+              - pattern-inside: "async function ($REQ, $RES, ...) {...}"
+              - pattern-inside: "async function $F($REQ, $RES, ...) {...}"
+              - pattern-inside: "($REQ, $RES, ...) => {...}"
+              - pattern-inside: "($REQ, $RES, ...) => $E"
+              - pattern-inside: "async ($REQ, $RES, ...) => {...}"
+              - pattern-inside: "async ($REQ, $RES, ...) => $E"
+              - pattern-inside: "$M($REQ, $RES, ...) {...}"
+              - pattern-inside: "async $M($REQ, $RES, ...) {...}"
+              - pattern-inside: "function ($REQ) {...}"
+              - pattern-inside: "function $F($REQ) {...}"
+              - pattern-inside: "($REQ) => {...}"
+              - pattern-inside: "($REQ) => $E"
+              - pattern-inside: "async ($REQ) => {...}"
+              - pattern-inside: "async function $F($REQ) {...}"
+              - pattern-inside: "$M($REQ) {...}"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(?i:_?(?:req|request|r))$"
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.cookies"
+              - pattern: "$REQ.signedCookies"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.baseUrl"
+              - pattern: "$REQ.subdomains"
+              - pattern: "$REQ.files"
+              - pattern: "$REQ.file"
+              - pattern: "$REQ.rawBody"
+              - pattern: "$REQ.payload"
+              - pattern: "$REQ.state"
+              - pattern: "$REQ.get(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.getHeader(...)"
+              - pattern: "$REQ.json()"
+              - pattern: "$REQ.text()"
+              - pattern: "$REQ.formData()"
+              - pattern: "$REQ.blob()"
+              - pattern: "$REQ.arrayBuffer()"
+              - pattern: "$REQ.nextUrl.$K"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "$APP.$M(..., function ($REQ, ...) {...})"
+              - pattern-inside: "$APP.$M(..., async function ($REQ, ...) {...})"
+              - pattern-inside: "$APP.$M(..., ($REQ, ...) => {...})"
+              - pattern-inside: "$APP.$M(..., ($REQ, ...) => $E)"
+              - pattern-inside: "$APP.$M(..., async ($REQ, ...) => {...})"
+              - pattern-inside: "$APP.$M(..., async ($REQ, ...) => $E)"
+              - pattern-inside: "$APP.$M(..., function $F($REQ, ...) {...})"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:get|post|put|delete|patch|all|use|route|head|options|on|createServer|handle|addHook|register)$"
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.cookies"
+              - pattern: "$REQ.signedCookies"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.baseUrl"
+              - pattern: "$REQ.subdomains"
+              - pattern: "$REQ.files"
+              - pattern: "$REQ.file"
+              - pattern: "$REQ.rawBody"
+              - pattern: "$REQ.payload"
+              - pattern: "$REQ.state"
+              - pattern: "$REQ.get(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.getHeader(...)"
+              - pattern: "$REQ.json()"
+              - pattern: "$REQ.text()"
+              - pattern: "$REQ.formData()"
+              - pattern: "$REQ.blob()"
+              - pattern: "$REQ.arrayBuffer()"
+              - pattern: "$REQ.nextUrl.$K"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "function getServerSideProps($CTX) {...}"
+              - pattern-inside: "async function getServerSideProps($CTX) {...}"
+              - pattern-inside: "function getInitialProps($CTX) {...}"
+              - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
+              - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
+          - pattern-either:
+              - pattern: "$CTX.query"
+              - pattern: "$CTX.params"
+              - pattern: "$CTX.req.url"
+              - pattern: "$CTX.req.headers"
+              - pattern: "$CTX.req.body"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "function getServerSideProps($CTX) {...}"
+              - pattern-inside: "async function getServerSideProps($CTX) {...}"
+              - pattern-inside: "function getInitialProps($CTX) {...}"
+              - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
+              - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
+          - pattern-inside: "$REQ = $CTX.req; ..."
+          - pattern-either:
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.cookies"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: "function ($CTX, ...) {...}"
+              - pattern-inside: "async function ($CTX, ...) {...}"
+              - pattern-inside: "async ($CTX, ...) => {...}"
+              - pattern-inside: "($CTX, ...) => {...}"
+              - pattern-inside: "async function $F($CTX, ...) {...}"
+              - pattern-inside: "function $F($CTX, ...) {...}"
+              - pattern-inside: "async ($CTX, $NEXT) => {...}"
+          - metavariable-regex:
+              metavariable: "$CTX"
+              regex: "^(?i:_?(?:ctx|context|koaContext))$"
+          - pattern-either:
+              - pattern: "$CTX.query"
+              - pattern: "$CTX.params"
+              - pattern: "$CTX.headers"
+              - pattern: "$CTX.url"
+              - pattern: "$CTX.originalUrl"
+              - pattern: "$CTX.path"
+              - pattern: "$CTX.href"
+              - pattern: "$CTX.querystring"
+              - pattern: "$CTX.search"
+              - pattern: "$CTX.hostname"
+              - pattern: "$CTX.host"
+              - pattern: "$CTX.origin"
+              - pattern: "$CTX.request.query"
+              - pattern: "$CTX.request.body"
+              - pattern: "$CTX.request.headers"
+              - pattern: "$CTX.request.url"
+              - pattern: "$CTX.request.path"
+              - pattern: "$CTX.request.href"
+              - pattern: "$CTX.request.querystring"
+              - pattern: "$CTX.request.search"
+              - pattern: "$CTX.request.originalUrl"
+              - pattern: "$CTX.request.host"
+              - pattern: "$CTX.request.hostname"
+              - pattern: "$CTX.req.url"
+              - pattern: "$CTX.req.headers"
+              - pattern: "$CTX.request.params"
+              - pattern: "$CTX.cookies"
+              - pattern: "$CTX.get(...)"
+              - pattern: "$CTX.cookies.get(...)"
+              - pattern: "$CTX.request.get(...)"
+              - pattern: "$CTX.header(...)"
+      - patterns:
+          - pattern: "@Body(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Query(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Param(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Headers(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Req(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Request(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@Cookies(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@UploadedFile(...) $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "@UploadedFiles(...) $X"
+          - focus-metavariable: "$X"
+      - pattern: location.hash
+      - pattern: location.search
+      - pattern: location.href
+      - pattern: location.pathname
+      - pattern: window.location.hash
+      - pattern: window.location.search
+      - pattern: window.location.href
+      - pattern: window.location.pathname
+      - pattern: document.location.hash
+      - pattern: document.location.search
+      - pattern: document.location.href
+      - pattern: document.location.pathname
+      - pattern: document.URL
+      - pattern: document.documentURI
+      - pattern: document.baseURI
+      - pattern: document.referrer
+      - pattern: window.name
+      - pattern: self.location.hash
+      - pattern: self.location.search
+      - pattern: self.location.href
+      - pattern: top.location.hash
+      - pattern: top.location.search
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.data"
+          - pattern-inside: 'window.addEventListener("message", function($E) {...})'
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: 'window.addEventListener("message", ($E) => {...})'
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "window.onmessage = function($E) {...}"
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "window.onmessage = ($E) => {...}"
+    pattern-sinks:
+      - patterns:
+          - pattern: "window[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new window[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "self[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "globalThis[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "global[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "document[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "this[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$F[$X](...)(...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$F[$X](...)"
+          - pattern-inside: "function $F(...) {...}"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "window[$X]"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$P + $X"
+          - pattern-not: '"" + $X'
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: '^(?!""$|''''$).+'
+      - patterns:
+          - pattern: "`...${$X}...`"
+          - pattern-not: "`${$X}`"
+    options:
+      interfile: true

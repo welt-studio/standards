@@ -1,0 +1,266 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-xss-through-dom
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "XSS através do DOM: texto lido de elementos da página (inputs, atributos, textContent) é reinterpretado como HTML. O valor pode ter sido inserido pelo atacante; use textContent ou sanitize antes de gravar como HTML."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/xss-through-dom
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: "$E.value"
+      - patterns:
+          - pattern: "$E.textContent"
+      - patterns:
+          - pattern: "$E.innerText"
+      - patterns:
+          - pattern: "$E.getAttribute(...)"
+      - patterns:
+          - pattern: "$E.val()"
+      - patterns:
+          - pattern: "$E.text()"
+      - patterns:
+          - pattern: "$E.attr($A)"
+          - pattern-not: "$E.attr($A, $B)"
+      - patterns:
+          - pattern: "$E.dataset.$K"
+      - patterns:
+          - pattern: "$E.data($A)"
+      - patterns:
+          - pattern: "$E.prop('value')"
+      - patterns:
+          - pattern: "$E.prop($A)"
+      - patterns:
+          - pattern: "$E.files[0].name"
+      - patterns:
+          - pattern: "$E.elements.$K.value"
+      - patterns:
+          - pattern: "$E.target.value"
+      - patterns:
+          - pattern: "$V.$K"
+          - pattern-inside: "{..., validate: ($V) => {...}, ...}"
+      - patterns:
+          - pattern: "$V.$K"
+          - pattern-inside: "{..., onSubmit: ($V, ...) => {...}, ...}"
+      - patterns:
+          - pattern: "$V.$K"
+          - pattern-inside: "{..., handleSubmit: ($V, ...) => {...}, ...}"
+      - patterns:
+          - pattern: "$V.$K"
+          - pattern-inside: "{..., validate: $V => {...}, ...}"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.innerHTML = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.outerHTML = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.innerHTML += $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.outerHTML += $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.srcdoc = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "document.write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "document.writeln($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D.write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$D.writeln($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.insertAdjacentHTML($P, $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.html($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.append($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.prepend($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.after($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.before($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.wrap($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.wrapAll($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.wrapInner($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.replaceWith($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.appendTo($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.prependTo($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jQuery($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$.parseHTML($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jQuery.parseHTML($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$R.createContextualFragment($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.trustAsHtml($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustHtml($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustScript($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustStyle($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustUrl($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.bypassSecurityTrustResourceUrl($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setAttribute('srcdoc', $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setAttribute('on$EV', $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "<$C dangerouslySetInnerHTML={{__html: $X}} />"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setHTML($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.setHTMLUnsafe($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W.document.write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.insertAdjacentHTML($P, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "{__html: $X}"
+          - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - pattern: "escapeHtml($X)"
+      - pattern: "escapeHTML($X)"
+      - pattern: "escape($X)"
+      - pattern: "escapeString($X)"
+      - pattern: "encodeURIComponent($X)"
+      - pattern: "encodeURI($X)"
+      - pattern: "sanitize($X)"
+      - pattern: "sanitizeHtml($X, ...)"
+      - pattern: "sanitizeHtml($X)"
+      - pattern: "xss($X)"
+      - pattern: "$L.escape($X)"
+      - pattern: "$L.sanitize($X, ...)"
+      - pattern: "$L.encode($X, ...)"
+      - pattern: "$L.escapeHtml($X)"
+      - pattern: "$L.escapeHTML($X)"
+      - pattern: "he.escape($X)"
+      - pattern: "DOMPurify.sanitize($X, ...)"
+      - pattern: "validator.escape($X)"
+      - pattern: "_.escape($X)"
+      - pattern: "parseInt($X, ...)"
+      - pattern: "parseFloat($X)"
+      - pattern: "Number($X)"
+      - pattern: "Boolean($X)"
+      - pattern: "isNaN($X)"
+      - pattern: "$L.stripTags($X)"
+      - pattern: "striptags($X)"
+      - pattern: "$L.filterXSS($X)"
+      - pattern: "filterXSS($X)"
+      - pattern: "escapeHtmlEntities($X)"
+      - pattern: "htmlEscape($X)"
+      - pattern: "$X.toFixed(...)"
+      - pattern: "$L.encodeForHTML($X)"
+      - pattern: "encodeHTML($X)"
+      - pattern: "$X.length"
+      - pattern: "JSON.stringify($X)"
+      - pattern: "+$X"
+      - pattern: "typeof $X"
+      - patterns:
+          - pattern: '"$P" + $X'
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!\\s*<).+"
+      - pattern: "DOMPurify.sanitize($X, ...)"
+      - pattern: "$D.sanitize($X, ...)"
+      - pattern: "$E.text($X)"
+      - pattern: "document.createTextNode($X)"
+      - pattern: "$T.sanitizeHtml($X)"
+      - pattern: '$X.replace(/[<>&"'']/g, ...)'
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.jquery) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (typeof $X === 'object') {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (typeof $X !== 'string') {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (isElement($X)) {...}"
+      - patterns:
+          - pattern: "$X.replace(/$RE/, ...)"
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: ".*(?:<|\\\\x3[cC]|\\\\u003[cC]).*"
+      - patterns:
+          - pattern: '$X.replace(new RegExp("$RE", ...), ...)'
+          - metavariable-regex:
+              metavariable: "$RE"
+              regex: ".*<.*"
+      - pattern: "$X.charCodeAt(...)"
+      - pattern: "$X.indexOf(...)"
+      - pattern: "$X.search(...)"
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if ($E.origin === $O) {...}"
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if ($E.origin == $O) {...}"
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if (!$E.origin.startsWith($O)) { return; } ..."
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-inside: "if ($O.includes($E.origin)) {...}"
+    options:
+      interfile: true

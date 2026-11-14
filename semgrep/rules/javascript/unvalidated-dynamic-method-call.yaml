@@ -1,0 +1,86 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-unvalidated-dynamic-method-call
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Método chamado dinamicamente a partir de um nome controlado pelo usuário, sem validar que o valor é uma função própria do objeto. O nome pode apontar para `__proto__`, `valueOf` ou outro membro herdado. Valide a chave (`hasOwnProperty`, lista fixa) antes de chamar."
+    metadata:
+      category: security
+      cwe: "CWE-754: Improper Check for Unusual or Exceptional Conditions"
+      codeql: js/unvalidated-dynamic-method-call
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.cookies"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.get(...)"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|ctx\\.request|this\\.request)$"
+      - pattern-either:
+          - pattern: location.search
+          - pattern: location.hash
+          - pattern: location.href
+          - pattern: location.pathname
+          - pattern: window.location.search
+          - pattern: window.location.hash
+          - pattern: window.location.href
+          - pattern: document.location.search
+          - pattern: document.location.hash
+          - pattern: document.location.href
+          - pattern: document.URL
+          - pattern: document.documentURI
+          - pattern: document.referrer
+          - pattern: document.cookie
+          - pattern: window.name
+      - patterns:
+          - pattern: "$EV.data"
+          - pattern-either:
+              - pattern-inside: |
+                  $W.addEventListener("message", function ($EV, ...) {...})
+              - pattern-inside: |
+                  $W.addEventListener("message", ($EV, ...) => {...})
+              - pattern-inside: |
+                  addEventListener("message", ($EV, ...) => {...})
+              - pattern-inside: |
+                  $W.onmessage = ($EV) => {...}
+    pattern-propagators:
+      - pattern: "$V = $O[$K]"
+        from: "$K"
+        to: "$V"
+      - pattern: "$V = $O.get($K)"
+        from: "$K"
+        to: "$V"
+    pattern-sanitizers:
+      - pattern: "$K.startsWith(...)"
+      - pattern: "$K in $O"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$O[$K](...)"
+              - pattern: "new $O[$K](...)"
+              - pattern: "$F(...)"
+              - pattern: "new $F(...)"
+          - pattern-not-inside: |
+              try { ... } catch ($E) {...}
+          - pattern-not-inside: |
+              if (<... typeof $F === "function" ...>) { ... }
+          - pattern-not-inside: |
+              if (<... typeof $F == "function" ...>) { ... }
+          - focus-metavariable: "$F"

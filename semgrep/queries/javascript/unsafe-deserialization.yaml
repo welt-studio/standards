@@ -1,0 +1,301 @@
+rules:
+  - id: welt-js-unsafe-deserialization
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: "Dados controlados pelo usuário são desserializados com um esquema/biblioteca que instancia objetos arbitrários (YAML com tipos de função, `node-serialize`), o que permite execução remota de código. Use o esquema padrão seguro (`DEFAULT_SCHEMA`) ou JSON."
+    metadata:
+      category: security
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+      codeql: js/unsafe-deserialization
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-or-context
+      - "$model": javascript/document-location-hash
+      - "$model": javascript/document-location-search
+      - "$model": javascript/document-location-href
+      - "$model": javascript/document-location-pathname-source
+      - "$model": javascript/window-location-hash
+      - "$model": javascript/window-location-search
+      - "$model": javascript/window-location-href
+      - "$model": javascript/window-location-pathname-source
+      - "$model": javascript/location-hash
+      - "$model": javascript/location-search
+      - "$model": javascript/location-href-and-pathname-sources
+      - "$model": javascript/document-url-sources
+      - "$model": javascript/document-referrer
+      - "$model": javascript/window-name
+    pattern-sinks:
+      - patterns:
+          - pattern: "jsyaml.load($X, {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jsyaml.load($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.load($X, {..., schema: require("js-yaml-js-types").all, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.load($X, {..., schema: require("js-yaml-js-types").function, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.load($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").all), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.load($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").function), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.load($X, {..., schema: require("js-yaml-js-types").all.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.load($X, {..., schema: require("js-yaml-js-types").function.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.load($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend([..., require("js-yaml-js-types").all, ...]), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...};
+              ...
+          - pattern: "jsyaml.load($X, $C)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jsyaml.loadAll($X, {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jsyaml.loadAll($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.loadAll($X, {..., schema: require("js-yaml-js-types").all, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.loadAll($X, {..., schema: require("js-yaml-js-types").function, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.loadAll($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").all), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.loadAll($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").function), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.loadAll($X, {..., schema: require("js-yaml-js-types").all.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.loadAll($X, {..., schema: require("js-yaml-js-types").function.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.loadAll($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend([..., require("js-yaml-js-types").all, ...]), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...};
+              ...
+          - pattern: "jsyaml.loadAll($X, $C)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jsyaml.safeLoad($X, {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jsyaml.safeLoad($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoad($X, {..., schema: require("js-yaml-js-types").all, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoad($X, {..., schema: require("js-yaml-js-types").function, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoad($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").all), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoad($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").function), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoad($X, {..., schema: require("js-yaml-js-types").all.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoad($X, {..., schema: require("js-yaml-js-types").function.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoad($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend([..., require("js-yaml-js-types").all, ...]), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...};
+              ...
+          - pattern: "jsyaml.safeLoad($X, $C)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jsyaml.safeLoadAll($X, {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jsyaml.safeLoadAll($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoadAll($X, {..., schema: require("js-yaml-js-types").all, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoadAll($X, {..., schema: require("js-yaml-js-types").function, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoadAll($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").all), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoadAll($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").function), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoadAll($X, {..., schema: require("js-yaml-js-types").all.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoadAll($X, {..., schema: require("js-yaml-js-types").function.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'jsyaml.safeLoadAll($X, {..., schema: jsyaml.DEFAULT_SCHEMA.extend([..., require("js-yaml-js-types").all, ...]), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...};
+              ...
+          - pattern: "jsyaml.safeLoadAll($X, $C)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "yaml.load($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "yaml.load($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.load($X, {..., schema: require("js-yaml-js-types").all, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.load($X, {..., schema: require("js-yaml-js-types").function, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.load($X, {..., schema: yaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").all), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.load($X, {..., schema: yaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").function), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.load($X, {..., schema: require("js-yaml-js-types").all.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.load($X, {..., schema: require("js-yaml-js-types").function.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.load($X, {..., schema: yaml.DEFAULT_SCHEMA.extend([..., require("js-yaml-js-types").all, ...]), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...};
+              ...
+          - pattern: "yaml.load($X, $C)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "yaml.loadAll($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "yaml.loadAll($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.loadAll($X, {..., schema: require("js-yaml-js-types").all, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.loadAll($X, {..., schema: require("js-yaml-js-types").function, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.loadAll($X, {..., schema: yaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").all), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.loadAll($X, {..., schema: yaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").function), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.loadAll($X, {..., schema: require("js-yaml-js-types").all.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.loadAll($X, {..., schema: require("js-yaml-js-types").function.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.loadAll($X, {..., schema: yaml.DEFAULT_SCHEMA.extend([..., require("js-yaml-js-types").all, ...]), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...};
+              ...
+          - pattern: "yaml.loadAll($X, $C)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "yaml.safeLoad($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "yaml.safeLoad($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoad($X, {..., schema: require("js-yaml-js-types").all, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoad($X, {..., schema: require("js-yaml-js-types").function, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoad($X, {..., schema: yaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").all), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoad($X, {..., schema: yaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").function), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoad($X, {..., schema: require("js-yaml-js-types").all.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoad($X, {..., schema: require("js-yaml-js-types").function.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoad($X, {..., schema: yaml.DEFAULT_SCHEMA.extend([..., require("js-yaml-js-types").all, ...]), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...};
+              ...
+          - pattern: "yaml.safeLoad($X, $C)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "yaml.safeLoadAll($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "yaml.safeLoadAll($X, {..., schema: yaml.DEFAULT_FULL_SCHEMA, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoadAll($X, {..., schema: require("js-yaml-js-types").all, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoadAll($X, {..., schema: require("js-yaml-js-types").function, ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoadAll($X, {..., schema: yaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").all), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoadAll($X, {..., schema: yaml.DEFAULT_SCHEMA.extend(require("js-yaml-js-types").function), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoadAll($X, {..., schema: require("js-yaml-js-types").all.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoadAll($X, {..., schema: require("js-yaml-js-types").function.extend(...), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'yaml.safeLoadAll($X, {..., schema: yaml.DEFAULT_SCHEMA.extend([..., require("js-yaml-js-types").all, ...]), ...})'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = {..., schema: jsyaml.DEFAULT_FULL_SCHEMA, ...};
+              ...
+          - pattern: "yaml.safeLoadAll($X, $C)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "serialize.unserialize($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'require("node-serialize").unserialize($X)'
+          - focus-metavariable: "$X"

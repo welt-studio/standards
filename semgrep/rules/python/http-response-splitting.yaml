@@ -1,0 +1,153 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-http-response-splitting
+    message: "Dado vindo da requisição chega a um cabeçalho da resposta HTTP sem remover quebras de linha (header injection / response splitting)."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-113: Improper Neutralization of CRLF Sequences in HTTP Headers ('HTTP Response Splitting')"
+      codeql: py/http-response-splitting
+      notes: |-
+        Flask/Werkzeug: atributos do `request` (Flask.qll, Werkzeug.qll).
+        Parâmetros de rota (Flask, FastAPI, Starlette, Bottle...): variáveis da URL e do corpo.
+        Django/DRF: parâmetros da view depois do `request` (vêm da URL).
+        Tornado: argumentos e dados do RequestHandler (Tornado.qll).
+        http.server: cabeçalhos e caminho da requisição (Stdlib.qll, BaseHTTPRequestHandler).
+        WSGI: o `environ` da aplicação.
+        Remover \r e \n do valor.
+        Flask / Werkzeug: o nome do cabeçalho (o valor é rejeitado pelo framework).
+        http.server.
+        WSGI: start_response(status, headers).
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "flask.request.$A"
+              - pattern: "flask.request.$A(...)"
+              - pattern: "bottle.request.$A"
+              - pattern: "request.$A"
+              - pattern: "self.request.$A"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "^(args|form|values|json|data|cookies|headers|files|stream|environ|view_args|query_string|url|base_url|full_path|path|path_info|script_root|url_root|host|host_url|referrer|user_agent|authorization|get_json|get_data|input_stream|GET|POST|COOKIES|META|FILES|body|get_full_path|get_full_path_info|get_host|build_absolute_uri|query_params|query|match_info|rel_url|json|text|read|content|path_params|params|matchdict|post|headers|raw_post_data)$"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$APP.$ROUTE(...)
+                  def $F(..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$ROUTE(...)
+                  async def $F(..., $P, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$ROUTE"
+              regex: "^(route|get|post|put|delete|patch|api_route|head|options)$"
+          - focus-metavariable: "$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!self$|cls$|request$|response$)"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  def $F(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  def $F(self, request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $F(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $F(self, request, ..., $P, ...):
+                    ...
+          - focus-metavariable: "$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!self$|cls$|request$|args$|kwargs$)"
+      - pattern-either:
+          - pattern: "self.get_argument(...)"
+          - pattern: "self.get_arguments(...)"
+          - pattern: "self.get_query_argument(...)"
+          - pattern: "self.get_query_arguments(...)"
+          - pattern: "self.get_body_argument(...)"
+          - pattern: "self.get_body_arguments(...)"
+          - pattern: "self.get_cookie(...)"
+          - pattern: "self.get_secure_cookie(...)"
+          - pattern: self.path_args
+          - pattern: self.path_kwargs
+      - pattern: self.headers
+      - pattern: self.path
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  def $APP(environ, start_response):
+                    ...
+              - pattern-inside: |
+                  def $APP(self, environ, start_response):
+                    ...
+          - pattern: environ
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$X.replace(\"\\n\", ...)"
+      - patterns:
+          - pattern: "$X.replace(\"\\r\", ...)"
+      - pattern: "int(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$H.add($N, ...)"
+              - pattern: "$H.add_header($N, ...)"
+              - pattern: "$H.set($N, ...)"
+              - pattern: "$H.setdefault($N, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  from flask import $X
+                  ...
+              - pattern-inside: |
+                  from werkzeug.datastructures import $X
+                  ...
+              - pattern-inside: |
+                  import flask
+                  ...
+              - pattern-inside: |
+                  import werkzeug
+                  ...
+          - focus-metavariable: "$N"
+      - patterns:
+          - pattern-either:
+              - pattern: "make_response($B, {$N: $V}, ...)"
+              - pattern: "flask.make_response($B, {$N: $V}, ...)"
+              - pattern: "$R.headers.extend($N)"
+              - pattern: "$R.headers.update($N)"
+              - pattern: "$R.headers[$N] = $V"
+              - pattern: "$R[$N] = $V"
+          - focus-metavariable: "$N"
+      - patterns:
+          - pattern-either:
+              - pattern: "$S.send_header($N, $V)"
+              - pattern: "$S.send_header($N, $V, ...)"
+          - focus-metavariable: "$N"
+      - patterns:
+          - pattern: "$S.send_header($N, $V)"
+          - focus-metavariable: "$V"
+      - patterns:
+          - pattern-either:
+              - pattern: "$S.extra_response_headers = $X"
+              - pattern: "$C(..., extra_response_headers=$X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "start_response($ST, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.setHeader($N, $V)"
+          - focus-metavariable: "$N"
+      - patterns:
+          - pattern: "$S.setHeader($N, $V)"
+          - focus-metavariable: "$V"

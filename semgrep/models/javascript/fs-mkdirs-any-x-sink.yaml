@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.mkdirs($X, ...)"
+    - focus-metavariable: "$X"

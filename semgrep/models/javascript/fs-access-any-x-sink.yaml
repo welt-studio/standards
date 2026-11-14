@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.access($X, ...)"
+    - focus-metavariable: "$X"

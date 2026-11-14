@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.emptyDirSync($X, ...)"
+    - focus-metavariable: "$X"

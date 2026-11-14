@@ -1,0 +1,7 @@
+- pattern: "$L.filterXSS($X)"
+- pattern: "filterXSS($X)"
+- pattern: "escapeHtmlEntities($X)"
+- pattern: "htmlEscape($X)"
+- pattern: "$X.toFixed(...)"
+- pattern: "$L.encodeForHTML($X)"
+- pattern: "encodeHTML($X)"

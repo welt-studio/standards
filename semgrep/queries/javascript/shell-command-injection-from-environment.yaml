@@ -1,0 +1,37 @@
+rules:
+  - id: welt-js-shell-command-injection-from-environment
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Este comando de shell depende de um caminho não controlado (diretório do script, diretório atual, caminho absoluto) que pode conter caracteres especiais do shell e injetar comandos. Escape o valor ou coloque entre aspas."
+    metadata:
+      category: security
+      cwe: "CWE-078: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      codeql: js/shell-command-injection-from-environment
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/dirname-source
+      - pattern: __filename
+      - pattern: process.execPath
+      - pattern: "process.cwd()"
+      - pattern: "path.resolve(...)"
+      - pattern: "path.join(__dirname, ...)"
+      - pattern: "fs.realpathSync(...)"
+      - pattern: "fs.realpath(...)"
+      - pattern: import.meta.dirname
+      - pattern: import.meta.filename
+    pattern-sinks:
+      - "$model": javascript/child-process-exec-sinks
+      - "$model": javascript/child-process-sinks
+      - "$model": javascript/execa-x-sink
+      - "$model": javascript/execa-sinks
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "\"\\\"\" + $X + \"\\\"\""
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: '"''" + $X + "''"'
+    options:
+      interfile: true

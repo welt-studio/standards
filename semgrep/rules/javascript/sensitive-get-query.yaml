@@ -1,0 +1,296 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-sensitive-get-query
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta rota GET lê uma senha ou outro dado sensível da query string. A URL fica registrada em logs, histórico do navegador e cabeçalhos Referer. Envie o valor no corpo de uma requisição POST."
+    metadata:
+      category: security
+      cwe: "CWE-598: Use of GET Request Method With Sensitive Query Strings"
+      codeql: js/sensitive-get-query
+    pattern-either:
+      - patterns:
+          - pattern: "$REQ.query.$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., function($REQ, ...) {...})"
+      - patterns:
+          - pattern: "$REQ.query[$S]"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., function($REQ, ...) {...})"
+      - patterns:
+          - pattern: "$REQ.param($S)"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., function($REQ, ...) {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.query.$X"
+              - pattern: "let $V = $REQ.query.$X"
+              - pattern: "var $V = $REQ.query.$X"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., function($REQ, ...) {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.query[$X]"
+              - pattern: "let $V = $REQ.query[$X]"
+              - pattern: "var $V = $REQ.query[$X]"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., function($REQ, ...) {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.param(...)"
+              - pattern: "let $V = $REQ.param(...)"
+              - pattern: "var $V = $REQ.param(...)"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., function($REQ, ...) {...})"
+      - patterns:
+          - pattern: "$REQ.query.$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., ($REQ, ...) => {...})"
+      - patterns:
+          - pattern: "$REQ.query[$S]"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., ($REQ, ...) => {...})"
+      - patterns:
+          - pattern: "$REQ.param($S)"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., ($REQ, ...) => {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.query.$X"
+              - pattern: "let $V = $REQ.query.$X"
+              - pattern: "var $V = $REQ.query.$X"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., ($REQ, ...) => {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.query[$X]"
+              - pattern: "let $V = $REQ.query[$X]"
+              - pattern: "var $V = $REQ.query[$X]"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., ($REQ, ...) => {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.param(...)"
+              - pattern: "let $V = $REQ.param(...)"
+              - pattern: "var $V = $REQ.param(...)"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., ($REQ, ...) => {...})"
+      - patterns:
+          - pattern: "$REQ.query.$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async function($REQ, ...) {...})"
+      - patterns:
+          - pattern: "$REQ.query[$S]"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async function($REQ, ...) {...})"
+      - patterns:
+          - pattern: "$REQ.param($S)"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async function($REQ, ...) {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.query.$X"
+              - pattern: "let $V = $REQ.query.$X"
+              - pattern: "var $V = $REQ.query.$X"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async function($REQ, ...) {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.query[$X]"
+              - pattern: "let $V = $REQ.query[$X]"
+              - pattern: "var $V = $REQ.query[$X]"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async function($REQ, ...) {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.param(...)"
+              - pattern: "let $V = $REQ.param(...)"
+              - pattern: "var $V = $REQ.param(...)"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async function($REQ, ...) {...})"
+      - patterns:
+          - pattern: "$REQ.query.$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async ($REQ, ...) => {...})"
+      - patterns:
+          - pattern: "$REQ.query[$S]"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async ($REQ, ...) => {...})"
+      - patterns:
+          - pattern: "$REQ.param($S)"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async ($REQ, ...) => {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.query.$X"
+              - pattern: "let $V = $REQ.query.$X"
+              - pattern: "var $V = $REQ.query.$X"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async ($REQ, ...) => {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.query[$X]"
+              - pattern: "let $V = $REQ.query[$X]"
+              - pattern: "var $V = $REQ.query[$X]"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async ($REQ, ...) => {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = $REQ.param(...)"
+              - pattern: "let $V = $REQ.param(...)"
+              - pattern: "var $V = $REQ.param(...)"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+          - pattern-inside: "$APP.get($P, ..., async ($REQ, ...) => {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "query.$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - pattern-inside: "$APP.get($P, ..., function({query}, ...) {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = query.$X"
+              - pattern: "let $V = query.$X"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - pattern-inside: "$APP.get($P, ..., function({query}, ...) {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "query.$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - pattern-inside: "$APP.get($P, ..., ({query}, ...) => {...})"
+      - patterns:
+          - pattern-either:
+              - pattern: "const $V = query.$X"
+              - pattern: "let $V = query.$X"
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))))"
+          - pattern-inside: "$APP.get($P, ..., ({query}, ...) => {...})"

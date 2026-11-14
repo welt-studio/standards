@@ -1,0 +1,211 @@
+rules:
+  - id: welt-js-incomplete-sanitization
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta substituição troca só a primeira ocorrência (sem a flag global) ou escapa caracteres sem escapar antes a barra invertida da entrada. Use uma expressão regular com a flag `g` e escape a barra invertida antes dos demais caracteres."
+    metadata:
+      category: security
+      cwe: "CWE-116: Improper Encoding or Escaping of Output"
+      codeql: js/incomplete-sanitization
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern: "$S.replace($ARG, $R)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:[\"'`](?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\\\\\|\\\\[nrt]|%[0-9A-Fa-f]{2}|/\\.\\./|\\.\\./|/\\.\\.)[\"'`]?)(?:\\s*\\+\\s*[\"'`][\"'`])*$|^(?:[\"'`][\"'`]\\s*\\+\\s*)+[\"'`](?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\\\\\|\\\\[nrt]|%[0-9A-Fa-f]{2}|/\\.\\./|\\.\\./|/\\.\\.)[\"'`]$"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?![\"'`](?:\\\\n|%|\\$)[\"'`]$)"
+          - patterns:
+              - pattern: "$S.replace(/$RE/, $R)"
+              - pattern-not: "$S.replace(/$RE/g, $R)"
+              - pattern-not: "$S.replace(/$RE/gi, $R)"
+              - pattern-not: "$S.replace(/$RE/gim, $R)"
+              - pattern-not: "$S.replace(/$RE/gis, $R)"
+              - pattern-not: "$S.replace(/$RE/giu, $R)"
+              - pattern-not: "$S.replace(/$RE/gm, $R)"
+              - pattern-not: "$S.replace(/$RE/gmi, $R)"
+              - pattern-not: "$S.replace(/$RE/gms, $R)"
+              - pattern-not: "$S.replace(/$RE/gmu, $R)"
+              - pattern-not: "$S.replace(/$RE/gs, $R)"
+              - pattern-not: "$S.replace(/$RE/gsi, $R)"
+              - pattern-not: "$S.replace(/$RE/gsm, $R)"
+              - pattern-not: "$S.replace(/$RE/gsu, $R)"
+              - pattern-not: "$S.replace(/$RE/gu, $R)"
+              - pattern-not: "$S.replace(/$RE/gui, $R)"
+              - pattern-not: "$S.replace(/$RE/gum, $R)"
+              - pattern-not: "$S.replace(/$RE/gus, $R)"
+              - pattern-not: "$S.replace(/$RE/ig, $R)"
+              - pattern-not: "$S.replace(/$RE/igm, $R)"
+              - pattern-not: "$S.replace(/$RE/igs, $R)"
+              - pattern-not: "$S.replace(/$RE/igu, $R)"
+              - pattern-not: "$S.replace(/$RE/img, $R)"
+              - pattern-not: "$S.replace(/$RE/isg, $R)"
+              - pattern-not: "$S.replace(/$RE/iug, $R)"
+              - pattern-not: "$S.replace(/$RE/mg, $R)"
+              - pattern-not: "$S.replace(/$RE/mgi, $R)"
+              - pattern-not: "$S.replace(/$RE/mgs, $R)"
+              - pattern-not: "$S.replace(/$RE/mgu, $R)"
+              - pattern-not: "$S.replace(/$RE/mig, $R)"
+              - pattern-not: "$S.replace(/$RE/msg, $R)"
+              - pattern-not: "$S.replace(/$RE/mug, $R)"
+              - pattern-not: "$S.replace(/$RE/sg, $R)"
+              - pattern-not: "$S.replace(/$RE/sgi, $R)"
+              - pattern-not: "$S.replace(/$RE/sgm, $R)"
+              - pattern-not: "$S.replace(/$RE/sgu, $R)"
+              - pattern-not: "$S.replace(/$RE/sig, $R)"
+              - pattern-not: "$S.replace(/$RE/smg, $R)"
+              - pattern-not: "$S.replace(/$RE/sug, $R)"
+              - pattern-not: "$S.replace(/$RE/ug, $R)"
+              - pattern-not: "$S.replace(/$RE/ugi, $R)"
+              - pattern-not: "$S.replace(/$RE/ugm, $R)"
+              - pattern-not: "$S.replace(/$RE/ugs, $R)"
+              - pattern-not: "$S.replace(/$RE/uig, $R)"
+              - pattern-not: "$S.replace(/$RE/umg, $R)"
+              - pattern-not: "$S.replace(/$RE/usg, $R)"
+              - metavariable-regex:
+                  metavariable: "$RE"
+                  regex: "^\\(?(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)\\)?$|^\\(?\\[(?:(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\))+\\]\\)?$|^\\(?(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)\\|(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)\\)$|^\\\\\\.\\\\\\.\\\\?/$|^\\.\\.$"
+              - metavariable-regex:
+                  metavariable: "$RE"
+                  regex: "^(?!(?:\\\\n|%|\\$)$)"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$S.replace(new RegExp($A), $R)"
+                  - pattern: "$S.replace(new RegExp($A, $F), $R)"
+              - metavariable-regex:
+                  metavariable: "$A"
+                  regex: "^[\"'`](?:(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)|\\\\\\\\\\.\\\\\\\\\\./)[\"'`]$"
+              - metavariable-regex:
+                  metavariable: "$A"
+                  regex: "^(?![\"'`](?:\\\\n|%|\\$)[\"'`]$)"
+          - patterns:
+              - pattern-inside: |
+                  $V = /$RE/;
+                  ...
+              - pattern: "$S.replace($V, $R)"
+              - metavariable-regex:
+                  metavariable: "$RE"
+                  regex: "^\\(?(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)\\)?$|^\\(?\\[(?:(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\))+\\]\\)?$|^\\(?(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)\\|(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)\\)$|^\\\\\\.\\\\\\.\\\\?/$|^\\.\\.$"
+          - patterns:
+              - pattern-either:
+                  - pattern: '$S.replace(...).replace($A, "")'
+                  - pattern: '$S.replace($A, "").replace(...)'
+                  - pattern: '$S.replace(new RegExp($A), "").replace(...)'
+                  - pattern: '$S.replace(...).replace(new RegExp($A), "")'
+              - metavariable-regex:
+                  metavariable: "$A"
+                  regex: "^[\"'`](?:\\\\n|%|\\$)[\"'`]$"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$S.replace(/$RE/g, $R)"
+                  - pattern: "$S.replace(/$RE/gi, $R)"
+                  - pattern: "$S.replace(/$RE/gim, $R)"
+                  - pattern: "$S.replace(/$RE/gis, $R)"
+                  - pattern: "$S.replace(/$RE/giu, $R)"
+                  - pattern: "$S.replace(/$RE/gm, $R)"
+                  - pattern: "$S.replace(/$RE/gmi, $R)"
+                  - pattern: "$S.replace(/$RE/gms, $R)"
+                  - pattern: "$S.replace(/$RE/gmu, $R)"
+                  - pattern: "$S.replace(/$RE/gs, $R)"
+                  - pattern: "$S.replace(/$RE/gsi, $R)"
+                  - pattern: "$S.replace(/$RE/gsm, $R)"
+                  - pattern: "$S.replace(/$RE/gsu, $R)"
+                  - pattern: "$S.replace(/$RE/gu, $R)"
+                  - pattern: "$S.replace(/$RE/gui, $R)"
+                  - pattern: "$S.replace(/$RE/gum, $R)"
+                  - pattern: "$S.replace(/$RE/gus, $R)"
+                  - pattern: "$S.replace(/$RE/ig, $R)"
+                  - pattern: "$S.replace(/$RE/igm, $R)"
+                  - pattern: "$S.replace(/$RE/igs, $R)"
+                  - pattern: "$S.replace(/$RE/igu, $R)"
+                  - pattern: "$S.replace(/$RE/img, $R)"
+                  - pattern: "$S.replace(/$RE/isg, $R)"
+                  - pattern: "$S.replace(/$RE/iug, $R)"
+                  - pattern: "$S.replace(/$RE/mg, $R)"
+                  - pattern: "$S.replace(/$RE/mgi, $R)"
+                  - pattern: "$S.replace(/$RE/mgs, $R)"
+                  - pattern: "$S.replace(/$RE/mgu, $R)"
+                  - pattern: "$S.replace(/$RE/mig, $R)"
+                  - pattern: "$S.replace(/$RE/msg, $R)"
+                  - pattern: "$S.replace(/$RE/mug, $R)"
+                  - pattern: "$S.replace(/$RE/sg, $R)"
+                  - pattern: "$S.replace(/$RE/sgi, $R)"
+                  - pattern: "$S.replace(/$RE/sgm, $R)"
+                  - pattern: "$S.replace(/$RE/sgu, $R)"
+                  - pattern: "$S.replace(/$RE/sig, $R)"
+                  - pattern: "$S.replace(/$RE/smg, $R)"
+                  - pattern: "$S.replace(/$RE/sug, $R)"
+                  - pattern: "$S.replace(/$RE/ug, $R)"
+                  - pattern: "$S.replace(/$RE/ugi, $R)"
+                  - pattern: "$S.replace(/$RE/ugm, $R)"
+                  - pattern: "$S.replace(/$RE/ugs, $R)"
+                  - pattern: "$S.replace(/$RE/uig, $R)"
+                  - pattern: "$S.replace(/$RE/umg, $R)"
+                  - pattern: "$S.replace(/$RE/usg, $R)"
+                  - pattern: "$S.replace(/$RE/, $R)"
+                  - pattern: '$S.replace(new RegExp($A, "g"), $R)'
+                  - pattern: "$S.replace(new RegExp($A, $F), $R)"
+                  - pattern: "$S.replace(new RegExp($A), $R)"
+              - metavariable-regex:
+                  metavariable: "$R"
+                  regex: "^([\"'`])\\\\\\\\(?:\\$[&0-9]|\\\\?[\"'])\\1$"
+              - metavariable-regex:
+                  metavariable: "$RE"
+                  regex: "^\\(?(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)\\)?$|^\\(?\\[(?:(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\))+\\]\\)?$|^\\(?(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)\\|(?:\\\\?['\"&<>*|{}%$\\[\\]/]|\\\\[nrt]|\\\\\\\\)\\)$|^\\\\\\.\\\\\\.\\\\?/$|^\\.\\.$"
+      - pattern-not-inside: "while (...) $BODY"
+      - pattern-not-inside: "while (...) { ... }"
+      - pattern-not-inside: '$X.replace("[", "").replace("]", "")'
+      - pattern-not-inside: |
+          $V = $V.replace("[", "");
+          ...
+          $V = $V.replace("]", "");
+      - pattern-not-inside: '$X.replace("]", "").replace("[", "")'
+      - pattern-not-inside: |
+          $V = $V.replace("]", "");
+          ...
+          $V = $V.replace("[", "");
+      - pattern-not-inside: '$X.replace("(", "").replace(")", "")'
+      - pattern-not-inside: |
+          $V = $V.replace("(", "");
+          ...
+          $V = $V.replace(")", "");
+      - pattern-not-inside: '$X.replace(")", "").replace("(", "")'
+      - pattern-not-inside: |
+          $V = $V.replace(")", "");
+          ...
+          $V = $V.replace("(", "");
+      - pattern-not-inside: '$X.replace("{", "").replace("}", "")'
+      - pattern-not-inside: |
+          $V = $V.replace("{", "");
+          ...
+          $V = $V.replace("}", "");
+      - pattern-not-inside: '$X.replace("}", "").replace("{", "")'
+      - pattern-not-inside: |
+          $V = $V.replace("}", "");
+          ...
+          $V = $V.replace("{", "");
+      - pattern-not-inside: '$X.replace(''"'', "").replace(''"'', "")'
+      - pattern-not-inside: |
+          $V = $V.replace('"', "");
+          ...
+          $V = $V.replace('"', "");
+      - pattern-not-inside: '$X.replace("''", "").replace("''", "")'
+      - pattern-not-inside: |
+          $V = $V.replace("'", "");
+          ...
+          $V = $V.replace("'", "");
+      - pattern-not-inside: "$T.replace(/\\\\/g, ...).replace(...)"
+      - pattern-not-inside: |
+          $V = $V.replace(/\\/g, ...);
+          ...
+      - pattern-not-inside: "$T.replace(/[\\\\]/g, ...).replace(...)"
+      - pattern-not-inside: |
+          $V = $V.replace(/[\\]/g, ...);
+          ...
+      - pattern-not-inside: |
+          $V = JSON.stringify(...);
+          ...

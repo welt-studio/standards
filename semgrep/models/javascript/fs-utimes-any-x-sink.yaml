@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.utimes($X, ...)"
+    - focus-metavariable: "$X"

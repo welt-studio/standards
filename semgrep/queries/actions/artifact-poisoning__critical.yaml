@@ -1,0 +1,391 @@
+rules:
+  - id: welt-actions-artifact-poisoning-critical
+    message: "O artefato baixado de outro workflow (`workflow_run`, `gh run download` etc.) é produzido por código do PR e pode ter qualquer conteúdo; um passo seguinte que o executa (scripts, `npm install`, action local) roda com os privilégios deste workflow. Extraia o artefato num diretório temporário e trate o conteúdo como dado."
+    severity: ERROR
+    languages:
+      - yaml
+    metadata:
+      category: security
+      cwe: "CWE-829: Inclusion of Functionality from Untrusted Control Sphere"
+      codeql: actions/artifact-poisoning/critical
+      confidence: MEDIUM
+      technology:
+        - github-actions
+      notes: |-
+        download em diretório temporário não conta (isSubpath com o caminho do passo seguinte)
+        download em diretório temporário não conta (isSubpath com o caminho do passo seguinte)
+        download em diretório temporário não conta (isSubpath com o caminho do passo seguinte)
+        download em diretório temporário não conta (isSubpath com o caminho do passo seguinte)
+        Job sem privilégio: permissões só de leitura e sem segredos (hasExplicitSecretAccess).
+    paths:
+      include:
+        - "*.yml"
+        - "*.yaml"
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-workflow-run-without-branches-regex
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              run-id: $RUN
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/download-artifact@"
+                      - metavariable-regex:
+                          metavariable: "$RUN"
+                          regex: "(?is)^.*github\\.event\\.workflow_run\\.id"
+                  - patterns:
+                      - "$model": actions/uses-step
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@"
+                      - pattern-not: |
+                          - uses: $U
+                            with:
+                              ...
+                              branch: $B
+                              ...
+                            ...
+                      - pattern-not: |
+                          - uses: $U
+                            with:
+                              ...
+                              event: pull_request
+                              ...
+                            ...
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              script: $JS
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex:
+                            "$text": actions/github-script-action-ref
+                      - metavariable-regex:
+                          metavariable: "$JS"
+                          regex: "(?is)^(?!.*exclude_pull_requests:\\s*true)(?=.*listWorkflowRunArtifacts\\().*downloadArtifact\\(.*"
+                  - patterns:
+                      - "$model": actions/run-step
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url)"
+              - pattern-not:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          with:
+                            ...
+                            path: $DP
+                            ...
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$DP"
+                        regex: "(?is)^[\\\"']?(?:/tmp|\\$\\{\\{\\s*runner\\.temp\\s*\\}\\}|\\$RUNNER_TEMP)"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/download-artifact@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+run-id:[^\\n]*workflow_run\\.id|uses:[ \\t]*[\\\"']?(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@|listWorkflowRunArtifacts\\(|gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace)))"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $KEY:
+                          ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-workflow-run-head-repository-regex
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-workflow-run-head-repository-regex
+              - "$model": actions/job-without-environment
+              - "$model": actions/job-with-needs-exclusion
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-pull-request-target-regex
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              run-id: $RUN
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/download-artifact@"
+                      - metavariable-regex:
+                          metavariable: "$RUN"
+                          regex: "(?is)^.*github\\.event\\.workflow_run\\.id"
+                  - patterns:
+                      - "$model": actions/uses-step
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@"
+                      - pattern-not: |
+                          - uses: $U
+                            with:
+                              ...
+                              branch: $B
+                              ...
+                            ...
+                      - pattern-not: |
+                          - uses: $U
+                            with:
+                              ...
+                              event: pull_request
+                              ...
+                            ...
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              script: $JS
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex:
+                            "$text": actions/github-script-action-ref
+                      - metavariable-regex:
+                          metavariable: "$JS"
+                          regex: "(?is)^(?!.*exclude_pull_requests:\\s*true)(?=.*listWorkflowRunArtifacts\\().*downloadArtifact\\(.*"
+                  - patterns:
+                      - "$model": actions/run-step
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url)"
+              - pattern-not:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          with:
+                            ...
+                            path: $DP
+                            ...
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$DP"
+                        regex: "(?is)^[\\\"']?(?:/tmp|\\$\\{\\{\\s*runner\\.temp\\s*\\}\\}|\\$RUNNER_TEMP)"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/download-artifact@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+run-id:[^\\n]*workflow_run\\.id|uses:[ \\t]*[\\\"']?(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@|listWorkflowRunArtifacts\\(|gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace)))"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $KEY:
+                          ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-pr-head-repository-regex
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-pr-head-repository-regex
+              - "$model": actions/job-without-environment
+              - "$model": actions/job-with-needs-exclusion
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-issue-comment-regex
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              run-id: $RUN
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/download-artifact@"
+                      - metavariable-regex:
+                          metavariable: "$RUN"
+                          regex: "(?is)^.*github\\.event\\.workflow_run\\.id"
+                  - patterns:
+                      - "$model": actions/uses-step
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@"
+                      - pattern-not: |
+                          - uses: $U
+                            with:
+                              ...
+                              branch: $B
+                              ...
+                            ...
+                      - pattern-not: |
+                          - uses: $U
+                            with:
+                              ...
+                              event: pull_request
+                              ...
+                            ...
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              script: $JS
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex:
+                            "$text": actions/github-script-action-ref
+                      - metavariable-regex:
+                          metavariable: "$JS"
+                          regex: "(?is)^(?!.*exclude_pull_requests:\\s*true)(?=.*listWorkflowRunArtifacts\\().*downloadArtifact\\(.*"
+                  - patterns:
+                      - "$model": actions/run-step
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url)"
+              - pattern-not:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          with:
+                            ...
+                            path: $DP
+                            ...
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$DP"
+                        regex: "(?is)^[\\\"']?(?:/tmp|\\$\\{\\{\\s*runner\\.temp\\s*\\}\\}|\\$RUNNER_TEMP)"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/download-artifact@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+run-id:[^\\n]*workflow_run\\.id|uses:[ \\t]*[\\\"']?(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@|listWorkflowRunArtifacts\\(|gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace)))"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $KEY:
+                          ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-issue-pr-author-association-regex
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex:
+                          "$text": actions/actor-condition-issue-pr-author-association-regex
+              - "$model": actions/job-without-environment
+              - "$model": actions/job-with-needs-exclusion
+          - patterns:
+              - pattern-inside:
+                  pattern-regex:
+                    "$text": actions/workflow-on-workflow-call-regex
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              run-id: $RUN
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^actions/download-artifact@"
+                      - metavariable-regex:
+                          metavariable: "$RUN"
+                          regex: "(?is)^.*github\\.event\\.workflow_run\\.id"
+                  - patterns:
+                      - "$model": actions/uses-step
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@"
+                      - pattern-not: |
+                          - uses: $U
+                            with:
+                              ...
+                              branch: $B
+                              ...
+                            ...
+                      - pattern-not: |
+                          - uses: $U
+                            with:
+                              ...
+                              event: pull_request
+                              ...
+                            ...
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            with:
+                              ...
+                              script: $JS
+                              ...
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex:
+                            "$text": actions/github-script-action-ref
+                      - metavariable-regex:
+                          metavariable: "$JS"
+                          regex: "(?is)^(?!.*exclude_pull_requests:\\s*true)(?=.*listWorkflowRunArtifacts\\().*downloadArtifact\\(.*"
+                  - patterns:
+                      - "$model": actions/run-step
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?is)^.*(?:gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url)"
+              - pattern-not:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          with:
+                            ...
+                            path: $DP
+                            ...
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$DP"
+                        regex: "(?is)^[\\\"']?(?:/tmp|\\$\\{\\{\\s*runner\\.temp\\s*\\}\\}|\\$RUNNER_TEMP)"
+              - "$model": actions/job-with-steps
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/download-artifact@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+run-id:[^\\n]*workflow_run\\.id|uses:[ \\t]*[\\\"']?(?:dawidd6/action\\-download\\-artifact|marcofaggian/action\\-download\\-multiple\\-artifacts|benday\\-inc/download\\-latest\\-artifact|blablacar/action\\-download\\-last\\-artifact|levonet/action\\-download\\-last\\-artifact|bettermarks/action\\-artifact\\-download|aochmann/actions\\-download\\-artifact|cytopia/download\\-artifact\\-retry\\-action|alextompkins/download\\-prior\\-artifact|nmerget/download\\-gzip\\-artifact|benday\\-inc/download\\-artifact|synergy\\-au/download\\-workflow\\-artifacts\\-action|ishworkh/docker\\-image\\-artifact\\-download|ishworkh/container\\-image\\-artifact\\-download|sidx1024/action\\-download\\-artifact|hyperskill/azblob\\-download\\-artifact|ma\\-ve/action\\-download\\-artifact\\-with\\-retry|Legit\\-Labs/action\\-download\\-artifact)@|listWorkflowRunArtifacts\\(|gh[ \\t]+run[ \\t]+download|workflow_run\\.artifacts_url).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace)))"
+      - "$model": actions/job-without-write-permission-or-secret-exclusion

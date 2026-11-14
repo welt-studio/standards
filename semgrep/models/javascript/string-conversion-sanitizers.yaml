@@ -1,0 +1,3 @@
+- pattern: "String($X)"
+- pattern: "`${$X}`"
+- pattern: "$X.toString()"

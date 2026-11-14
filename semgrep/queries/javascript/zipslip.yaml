@@ -1,0 +1,245 @@
+rules:
+  - id: welt-js-zipslip
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Zip Slip: o caminho de uma entrada de arquivo compactado é usado para gravar arquivos sem validação e pode escapar do diretório de extração (entradas com '..'). Resolva o caminho e confira que ele fica dentro do destino."
+    metadata:
+      category: security
+      cwe: "CWE-022: Improper Limitation of a Pathname to a Restricted Directory"
+      codeql: js/zipslip
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: "$E.path"
+          - pattern-inside: "$S.on('entry', ($E) => {...})"
+      - patterns:
+          - pattern: "$E.path"
+          - pattern-inside: "$S.on('entry', function($E) {...})"
+      - patterns:
+          - pattern: "$E.fileName"
+          - pattern-inside: "$S.on('entry', ($E) => {...})"
+      - patterns:
+          - pattern: "$E.fileName"
+          - pattern-inside: "$S.on('entry', function($E) {...})"
+      - patterns:
+          - pattern: "$E.header.name"
+          - pattern-inside: "$S.on('entry', function($E) {...})"
+      - patterns:
+          - pattern: "$E.entryName"
+          - pattern-inside: "$Z.forEach(function($E) {...})"
+      - patterns:
+          - pattern: "$E.entryName"
+          - pattern-inside: "$Z.forEach(($E) => {...})"
+      - patterns:
+          - pattern: "$E.entryName"
+          - pattern-inside: "for (const $E of $Z.getEntries()) {...}"
+      - pattern: "$Z.getEntries()"
+      - patterns:
+          - pattern: "$NAME"
+          - pattern-inside: "for ($NAME in $Z.files) {...}"
+      - patterns:
+          - pattern: "$NAME"
+          - pattern-inside: "$Z.forEach(function($NAME, ...) {...})"
+      - patterns:
+          - pattern: "$NAME"
+          - pattern-inside: "$Z.forEach(($NAME, ...) => {...})"
+      - patterns:
+          - pattern: "$H.name"
+          - pattern-inside: "$X.on('entry', function($H, ...) {...})"
+      - patterns:
+          - pattern: "$E.path"
+          - pattern-inside: "tar.extract({..., filter: ($E) => {...}})"
+      - patterns:
+          - pattern: "$ENTRY.$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?:fileName|entryName|path)$"
+          - pattern-inside: "$Y.eachEntry(function($ENTRY) {...})"
+    pattern-sinks:
+      - "$model": javascript/any-fs-read-file-any-x-sink
+      - "$model": javascript/any-fs-read-file-sync-any-x-sink
+      - "$model": javascript/any-fs-write-file-any-x-sink
+      - "$model": javascript/any-fs-write-file-sync-any-x-sink
+      - "$model": javascript/any-fs-append-file-any-x-sink
+      - "$model": javascript/any-fs-append-file-sync-any-x-sink
+      - "$model": javascript/any-fs-create-read-stream-any-x-sink
+      - "$model": javascript/any-fs-create-write-stream-any-x-sink
+      - "$model": javascript/any-fs-open-any-x-sink
+      - "$model": javascript/any-fs-open-sync-any-x-sink
+      - "$model": javascript/any-fs-readdir-any-x-sink
+      - "$model": javascript/any-fs-readdir-sync-any-x-sink
+      - "$model": javascript/any-fs-stat-any-x-sink
+      - "$model": javascript/any-fs-stat-sync-any-x-sink
+      - "$model": javascript/any-fs-lstat-any-x-sink
+      - "$model": javascript/any-fs-lstat-sync-any-x-sink
+      - "$model": javascript/any-fs-access-any-x-sink
+      - "$model": javascript/any-fs-access-sync-any-x-sink
+      - "$model": javascript/any-fs-unlink-any-x-sink
+      - "$model": javascript/any-fs-unlink-sync-any-x-sink
+      - "$model": javascript/any-fs-rmdir-any-x-sink
+      - "$model": javascript/any-fs-rmdir-sync-any-x-sink
+      - "$model": javascript/any-fs-rm-any-x-sink
+      - "$model": javascript/any-fs-rm-sync-any-x-sink
+      - "$model": javascript/any-fs-mkdir-any-x-sink
+      - "$model": javascript/any-fs-mkdir-sync-any-x-sink
+      - "$model": javascript/any-fs-truncate-any-x-sink
+      - "$model": javascript/any-fs-truncate-sync-any-x-sink
+      - "$model": javascript/any-fs-chmod-any-x-sink
+      - "$model": javascript/any-fs-chmod-sync-any-x-sink
+      - "$model": javascript/any-fs-chown-any-x-sink
+      - "$model": javascript/any-fs-chown-sync-any-x-sink
+      - "$model": javascript/any-fs-readlink-any-x-sink
+      - "$model": javascript/any-fs-readlink-sync-any-x-sink
+      - "$model": javascript/any-fs-realpath-any-x-sink
+      - "$model": javascript/any-fs-realpath-sync-any-x-sink
+      - "$model": javascript/any-fs-exists-any-x-sink
+      - "$model": javascript/any-fs-exists-sync-any-x-sink
+      - "$model": javascript/any-fs-watch-any-x-sink
+      - "$model": javascript/any-fs-watch-file-any-x-sink
+      - "$model": javascript/any-fs-opendir-any-x-sink
+      - "$model": javascript/any-fs-opendir-sync-any-x-sink
+      - "$model": javascript/any-fs-utimes-any-x-sink
+      - "$model": javascript/any-fs-utimes-sync-any-x-sink
+      - "$model": javascript/any-fs-mkdtemp-any-x-sink
+      - "$model": javascript/any-fs-mkdtemp-sync-any-x-sink
+      - "$model": javascript/any-fs-ensure-dir-any-x-sink
+      - "$model": javascript/any-fs-ensure-file-any-x-sink
+      - "$model": javascript/any-fs-ensure-dir-sync-any-x-sink
+      - "$model": javascript/any-fs-ensure-file-sync-any-x-sink
+      - "$model": javascript/any-fs-empty-dir-any-x-sink
+      - "$model": javascript/any-fs-empty-dir-sync-any-x-sink
+      - "$model": javascript/any-fs-output-file-any-x-sink
+      - "$model": javascript/any-fs-output-file-sync-any-x-sink
+      - "$model": javascript/any-fs-output-json-any-x-sink
+      - "$model": javascript/any-fs-output-json-sync-any-x-sink
+      - "$model": javascript/any-fs-read-json-any-x-sink
+      - "$model": javascript/any-fs-read-json-sync-any-x-sink
+      - "$model": javascript/any-fs-write-json-any-x-sink
+      - "$model": javascript/any-fs-write-json-sync-any-x-sink
+      - "$model": javascript/any-fs-remove-any-x-sink
+      - "$model": javascript/any-fs-remove-sync-any-x-sink
+      - "$model": javascript/any-fs-path-exists-any-x-sink
+      - "$model": javascript/any-fs-path-exists-sync-any-x-sink
+      - "$model": javascript/any-fs-create-file-any-x-sink
+      - "$model": javascript/any-fs-create-file-sync-any-x-sink
+      - "$model": javascript/any-fs-mkdirs-any-x-sink
+      - "$model": javascript/any-fs-mkdirs-sync-any-x-sink
+      - "$model": javascript/any-fs-mkdirp-any-x-sink
+      - "$model": javascript/any-fs-mkdirp-sync-any-x-sink
+      - "$model": javascript/any-fs-read-json-any-x-sink-upper
+      - "$model": javascript/any-fs-read-json-sync-any-x-sink-upper
+      - "$model": javascript/any-fs-write-json-any-x-sink-upper
+      - "$model": javascript/any-fs-write-json-sync-any-x-sink-upper
+      - "$model": javascript/any-fs-output-json-any-x-sink-upper
+      - "$model": javascript/any-fs-lutimes-any-x-sink
+      - "$model": javascript/any-fs-statfs-any-x-sink
+      - "$model": javascript/any-fs-cp-any-x-sink
+      - "$model": javascript/any-fs-cp-sync-any-x-sink
+      - "$model": javascript/fs-read-file-any-x-sink
+      - "$model": javascript/fs-read-file-sync-any-x-sink
+      - "$model": javascript/fs-write-file-any-x-sink
+      - "$model": javascript/fs-write-file-sync-any-x-sink
+      - "$model": javascript/fs-append-file-any-x-sink
+      - "$model": javascript/fs-append-file-sync-any-x-sink
+      - "$model": javascript/fs-create-read-stream-any-x-sink
+      - "$model": javascript/fs-create-write-stream-any-x-sink
+      - "$model": javascript/fs-open-any-x-sink
+      - "$model": javascript/fs-open-sync-any-x-sink
+      - "$model": javascript/fs-readdir-any-x-sink
+      - "$model": javascript/fs-readdir-sync-any-x-sink
+      - "$model": javascript/fs-stat-any-x-sink
+      - "$model": javascript/fs-stat-sync-any-x-sink
+      - "$model": javascript/fs-lstat-any-x-sink
+      - "$model": javascript/fs-lstat-sync-any-x-sink
+      - "$model": javascript/fs-access-any-x-sink
+      - "$model": javascript/fs-access-sync-any-x-sink
+      - "$model": javascript/fs-unlink-any-x-sink
+      - "$model": javascript/fs-unlink-sync-any-x-sink
+      - "$model": javascript/fs-rmdir-any-x-sink
+      - "$model": javascript/fs-rmdir-sync-any-x-sink
+      - "$model": javascript/fs-rm-any-x-sink
+      - "$model": javascript/fs-rm-sync-any-x-sink
+      - "$model": javascript/fs-mkdir-any-x-sink
+      - "$model": javascript/fs-mkdir-sync-any-x-sink
+      - "$model": javascript/fs-truncate-any-x-sink
+      - "$model": javascript/fs-truncate-sync-any-x-sink
+      - "$model": javascript/fs-chmod-any-x-sink
+      - "$model": javascript/fs-chmod-sync-any-x-sink
+      - "$model": javascript/fs-chown-any-x-sink
+      - "$model": javascript/fs-chown-sync-any-x-sink
+      - "$model": javascript/fs-readlink-any-x-sink
+      - "$model": javascript/fs-readlink-sync-any-x-sink
+      - "$model": javascript/fs-realpath-any-x-sink
+      - "$model": javascript/fs-realpath-sync-any-x-sink
+      - "$model": javascript/fs-exists-any-x-sink
+      - "$model": javascript/fs-exists-sync-any-x-sink
+      - "$model": javascript/fs-watch-any-x-sink
+      - "$model": javascript/fs-watch-file-any-x-sink
+      - "$model": javascript/fs-opendir-any-x-sink
+      - "$model": javascript/fs-opendir-sync-any-x-sink
+      - "$model": javascript/fs-utimes-any-x-sink
+      - "$model": javascript/fs-utimes-sync-any-x-sink
+      - "$model": javascript/fs-mkdtemp-any-x-sink
+      - "$model": javascript/fs-mkdtemp-sync-any-x-sink
+      - "$model": javascript/fs-ensure-dir-any-x-sink
+      - "$model": javascript/fs-ensure-file-any-x-sink
+      - "$model": javascript/fs-ensure-dir-sync-any-x-sink
+      - "$model": javascript/fs-ensure-file-sync-any-x-sink
+      - "$model": javascript/fs-empty-dir-any-x-sink
+      - "$model": javascript/fs-empty-dir-sync-any-x-sink
+      - "$model": javascript/fs-output-file-any-x-sink
+      - "$model": javascript/fs-output-file-sync-any-x-sink
+      - "$model": javascript/fs-output-json-any-x-sink
+      - "$model": javascript/fs-output-json-sync-any-x-sink
+      - "$model": javascript/fs-read-json-any-x-sink
+      - "$model": javascript/fs-read-json-sync-any-x-sink
+      - "$model": javascript/fs-write-json-any-x-sink
+      - "$model": javascript/fs-write-json-sync-any-x-sink
+      - "$model": javascript/fs-remove-any-x-sink
+      - "$model": javascript/fs-remove-sync-any-x-sink
+      - "$model": javascript/fs-path-exists-any-x-sink
+      - "$model": javascript/fs-path-exists-sync-any-x-sink
+      - "$model": javascript/fs-create-file-any-x-sink
+      - "$model": javascript/fs-create-file-sync-any-x-sink
+      - "$model": javascript/fs-mkdirs-any-x-sink
+      - "$model": javascript/fs-mkdirs-sync-any-x-sink
+      - "$model": javascript/fs-mkdirp-any-x-sink
+      - "$model": javascript/fs-mkdirp-sync-any-x-sink
+      - "$model": javascript/fs-read-json-any-x-sink-upper
+      - "$model": javascript/fs-read-json-sync-any-x-sink-upper
+      - "$model": javascript/fs-write-json-any-x-sink-upper
+      - "$model": javascript/fs-write-json-sync-any-x-sink-upper
+      - "$model": javascript/fs-output-json-any-x-sink-upper
+      - "$model": javascript/fs-lutimes-any-x-sink
+      - "$model": javascript/fs-statfs-any-x-sink
+      - "$model": javascript/fs-cp-any-x-sink
+      - "$model": javascript/fs-cp-sync-any-x-sink
+      - patterns:
+          - pattern: "Writer({path: $X})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fstream.Writer({path: $X})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W.Writer({path: $X})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new Writer({path: $X})"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - "$model": javascript/filename-sanitizers
+      - "$model": javascript/parse-int-x-sanitizer
+      - "$model": javascript/number-x-sanitizer
+      - patterns:
+          - pattern: "$X"
+          - "$model": javascript/startswith-check
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!$T.startsWith($P)) { throw ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!$T.startsWith($P)) { return ...; } ..."
+    options:
+      interfile: true

@@ -1,0 +1,5 @@
+- pattern-either:
+    - "$model": python/request-attribute-access
+- metavariable-regex:
+    metavariable: "$A"
+    regex: "^(args|form|values|json|data|files|cookies|headers|GET|POST|body|META|COOKIES|FILES|query_params|path_params|query|match_info|query_string|full_path|view_args|stream|environ|path|url|referrer|content_type)$"

@@ -1,0 +1,23 @@
+rules:
+  - id: welt-py-samesite-none-cookie
+    message: 'Cookie sensível com `samesite="None"`; ele acompanha requisições entre sites e abre espaço para CSRF.'
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-1275: Sensitive Cookie with Improper SameSite Attribute"
+      codeql: py/samesite-none-cookie
+      notes: |-
+        Porta do `py/samesite-none-cookie` (CookieWrite de Concepts.qll + modelos Flask.qll, Django.qll, Aiohttp.qll).
+        Sensível = nome do cookie pelo regex de SensitiveDataHeuristics.qll (notSensitive incluído).
+    patterns:
+      - pattern-either:
+          - patterns:
+              - "$model": python/set-cookie-name-calls
+              - pattern: '$R.set_cookie(..., samesite="None", ...)'
+      - metavariable-regex:
+          metavariable: "$NAME"
+          regex:
+            "$text": python/sensitive-names

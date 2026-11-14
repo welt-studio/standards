@@ -1,0 +1,5 @@
+- pattern: "$D.sanitize($X, ...)"
+- pattern: "$E.text($X)"
+- pattern: "document.createTextNode($X)"
+- pattern: "$T.sanitizeHtml($X)"
+- pattern: '$X.replace(/[<>&"'']/g, ...)'

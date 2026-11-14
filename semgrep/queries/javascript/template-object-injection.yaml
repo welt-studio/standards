@@ -1,0 +1,40 @@
+rules:
+  - id: welt-js-template-object-injection
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Injeção de objeto em template: o objeto de entrada do usuário é passado inteiro ao motor de template (res.render(view, req.body)), o que pode ativar opções do motor e levar a execução de código ou leitura de arquivos. Passe só os campos esperados, como strings."
+    metadata:
+      category: security
+      cwe: "CWE-073: External Control of File Name or Path"
+      codeql: js/template-object-injection
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/express-request-sources-cookies
+      - "$model": javascript/nextjs-server-side-sources
+    pattern-sinks:
+      - patterns:
+          - pattern: "$RES.render($T, $X)"
+          - pattern-not: "$RES.render($T, {...})"
+          - pattern-not: "$RES.render($T, [...])"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$RES"
+              regex:
+                "$text": javascript/response-variable-name-regex
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: 'if (typeof $X === "string") {...}'
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: 'if (typeof $X == "string") {...}'
+      - pattern: '$X + ""'
+      - pattern: '"" + $X'
+      - "$model": javascript/string-conversion-sanitizers
+      - "$model": javascript/parse-int-x-sanitizer
+      - "$model": javascript/number-x-sanitizer
+      - "$model": javascript/json-stringify-x-sanitizer
+    options:
+      interfile: true

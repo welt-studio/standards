@@ -1,0 +1,99 @@
+- patterns:
+    - pattern-either:
+        - pattern-inside: "function getServerSideProps($CTX) {...}"
+        - pattern-inside: "async function getServerSideProps($CTX) {...}"
+        - pattern-inside: "function getInitialProps($CTX) {...}"
+        - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
+        - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
+    - pattern-either:
+        - pattern: "$CTX.query"
+        - pattern: "$CTX.params"
+        - pattern: "$CTX.req.url"
+        - pattern: "$CTX.req.headers"
+        - pattern: "$CTX.req.body"
+- patterns:
+    - pattern-either:
+        - pattern-inside: "function getServerSideProps($CTX) {...}"
+        - pattern-inside: "async function getServerSideProps($CTX) {...}"
+        - pattern-inside: "function getInitialProps($CTX) {...}"
+        - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
+        - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
+    - pattern-inside: "$REQ = $CTX.req; ..."
+    - pattern-either:
+        - "$model": javascript/req-url
+        - "$model": javascript/req-headers
+        - "$model": javascript/req-body
+        - "$model": javascript/req-query
+        - "$model": javascript/req-cookies
+- patterns:
+    - pattern-either:
+        - pattern-inside: "function ($CTX, ...) {...}"
+        - pattern-inside: "async function ($CTX, ...) {...}"
+        - pattern-inside: "async ($CTX, ...) => {...}"
+        - pattern-inside: "($CTX, ...) => {...}"
+        - pattern-inside: "async function $F($CTX, ...) {...}"
+        - pattern-inside: "function $F($CTX, ...) {...}"
+        - pattern-inside: "async ($CTX, $NEXT) => {...}"
+    - metavariable-regex:
+        metavariable: "$CTX"
+        regex:
+          "$text": javascript/koa-context-variable-name-regex
+    - pattern-either:
+        - pattern: "$CTX.query"
+        - pattern: "$CTX.params"
+        - pattern: "$CTX.headers"
+        - pattern: "$CTX.url"
+        - pattern: "$CTX.originalUrl"
+        - pattern: "$CTX.path"
+        - pattern: "$CTX.href"
+        - pattern: "$CTX.querystring"
+        - pattern: "$CTX.search"
+        - pattern: "$CTX.hostname"
+        - pattern: "$CTX.host"
+        - pattern: "$CTX.origin"
+        - pattern: "$CTX.request.query"
+        - pattern: "$CTX.request.body"
+        - pattern: "$CTX.request.headers"
+        - pattern: "$CTX.request.url"
+        - pattern: "$CTX.request.path"
+        - pattern: "$CTX.request.href"
+        - pattern: "$CTX.request.querystring"
+        - pattern: "$CTX.request.search"
+        - pattern: "$CTX.request.originalUrl"
+        - pattern: "$CTX.request.host"
+        - pattern: "$CTX.request.hostname"
+        - pattern: "$CTX.req.url"
+        - pattern: "$CTX.req.headers"
+        - pattern: "$CTX.request.params"
+        - pattern: "$CTX.cookies"
+        - pattern: "$CTX.get(...)"
+        - pattern: "$CTX.cookies.get(...)"
+        - pattern: "$CTX.request.get(...)"
+        - pattern: "$CTX.header(...)"
+- patterns:
+    - pattern: "@Body(...) $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "@Query(...) $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "@Param(...) $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "@Headers(...) $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "@Req(...) $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "@Request(...) $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "@Cookies(...) $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "@UploadedFile(...) $X"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "@UploadedFiles(...) $X"
+    - focus-metavariable: "$X"

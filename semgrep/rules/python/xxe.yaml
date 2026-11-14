@@ -1,0 +1,164 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-xxe
+    message: "Dado controlado pelo usuário é lido por um parser XML que resolve entidades externas (XXE). Desligue a resolução (`resolve_entities=False`) ou use `defusedxml`."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-611: Improper Restriction of XML External Entity Reference"
+      codeql: py/xxe
+      notes: |-
+        Porta do `py/xxe` (XxeCustomizations.qll + XmlParsing.vulnerableTo(XXE) de Lxml.qll e Stdlib.qll
+        para xml.sax/xml.dom com feature_external_ges ligada).
+        lxml sem parser explícito (o padrão resolve entidades); `HTML` fica de fora, como no CodeQL.
+        lxml com parser criado antes e que não desliga resolve_entities.
+        lxml com parser criado na própria chamada.
+        xml.sax / xml.dom com a feature de entidades externas ligada.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  def $V(self, request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $V(self, request, ..., $P, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(get|post|put|patch|delete|head|options|list|retrieve|create|update|partial_update|destroy|dispatch|form_valid|get_object|get_queryset)$"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$D
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$D(...)
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$D
+                  async def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$D(...)
+                  async def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $V(request, ..., $P, ...):
+                    ...
+          - pattern-not-inside: |
+              def $V2(request: $T, ...):
+                ...
+          - pattern-not-inside: |
+              async def $V2(request: $T, ...):
+                ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!_)"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-either:
+              - pattern: "request.$A"
+              - pattern: "self.request.$A"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "^(args|form|values|json|data|files|cookies|headers|GET|POST|body|META|COOKIES|FILES|query_params|path_params|query|match_info|query_string|full_path|view_args|stream|environ|path|url|referrer|content_type)$"
+      - patterns:
+          - pattern-either:
+              - pattern: "request.$M(...)"
+              - pattern: "self.request.$M(...)"
+              - pattern: "await request.$M(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get_json|get_data|json|form|body|post|text|read|get_full_path|get_host)$"
+      - patterns:
+          - pattern: "self.$M(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get_argument|get_arguments|get_query_argument|get_query_arguments|get_body_argument|get_body_arguments|get_cookie|get_secure_cookie)$"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  def $F(..., $P: $T, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  async def $F(..., $P: $T, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  def $F(..., $P: $T = $D, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  async def $F(..., $P: $T = $D, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$VERB"
+              regex: "^(get|post|put|patch|delete|api_route|head|options|route|websocket)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?!.*\\b(Depends|Security)\\()(?!\\s*(Request|Response|BackgroundTasks|WebSocket|HTTPConnection|Session|AsyncSession|SecurityScopes)\\s*$)"
+          - focus-metavariable: "$P"
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: "markupsafe.escape(...)"
+          - pattern: "html.escape(...)"
+          - pattern: "xml.sax.saxutils.escape(...)"
+          - pattern: "flask.escape(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "etree.$FN($X)"
+              - pattern: "lxml.etree.$FN($X)"
+          - metavariable-regex:
+              metavariable: "$FN"
+              regex: "^(fromstring|fromstringlist|XML|XMLID|XMLDTDID|parse|parseid|iterparse)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "etree.$FN($X, $P, ...)"
+              - pattern: "etree.$FN($X, ..., parser=$P, ...)"
+              - pattern: "lxml.etree.$FN($X, $P, ...)"
+              - pattern: "lxml.etree.$FN($X, ..., parser=$P, ...)"
+          - metavariable-regex:
+              metavariable: "$FN"
+              regex: "^(fromstring|fromstringlist|XML|XMLID|XMLDTDID|parse|parseid)$"
+          - pattern-inside: |
+              $P = $M.XMLParser(...)
+              ...
+          - pattern-not-inside: |
+              $P = $M.XMLParser(..., resolve_entities=False, ...)
+              ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "etree.$FN($X, ..., parser=etree.XMLParser(...), ...)"
+              - pattern: "lxml.etree.$FN($X, ..., parser=lxml.etree.XMLParser(...), ...)"
+          - pattern-not: "etree.$FN($X, ..., parser=etree.XMLParser(..., resolve_entities=False, ...), ...)"
+          - pattern-not: "lxml.etree.$FN($X, ..., parser=lxml.etree.XMLParser(..., resolve_entities=False, ...), ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $P.setFeature(xml.sax.handler.feature_external_ges, True)
+              ...
+          - pattern-either:
+              - pattern: "$P.parse($X, ...)"
+              - pattern: "xml.dom.minidom.parse($X, $P, ...)"
+              - pattern: "xml.dom.minidom.parseString($X, $P, ...)"
+              - pattern: "xml.dom.pulldom.parse($X, $P, ...)"
+              - pattern: "xml.dom.pulldom.parseString($X, $P, ...)"
+          - focus-metavariable: "$X"

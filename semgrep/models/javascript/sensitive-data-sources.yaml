@@ -1,0 +1,44 @@
+- patterns:
+    - pattern: "$N"
+    - metavariable-regex:
+        metavariable: "$N"
+        regex:
+          "$text": javascript/identifier-name
+    - metavariable-regex:
+        metavariable: "$N"
+        regex:
+          "$text": javascript/sensitive-passwords
+- patterns:
+    - pattern: "$O.$N"
+    - metavariable-regex:
+        metavariable: "$N"
+        regex:
+          "$text": javascript/sensitive-passwords
+- patterns:
+    - pattern: "{..., $N: $V, ...}"
+    - metavariable-regex:
+        metavariable: "$N"
+        regex:
+          "$text": javascript/sensitive-passwords
+    - focus-metavariable: "$V"
+- patterns:
+    - pattern: "$O.$N = $V"
+    - metavariable-regex:
+        metavariable: "$N"
+        regex:
+          "$text": javascript/sensitive-passwords
+    - focus-metavariable: "$V"
+- patterns:
+    - pattern: "$F(...)"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "(?is)^getPassword$"
+- patterns:
+    - pattern: "$O.$F(...)"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "(?is)^getPassword$"
+- patterns:
+    - pattern: process.env
+    - pattern-not-inside: "process.env.$X"
+    - pattern-not-inside: "process.env[$X]"

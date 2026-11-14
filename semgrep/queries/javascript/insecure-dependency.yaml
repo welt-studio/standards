@@ -1,0 +1,22 @@
+rules:
+  - id: welt-js-insecure-dependency
+    languages:
+      - json
+    severity: ERROR
+    message: "Esta dependência é baixada por um canal sem criptografia (`http://` ou `ftp://`), o que permite que um atacante na rede troque o pacote. Use `https://` ou o registro padrão do npm."
+    metadata:
+      category: security
+      cwe: "CWE-300: Channel Accessible by Non-Endpoint"
+      codeql: js/insecure-dependency
+    paths:
+      include:
+        - package.json
+    patterns:
+      - pattern-inside: '{..., "$SECTION": {...}, ...}'
+      - metavariable-regex:
+          metavariable: "$SECTION"
+          regex: '^"(dependencies|devDependencies)"$'
+      - pattern: '"$NAME": "$URL"'
+      - metavariable-regex:
+          metavariable: "$URL"
+          regex: "^(http|ftp)://"

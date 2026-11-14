@@ -1,0 +1,1 @@
+"(?ims)\\A(?=(?:.*?date[ \\t]+-d[^\\n]*?(?:commit|pushed|comment|commented)_at){2}).*\\z"

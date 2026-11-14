@@ -1,0 +1,1643 @@
+{
+  "actions/artifact-poisoning/critical": {
+    "missing": [
+      "actions/query-tests/Security/CWE-829/.github/actions/download-artifact-2/action.yaml:6",
+      "actions/query-tests/Security/CWE-829/.github/workflows/artifactpoisoning81.yml:28"
+    ],
+    "extra": []
+  },
+  "actions/code-injection/critical": {
+    "missing": [
+      "actions/query-tests/Security/CWE-094/.github/actions/action5/action.yml:34",
+      "actions/query-tests/Security/CWE-094/.github/actions/external/TestOrg/TestRepo/.github/actions/clone-repo/action.yaml:22",
+      "actions/query-tests/Security/CWE-094/.github/actions/external/ultralytics/actions/action.yaml:96",
+      "actions/query-tests/Security/CWE-094/.github/workflows/argus_case_study.yml:27",
+      "actions/query-tests/Security/CWE-094/.github/workflows/artifactpoisoning1.yml:27",
+      "actions/query-tests/Security/CWE-094/.github/workflows/artifactpoisoning2.yml:22",
+      "actions/query-tests/Security/CWE-094/.github/workflows/artifactpoisoning3.yml:53",
+      "actions/query-tests/Security/CWE-094/.github/workflows/artifactpoisoning4.yml:22",
+      "actions/query-tests/Security/CWE-094/.github/workflows/artifactpoisoning5.yml:22",
+      "actions/query-tests/Security/CWE-094/.github/workflows/artifactpoisoning6.yml:21",
+      "actions/query-tests/Security/CWE-094/.github/workflows/artifactpoisoning6.yml:29",
+      "actions/query-tests/Security/CWE-094/.github/workflows/artifactpoisoning7.yml:30",
+      "actions/query-tests/Security/CWE-094/.github/workflows/artifactpoisoning8.yml:22",
+      "actions/query-tests/Security/CWE-094/.github/workflows/composite-action-caller-3.yml:13",
+      "actions/query-tests/Security/CWE-094/.github/workflows/composite-action-caller-3.yml:14",
+      "actions/query-tests/Security/CWE-094/.github/workflows/composite-action-caller-4.yml:17",
+      "actions/query-tests/Security/CWE-094/.github/workflows/external/TestOrg/TestRepo/.github/workflows/publishResults.yml:94",
+      "actions/query-tests/Security/CWE-094/.github/workflows/external/TestOrg/TestRepo/.github/workflows/reusable-workflow.yml:36",
+      "actions/query-tests/Security/CWE-094/.github/workflows/external/TestOrg/TestRepo/.github/workflows/reusable-workflow.yml:53",
+      "actions/query-tests/Security/CWE-094/.github/workflows/external/TestOrg/TestRepo/.github/workflows/reusable-workflow.yml:66",
+      "actions/query-tests/Security/CWE-094/.github/workflows/image_link_generator.yml:37",
+      "actions/query-tests/Security/CWE-094/.github/workflows/issues.yaml:17",
+      "actions/query-tests/Security/CWE-094/.github/workflows/issues.yaml:18",
+      "actions/query-tests/Security/CWE-094/.github/workflows/json_wrap.yml:23",
+      "actions/query-tests/Security/CWE-094/.github/workflows/reusable-workflow-2.yml:36",
+      "actions/query-tests/Security/CWE-094/.github/workflows/reusable-workflow-2.yml:53",
+      "actions/query-tests/Security/CWE-094/.github/workflows/reusable-workflow-2.yml:66",
+      "actions/query-tests/Security/CWE-094/.github/workflows/schedule_remote_code_injection.yml:19",
+      "actions/query-tests/Security/CWE-094/.github/workflows/self_needs.yml:19",
+      "actions/query-tests/Security/CWE-094/.github/workflows/self_needs.yml:20",
+      "actions/query-tests/Security/CWE-094/.github/workflows/simple2.yml:29",
+      "actions/query-tests/Security/CWE-094/.github/workflows/slash_command2.yml:20",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test.yml:52",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test1.yml:27",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test11.yml:54",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test11.yml:55",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test14.yml:16",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test14.yml:27",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test14.yml:37",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test14.yml:48",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test15.yml:13",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test15.yml:21",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test15.yml:28",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test15.yml:36",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test17.yml:25",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test17.yml:45",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test17.yml:56",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test17.yml:69",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test18.yml:18",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:103",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:108",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:117",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:123",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:129",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:14",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:19",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:24",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:29",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:34",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:39",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:47",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:52",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:57",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:62",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:67",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:72",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:80",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:85",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:90",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test19.yml:98",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test2.yml:27",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test2.yml:39",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test24.yml:19",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test25.yml:12",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test25.yml:13",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test26.yml:28",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test26.yml:29",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test27.yml:52",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test3.yml:60",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test5.yml:12",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test7.yml:18",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test7.yml:20",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test9.yml:20",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test9.yml:25",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test9.yml:26",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test9.yml:27",
+      "actions/query-tests/Security/CWE-094/.github/workflows/test9.yml:31",
+      "actions/query-tests/Security/CWE-094/.github/workflows/untrusted_checkout1.yml:15"
+    ],
+    "extra": [
+      "actions/query-tests/Security/CWE-094/.github/actions/action3/action.yml:9",
+      "actions/query-tests/Security/CWE-094/.github/actions/action4/action.yml:7",
+      "actions/query-tests/Security/CWE-094/.github/actions/action7/action.yml:213"
+    ]
+  },
+  "actions/envvar-injection/critical": {
+    "missing": [
+      "actions/query-tests/Security/CWE-077/.github/workflows/test15.yml:11",
+      "actions/query-tests/Security/CWE-077/.github/workflows/test15.yml:18",
+      "actions/query-tests/Security/CWE-077/.github/workflows/test7.yml:16"
+    ],
+    "extra": [
+      "actions/query-tests/Security/CWE-077/.github/workflows/test16.yml:27",
+      "actions/query-tests/Security/CWE-077/.github/workflows/test4.yml:61"
+    ]
+  },
+  "actions/untrusted-checkout/critical": {
+    "missing": [],
+    "extra": [
+      "actions/query-tests/Security/CWE-829/.github/workflows/external/TestOrg/TestRepo/.github/workflows/formal.yml:14",
+      "actions/query-tests/Security/CWE-829/.github/workflows/test16.yml:221"
+    ]
+  },
+  "actions/untrusted-checkout/high": {
+    "missing": [],
+    "extra": [
+      "actions/query-tests/Security/CWE-829/.github/workflows/issue_comment_3rd_party_action.yml:16",
+      "actions/query-tests/Security/CWE-829/.github/workflows/issue_comment_3rd_party_action.yml:30",
+      "actions/query-tests/Security/CWE-829/.github/workflows/issue_comment_3rd_party_action.yml:45",
+      "actions/query-tests/Security/CWE-829/.github/workflows/issue_comment_3rd_party_action.yml:49"
+    ]
+  },
+  "js/angular/disabling-sce": {
+    "missing": ["javascript/query-tests/AngularJS/DisablingSce/DisablingSce.js:9"],
+    "extra": ["javascript/query-tests/AngularJS/DisablingSce/DisablingSce.js:6"]
+  },
+  "js/bad-code-sanitization": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-094/CodeInjection/bad-code-sanitization.js:64",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/bad-code-sanitization.js:8"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-094/CodeInjection/bad-code-sanitization.js:54",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/bad-code-sanitization.js:58"
+    ]
+  },
+  "js/biased-cryptographic-random": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-327/bad-random.js:85",
+      "javascript/query-tests/Security/CWE-327/bad-random.js:87"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-327/bad-random.js:104",
+      "javascript/query-tests/Security/CWE-327/bad-random.js:107",
+      "javascript/query-tests/Security/CWE-327/bad-random.js:128"
+    ]
+  },
+  "js/build-artifact-leak": {
+    "missing": ["javascript/query-tests/Security/CWE-312/build-leaks.js:34"],
+    "extra": []
+  },
+  "js/clear-text-cookie": {
+    "missing": [],
+    "extra": [
+      "javascript/query-tests/Security/CWE-614/tst-cleartextCookie.js:130",
+      "javascript/query-tests/Security/CWE-614/tst-cleartextCookie.js:203"
+    ]
+  },
+  "js/clear-text-logging": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-312/passwords.js:142",
+      "javascript/query-tests/Security/CWE-312/passwords.js:163",
+      "javascript/query-tests/Security/CWE-312/passwords.js:164",
+      "javascript/query-tests/Security/CWE-312/passwords.js:182"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-312/passwords.js:33",
+      "javascript/query-tests/Security/CWE-312/passwords.js:35",
+      "javascript/query-tests/Security/CWE-312/passwords.js:43",
+      "javascript/query-tests/Security/CWE-312/passwords.js:59",
+      "javascript/query-tests/Security/CWE-312/passwords.js:61",
+      "javascript/query-tests/Security/CWE-312/passwords.js:75",
+      "javascript/query-tests/Security/CWE-312/passwords_in_browser1.js:2",
+      "javascript/query-tests/Security/CWE-312/passwords_in_browser2.js:2"
+    ]
+  },
+  "js/client-exposed-cookie": {
+    "missing": ["javascript/query-tests/Security/CWE-1004/tst-httpOnly.js:170"],
+    "extra": [
+      "javascript/query-tests/Security/CWE-1004/tst-httpOnly.js:123",
+      "javascript/query-tests/Security/CWE-1004/tst-httpOnly.js:185",
+      "javascript/query-tests/Security/CWE-1004/tst-httpOnly.js:277"
+    ]
+  },
+  "js/client-side-unvalidated-url-redirection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst13.js:50",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst13.js:53",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst13.js:67",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst13.js:74",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst15.js:10",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst15.js:3",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst15.js:4",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst15.js:5",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst15.js:8",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst15.js:9",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst6.js:3",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst6.js:4",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst6.js:5",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/typed.ts:29",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/typed.ts:52",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/typed.ts:56"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/regexp-exec.js:15",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/regexp-exec.js:20",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/regexp-exec.js:25",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst11.js:5",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst11.js:8",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst12.js:4",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst3.js:4",
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst8.js:4"
+    ]
+  },
+  "js/code-injection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-094/CodeInjection/NoSQLCodeInjection.js:18",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/NoSQLCodeInjection.js:19",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/NoSQLCodeInjection.js:22",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/actions.js:4",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/angularjs.js:28",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/angularjs.js:31",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/angularjs.js:44",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/angularjs.js:53",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/express.js:20",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/express.js:36",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/express.js:43",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/express.js:9",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/fastify.js:71",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/fastify.js:84",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/fastify.js:99",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/graph-ql.js:20",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/graph-ql.js:39",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/graph-ql.js:66",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/module.js:11",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/module.js:9",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/react-native.js:8",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/react.js:11",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/react.js:25",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/tst.js:13",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/tst.js:15",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/tst.js:19",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/webix/webix.html:3",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/webix/webix.html:4",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/webix/webix.html:5"
+    ],
+    "extra": []
+  },
+  "js/command-line-injection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-078/CommandInjection/actions.js:19",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/actions.js:9",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/child_process-test.js:54",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/command-line-libs.js:14",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/command-line-libs.js:15",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/command-line-libs.js:21",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/exec-sh.js:15",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/exec-sh2.js:10",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/form-parsers.js:36",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/form-parsers.js:41",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/form-parsers.js:53",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/form-parsers.js:59",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:102",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:124",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:152",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:24",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:69",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:74",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:79",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:83",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:9",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/third-party-command-injection.js:6"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-078/CommandInjection/exec-sh.js:20",
+      "javascript/query-tests/Security/CWE-078/CommandInjection/exec-sh2.js:15"
+    ]
+  },
+  "js/cors-misconfiguration-for-credentials": {
+    "missing": [],
+    "extra": ["javascript/query-tests/Security/CWE-346/tst.js:51"]
+  },
+  "js/disabling-certificate-validation": {
+    "missing": [],
+    "extra": ["javascript/query-tests/Security/CWE-295/tst.js:10"]
+  },
+  "js/disabling-electron-websecurity": {
+    "missing": [
+      "javascript/query-tests/Electron/DangerousWebPreferencesSettings/DangerousWebPreferences.js:6"
+    ],
+    "extra": []
+  },
+  "js/enabling-electron-insecure-content": {
+    "missing": [
+      "javascript/query-tests/Electron/DangerousWebPreferencesSettings/DangerousWebPreferences.js:7"
+    ],
+    "extra": []
+  },
+  "js/exposure-of-private-files": {
+    "missing": [],
+    "extra": [
+      "javascript/query-tests/Security/CWE-200/private-file-exposure.js:36",
+      "javascript/query-tests/Security/CWE-200/private-file-exposure.js:37",
+      "javascript/query-tests/Security/CWE-200/private-file-exposure.js:64"
+    ]
+  },
+  "js/functionality-from-untrusted-source": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-830/DynamicCreationOfUntrustedSourceUse.html:18",
+      "javascript/query-tests/Security/CWE-830/DynamicCreationOfUntrustedSourceUse.html:21",
+      "javascript/query-tests/Security/CWE-830/DynamicCreationOfUntrustedSourceUse.html:31",
+      "javascript/query-tests/Security/CWE-830/DynamicCreationOfUntrustedSourceUse.html:34"
+    ],
+    "extra": []
+  },
+  "js/html-constructed-from-input": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/jquery-plugin.js:12",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/lib2/index.ts:18",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:105",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:111",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:90",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:99"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:37",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:70",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:76",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:83",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:85",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:94",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/typed.ts:18",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/typed.ts:8"
+    ]
+  },
+  "js/identity-replacement": {
+    "missing": [
+      "javascript/query-tests/RegExp/IdentityReplacement/IdentityReplacement.js:1",
+      "javascript/query-tests/RegExp/IdentityReplacement/IdentityReplacement.js:4",
+      "javascript/query-tests/RegExp/IdentityReplacement/tst.js:10",
+      "javascript/query-tests/RegExp/IdentityReplacement/tst.js:11",
+      "javascript/query-tests/RegExp/IdentityReplacement/tst.js:12",
+      "javascript/query-tests/RegExp/IdentityReplacement/tst.js:13",
+      "javascript/query-tests/RegExp/IdentityReplacement/tst.js:14",
+      "javascript/query-tests/RegExp/IdentityReplacement/tst.js:16",
+      "javascript/query-tests/RegExp/IdentityReplacement/tst.js:3",
+      "javascript/query-tests/RegExp/IdentityReplacement/tst.js:9"
+    ],
+    "extra": []
+  },
+  "js/incomplete-hostname-regexp": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-020/IncompleteHostnameRegExp/tst-IncompleteHostnameRegExp.js:29",
+      "javascript/query-tests/Security/CWE-020/IncompleteHostnameRegExp/tst-IncompleteHostnameRegExp.js:31"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-020/IncompleteHostnameRegExp/tst-IncompleteHostnameRegExp.js:18",
+      "javascript/query-tests/Security/CWE-020/IncompleteHostnameRegExp/tst-IncompleteHostnameRegExp.js:27",
+      "javascript/query-tests/Security/CWE-020/IncompleteHostnameRegExp/tst-IncompleteHostnameRegExp.js:33",
+      "javascript/query-tests/Security/CWE-020/IncompleteHostnameRegExp/tst-IncompleteHostnameRegExp.js:52"
+    ]
+  },
+  "js/incomplete-html-attribute-sanitization": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst.js:275",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst.js:309"
+    ],
+    "extra": []
+  },
+  "js/incomplete-multi-character-sanitization": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:125",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:147",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:151",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:19",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:49",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:91",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst.js:341"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:112",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:118",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:128",
+      "javascript/query-tests/Security/CWE-116/IncompleteSanitization/tst-multi-character-sanitization.js:30"
+    ]
+  },
+  "js/insecure-download": {
+    "missing": ["javascript/query-tests/Security/CWE-829/insecure-download.js:52"],
+    "extra": ["javascript/query-tests/Security/CWE-829/insecure-download.js:5"]
+  },
+  "js/insecure-randomness": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-338/tst.js:118",
+      "javascript/query-tests/Security/CWE-338/tst.js:120",
+      "javascript/query-tests/Security/CWE-338/tst.js:121",
+      "javascript/query-tests/Security/CWE-338/tst.js:77"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-338/library2.js:2",
+      "javascript/query-tests/Security/CWE-338/tst.js:86"
+    ]
+  },
+  "js/insufficient-key-size": {
+    "missing": ["javascript/query-tests/Security/CWE-326/tst.xsjs:3"],
+    "extra": []
+  },
+  "js/loop-bound-injection": {
+    "missing": ["javascript/query-tests/Security/CWE-834/LoopBoundInjectionExitBad.js:20"],
+    "extra": [
+      "javascript/query-tests/Security/CWE-834/LoopBoundInjectionExitGood.js:52",
+      "javascript/query-tests/Security/CWE-834/LoopBoundInjectionNested.js:10",
+      "javascript/query-tests/Security/CWE-834/LoopBoundInjectionObviousNullPointer.js:24",
+      "javascript/query-tests/Security/CWE-834/LoopBoundInjectionObviousNullPointer.js:33",
+      "javascript/query-tests/Security/CWE-834/LoopBoundInjectionObviousNullPointer.js:41",
+      "javascript/query-tests/Security/CWE-834/LoopBoundInjectionObviousNullPointer.js:49",
+      "javascript/query-tests/Security/CWE-834/LoopBoundInjectionObviousNullPointer.js:55",
+      "javascript/query-tests/Security/CWE-834/LoopBoundInjectionObviousNullPointerInPreviousLoop.js:17",
+      "javascript/query-tests/Security/CWE-834/LoopBoundInjectionObviousNullPointerInPreviousLoop.js:21"
+    ]
+  },
+  "js/missing-rate-limiting": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst.js:111",
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst.js:116",
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst.js:130",
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst.js:161",
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst.js:64",
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst.js:76",
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst.js:88"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst.js:28",
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst2.ts:6",
+      "javascript/query-tests/Security/CWE-770/MissingRateLimit/tst3.js:10"
+    ]
+  },
+  "js/missing-token-validation": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-352/fastify.js:5",
+      "javascript/query-tests/Security/CWE-352/fastify2.js:7",
+      "javascript/query-tests/Security/CWE-352/tst.js:6"
+    ],
+    "extra": []
+  },
+  "js/path-injection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:111",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:149",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:150",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:151",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:152",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:16",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:167",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:168",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:185",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:186",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:187",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:78",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/api/controllers/attachments/download-thumbnail.js:18",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/execa.js:12",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/execa.js:15",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/execa.js:18",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/execa.js:9",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/express.js:8",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/handlebars.js:11",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/handlebars.js:15",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/make-dir.js:10",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/make-dir.js:9",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/mkdirp.js:14",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/mkdirp.js:15",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/mkdirp.js:16",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/mkdirp.js:17",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/mkdirp.js:18",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/mkdirp.js:19",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/mkdirp.js:20",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/mkdirp.js:21",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:144",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:165",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:170",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:205",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:36",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:388",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:399",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:41",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:415",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:426",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:90",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:16",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:17",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:19",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:24",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:40",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:41",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:42",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:54",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:55",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:57",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:59",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:62",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:63",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/prettier.js:11",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/pupeteer.js:13",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/pupeteer.js:9",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:12",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:13",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:14",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:15",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:16",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:17",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:18",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:19",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:20",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:21",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:22",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:23",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:24",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:25",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:26",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:27",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:28",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/rimraf.js:29",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-access-paths.js:26",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-access-paths.js:49",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/torrents.js:7",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/typescript.ts:31"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:105",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:123",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:207",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:25",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:28",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/TaintedPath.js:92",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/examples/TaintedPathGood.js:12",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/examples/TaintedPathGood.js:18",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:113",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:117",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:125",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:126",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:133",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:197",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:217",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:243",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:248",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:264",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:272",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:280",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:288",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:294",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:306",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:322",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:329",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:349",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:366",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:368",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:61",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:66",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:76",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-array-steps.js:10",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-array-steps.js:14",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-sendFile.js:11",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-sendFile.js:18",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-sendFile.js:19",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-sendFile.js:24",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-sendFile.js:35",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-string-steps.js:20",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/typescript.ts:14",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/typescript.ts:17"
+    ]
+  },
+  "js/polynomial-redos": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/closure.js:4",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/indirect.js:2",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/lib.js:36",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/lib.js:4",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/lib.js:42",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/lib.js:45",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/lib.js:53",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/lib.js:8",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/moduleLib/moduleLib.js:2",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/otherLib/js/src/index.js:2",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/snapdragon.js:15",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/snapdragon.js:23",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/snapdragon.js:7",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/subLib4/factory.js:8",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/subLib5/feature.js:2",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/subLib5/main.js:2",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/subLib5/subclass.js:5",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/subLib6/index.js:2",
+      "javascript/query-tests/Security/CWE-400/ReDoS/lib/sublib/factory.js:13",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:100",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:101",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:102",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:103",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:104",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:109",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:111",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:112",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:114",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:116",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:118",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:124",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:130",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:133",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:136",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:140",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:141",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:142",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:25",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:40",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:62",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:63",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:64",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:7",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:71",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:73",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:80",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:81",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:88",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:89",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:90",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:96"
+    ],
+    "extra": ["javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:22"]
+  },
+  "js/prototype-polluting-assignment": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:108",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:119",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:128",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:15",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:22",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:26",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:34",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:42",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:6",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/lib.js:87",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/otherlib/src/otherlibimpl.js:2",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/sublib/other.js:6",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/sublib/sub.js:2"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/tst.js:112",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/tst.js:120",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/tst.js:23",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/tst.js:36",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/tst.js:42",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/tst.js:51",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment/tst.js:85"
+    ]
+  },
+  "js/prototype-pollution": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingMergeCall/webix/webix.html:4",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingMergeCall/webix/webix.html:5"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingMergeCall/src-non-vulnerable-lodash/tst.js:7"
+    ]
+  },
+  "js/prototype-pollution-utility": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/path-assignment.js:15",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/path-assignment.js:44",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/path-assignment.js:61",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/path-assignment.js:71",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:196",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:233",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:270",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:36",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:403",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:465",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:466",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:467",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:477",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:517",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:529",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:547"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/examples/PrototypePollutingFunction_fixed.js:7",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:121",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:128",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:135",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:171",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:184",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:355",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:371",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:373",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:453",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:502",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:559",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:571",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:582",
+      "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction/tests.js:83"
+    ]
+  },
+  "js/redos": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-400/ReDoS/highlight.js:10",
+      "javascript/query-tests/Security/CWE-400/ReDoS/highlight.js:2",
+      "javascript/query-tests/Security/CWE-400/ReDoS/highlight.js:26",
+      "javascript/query-tests/Security/CWE-400/ReDoS/highlight.js:30",
+      "javascript/query-tests/Security/CWE-400/ReDoS/highlight.js:6",
+      "javascript/query-tests/Security/CWE-400/ReDoS/jsonschema.js:15",
+      "javascript/query-tests/Security/CWE-400/ReDoS/jsonschema.js:20",
+      "javascript/query-tests/Security/CWE-400/ReDoS/jsonschema.js:5",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/markup.js:13",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/markup.js:24",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/markup.js:47",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:142",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:15",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:24",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:4",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:79",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/strings.js:19",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:100",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:105",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:109",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:111",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:113",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:118",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:120",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:122",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:124",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:126",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:128",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:130",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:132",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:134",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:136",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:155",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:221",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:252",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:267",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:271",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:273",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:28",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:290",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:291",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:292",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:293",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:3",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:310",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:313",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:315",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:316",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:319",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:326",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:327",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:328",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:332",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:335",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:339",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:341",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:343",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:345",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:63",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:65",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:67",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:77",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:92",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:94",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:96",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:98"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-400/ReDoS/jsonschema.js:10",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:11",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:111",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:112",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:114",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:116",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:118",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:12",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:13",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:14",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:15",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:30",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:31",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:32",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:33",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:34",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:36",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:37",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:38",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:43",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:44",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:53",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:54",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:55",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:56",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:60",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:7",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:8",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:80",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:81",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:82",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:83",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:84",
+      "javascript/query-tests/Security/CWE-400/ReDoS/polynomial-redos.js:9",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/address.js:48",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/dates.js:133",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/dates.js:66",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:10",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:11",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:16",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:17",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:18",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:21",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:29",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:3",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:30",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/email.js:9",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/markup.js:19",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/markup.js:21",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/markup.js:30",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/markup.js:50",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/markup.js:60",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:102",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:119",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:166",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:63",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:68",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:70",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:87",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/misc.js:9",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/numbers.js:10",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/numbers.js:17",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/numbers.js:18",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/numbers.js:19",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/numbers.js:4",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/numbers.js:9",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/strings.js:22",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/uri.js:36",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/uri.js:48",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/uri.js:66",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/uri.js:7",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/uri.js:71",
+      "javascript/query-tests/Security/CWE-400/ReDoS/regexplib/uri.js:9",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:11",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:13",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:141",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:144",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:147",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:164",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:169",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:186",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:189",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:194",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:199",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:20",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:202",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:21",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:224",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:233",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:263",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:278",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:298",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:337",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:70",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:75",
+      "javascript/query-tests/Security/CWE-400/ReDoS/tst.js:85"
+    ]
+  },
+  "js/reflected-xss": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXss.js:109",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXss.js:64",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXss.js:74",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:10",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:19",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:28",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:37",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/promises.js:6"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXss.js:69",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssContentTypes.js:53",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssContentTypes.js:76",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssContentTypes.js:78",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssGood.js:40",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssGood.js:85",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssGood3.js:137",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/cookies.js:9",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:51",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:52",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/tst2.js:23"
+    ]
+  },
+  "js/regex-injection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-730/Threat-models-disabled/RegExpInjection.js:95",
+      "javascript/query-tests/Security/CWE-730/Threat-models-enabled/RegExpInjection.js:11",
+      "javascript/query-tests/Security/CWE-730/Threat-models-enabled/RegExpInjection.js:6",
+      "javascript/query-tests/Security/CWE-730/Threat-models-enabled/RegExpInjection.js:8"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-730/Threat-models-disabled/RegExpInjection.js:47",
+      "javascript/query-tests/Security/CWE-730/Threat-models-disabled/RegExpInjection.js:57",
+      "javascript/query-tests/Security/CWE-730/Threat-models-disabled/RegExpInjection.js:79"
+    ]
+  },
+  "js/request-forgery": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-918/Request/app/api/proxy/route.serverSide.ts:3",
+      "javascript/query-tests/Security/CWE-918/Request/app/api/proxy/route2.serverSide.ts:5",
+      "javascript/query-tests/Security/CWE-918/Request/middleware.ts:12",
+      "javascript/query-tests/Security/CWE-918/Request/middleware.ts:7",
+      "javascript/query-tests/Security/CWE-918/apollo.serverSide.ts:18",
+      "javascript/query-tests/Security/CWE-918/apollo.serverSide.ts:8",
+      "javascript/query-tests/Security/CWE-918/axiosInterceptors.serverSide.js:11",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:145",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:151",
+      "javascript/query-tests/Security/CWE-918/serverSide2.js:17",
+      "javascript/query-tests/Security/CWE-918/serverSide2.js:20",
+      "javascript/query-tests/Security/CWE-918/serverSide2.js:26"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-918/serverSide.js:32",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:47",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:49",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:51",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:53",
+      "javascript/query-tests/Security/CWE-918/serverSide2.js:10",
+      "javascript/query-tests/Security/CWE-918/serverSide2.js:11"
+    ]
+  },
+  "js/resource-exhaustion": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-770/ResourceExhaustion/resource-exhaustion.js:92"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-770/ResourceExhaustion/documentaion-examples/ResourceExhaustion_timeout_fixed.js:13"
+    ]
+  },
+  "js/second-order-command-line-injection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-078/SecondOrderCommandInjection/second-order.js:11",
+      "javascript/query-tests/Security/CWE-078/SecondOrderCommandInjection/second-order.js:26"
+    ],
+    "extra": []
+  },
+  "js/sensitive-get-query": {
+    "missing": ["javascript/query-tests/Security/CWE-598/tst.js:50"],
+    "extra": []
+  },
+  "js/server-crash": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-730/Threat-models-disabled/server-crash.js:102",
+      "javascript/query-tests/Security/CWE-730/Threat-models-disabled/server-crash.js:109",
+      "javascript/query-tests/Security/CWE-730/Threat-models-disabled/server-crash.js:117",
+      "javascript/query-tests/Security/CWE-730/Threat-models-disabled/server-crash.js:19",
+      "javascript/query-tests/Security/CWE-730/Threat-models-disabled/server-crash.js:94"
+    ],
+    "extra": []
+  },
+  "js/server-side-unvalidated-url-redirection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/ServerSideUrlRedirectGood2.js:18",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:136",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:145",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:150",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:83"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/ServerSideUrlRedirectGood.js:9",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:104",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:107",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:122",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:15",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:21",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:73",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/express.js:99",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/koa.js:26",
+      "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect/node.js:22"
+    ]
+  },
+  "js/shell-command-constructed-from-input": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:100",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:102",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:108",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:149",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:161",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:173",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:277",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:281",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:325",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:351",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:417",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:418",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:419",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:420",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:424",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:426",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:427",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:428",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:436",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:442",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:447",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:478",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:483",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:499",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:54",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:552",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:555",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:560",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:562",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:566",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:57",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:86",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:89",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:91",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:98",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/subLib/index.js:14"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:117",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:126",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:135",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:138",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:171",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:179",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:193",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:202",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:210",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:264",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:272",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:311",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:318",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:345",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:409",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:485",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:515",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:521",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:527",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:533",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:539",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:576",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:582",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:586",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:612",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:616",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:620",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:624",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:637",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:640",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/other.js:4"
+    ]
+  },
+  "js/sql-injection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-089/local-threat-source/test.js:7",
+      "javascript/query-tests/Security/CWE-089/typed/typedClient.ts:14",
+      "javascript/query-tests/Security/CWE-089/typed/typedClient.ts:22",
+      "javascript/query-tests/Security/CWE-089/typed/typedClient.ts:23",
+      "javascript/query-tests/Security/CWE-089/untyped/athena.js:48",
+      "javascript/query-tests/Security/CWE-089/untyped/athena.js:57",
+      "javascript/query-tests/Security/CWE-089/untyped/athena.js:66",
+      "javascript/query-tests/Security/CWE-089/untyped/clients3.js:29",
+      "javascript/query-tests/Security/CWE-089/untyped/clients3.js:38",
+      "javascript/query-tests/Security/CWE-089/untyped/dynamodb.js:58",
+      "javascript/query-tests/Security/CWE-089/untyped/dynamodb.js:64",
+      "javascript/query-tests/Security/CWE-089/untyped/dynamodb.js:67",
+      "javascript/query-tests/Security/CWE-089/untyped/graphql.js:82",
+      "javascript/query-tests/Security/CWE-089/untyped/hana.js:54",
+      "javascript/query-tests/Security/CWE-089/untyped/hana.js:71",
+      "javascript/query-tests/Security/CWE-089/untyped/html-sanitizer.js:16",
+      "javascript/query-tests/Security/CWE-089/untyped/ldap.js:28",
+      "javascript/query-tests/Security/CWE-089/untyped/ldap.js:68",
+      "javascript/query-tests/Security/CWE-089/untyped/marsdb-flow-to.js:13",
+      "javascript/query-tests/Security/CWE-089/untyped/mongodb.js:30",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:31",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:51",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:53",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:54",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:59",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:60",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:61",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:63",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:68",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:69",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:71",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:73",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:75",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:78",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:80",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:82",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:97",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:99",
+      "javascript/query-tests/Security/CWE-089/untyped/pg-promise.js:60",
+      "javascript/query-tests/Security/CWE-089/untyped/pg-promise.js:63",
+      "javascript/query-tests/Security/CWE-089/untyped/pg-promise.js:64",
+      "javascript/query-tests/Security/CWE-089/untyped/rds-client.js:53",
+      "javascript/query-tests/Security/CWE-089/untyped/rds-client.js:61",
+      "javascript/query-tests/Security/CWE-089/untyped/redis.js:25",
+      "javascript/query-tests/Security/CWE-089/untyped/redis.js:32",
+      "javascript/query-tests/Security/CWE-089/untyped/redis.js:43",
+      "javascript/query-tests/Security/CWE-089/untyped/redis.js:46",
+      "javascript/query-tests/Security/CWE-089/untyped/socketio.js:11",
+      "javascript/query-tests/Security/CWE-089/untyped/tst4.js:8"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-089/untyped/dynamodb.js:35",
+      "javascript/query-tests/Security/CWE-089/untyped/dynamodb.js:44",
+      "javascript/query-tests/Security/CWE-089/untyped/hana.js:93",
+      "javascript/query-tests/Security/CWE-089/untyped/hana.js:94",
+      "javascript/query-tests/Security/CWE-089/untyped/json-schema-validator.js:27",
+      "javascript/query-tests/Security/CWE-089/untyped/json-schema-validator.js:30",
+      "javascript/query-tests/Security/CWE-089/untyped/json-schema-validator.js:53",
+      "javascript/query-tests/Security/CWE-089/untyped/ldap.js:40",
+      "javascript/query-tests/Security/CWE-089/untyped/ldap.js:61",
+      "javascript/query-tests/Security/CWE-089/untyped/mongodb_bodySafe.js:18",
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:120",
+      "javascript/query-tests/Security/CWE-089/untyped/mysql.js:8",
+      "javascript/query-tests/Security/CWE-089/untyped/pg-promise.js:24",
+      "javascript/query-tests/Security/CWE-089/untyped/rds-client.js:27"
+    ]
+  },
+  "js/stack-trace-exposure": {
+    "missing": ["javascript/query-tests/Security/CWE-209/tst.js:17"],
+    "extra": []
+  },
+  "js/stored-xss": {
+    "missing": ["javascript/query-tests/Security/CWE-079/StoredXss/xss-through-torrent.js:7"],
+    "extra": []
+  },
+  "js/system-prompt-injection": {
+    "missing": [
+      "javascript/Security/CWE-1427/SystemPromptInjection/agents_test.js:16",
+      "javascript/Security/CWE-1427/SystemPromptInjection/agents_test.js:25",
+      "javascript/Security/CWE-1427/SystemPromptInjection/agents_test.js:32",
+      "javascript/Security/CWE-1427/SystemPromptInjection/agents_test.js:43",
+      "javascript/Security/CWE-1427/SystemPromptInjection/agents_test.js:51",
+      "javascript/Security/CWE-1427/SystemPromptInjection/agents_test.js:59",
+      "javascript/Security/CWE-1427/SystemPromptInjection/agents_test.js:73",
+      "javascript/Security/CWE-1427/SystemPromptInjection/agents_test.js:81",
+      "javascript/Security/CWE-1427/SystemPromptInjection/agents_test.js:96",
+      "javascript/Security/CWE-1427/SystemPromptInjection/anthropic_test.js:110",
+      "javascript/Security/CWE-1427/SystemPromptInjection/anthropic_test.js:117",
+      "javascript/Security/CWE-1427/SystemPromptInjection/gemini_test.js:105",
+      "javascript/Security/CWE-1427/SystemPromptInjection/gemini_test.js:119",
+      "javascript/Security/CWE-1427/SystemPromptInjection/gemini_test.js:18",
+      "javascript/Security/CWE-1427/SystemPromptInjection/gemini_test.js:59",
+      "javascript/Security/CWE-1427/SystemPromptInjection/gemini_test.js:85",
+      "javascript/Security/CWE-1427/SystemPromptInjection/gemini_test.js:95",
+      "javascript/Security/CWE-1427/SystemPromptInjection/langchain_test.js:16",
+      "javascript/Security/CWE-1427/SystemPromptInjection/langchain_test.js:19",
+      "javascript/Security/CWE-1427/SystemPromptInjection/langchain_test.js:25",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openai_test.js:128",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openai_test.js:137",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openai_test.js:142",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openai_test.js:148",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openai_test.js:154",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openai_test.js:172",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openai_test.js:19",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openrouter_test.js:109",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openrouter_test.js:118",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openrouter_test.js:125",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openrouter_test.js:23",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openrouter_test.js:38",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openrouter_test.js:52",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openrouter_test.js:88",
+      "javascript/Security/CWE-1427/SystemPromptInjection/openrouter_test.js:98"
+    ],
+    "extra": [
+      "javascript/Security/CWE-1427/SystemPromptInjection/anthropic_test.js:132",
+      "javascript/Security/CWE-1427/SystemPromptInjection/anthropic_test.js:159"
+    ]
+  },
+  "js/template-object-injection": {
+    "missing": ["javascript/query-tests/Security/CWE-073/tst.js:29"],
+    "extra": [
+      "javascript/query-tests/Security/CWE-073/tst2.js:13",
+      "javascript/query-tests/Security/CWE-073/tst2.js:20"
+    ]
+  },
+  "js/type-confusion-through-parameter-tampering": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-843/tst.js:83",
+      "javascript/query-tests/Security/CWE-843/tst.js:84"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-843/tst.js:41",
+      "javascript/query-tests/Security/CWE-843/tst.js:43",
+      "javascript/query-tests/Security/CWE-843/tst.js:97"
+    ]
+  },
+  "js/unsafe-dynamic-method-access": {
+    "missing": ["javascript/query-tests/Security/CWE-094/UnsafeDynamicMethodAccess/tst.js:15"],
+    "extra": []
+  },
+  "js/unsafe-jquery-plugin": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:127",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:179",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:22",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:30",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:36",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:48",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:52",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:68"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:141",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:144",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:147",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:150",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:155",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:161",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:163",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:167",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:42",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:58",
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:66"
+    ]
+  },
+  "js/unvalidated-dynamic-method-call": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-754/tst.js:28",
+      "javascript/query-tests/Security/CWE-754/tst.js:37"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-754/UnsafeDynamicMethodAccess.js:10",
+      "javascript/query-tests/Security/CWE-754/UnsafeDynamicMethodAccess.js:13",
+      "javascript/query-tests/Security/CWE-754/UnsafeDynamicMethodAccess.js:7",
+      "javascript/query-tests/Security/CWE-754/UnsafeDynamicMethodAccess.js:8",
+      "javascript/query-tests/Security/CWE-754/UnsafeDynamicMethodAccess.js:9",
+      "javascript/query-tests/Security/CWE-754/UnvalidatedDynamicMethodCall3.js:15",
+      "javascript/query-tests/Security/CWE-754/UnvalidatedDynamicMethodCallGood.js:17",
+      "javascript/query-tests/Security/CWE-754/tst.js:31"
+    ]
+  },
+  "js/xml-bomb": {
+    "missing": [],
+    "extra": ["javascript/query-tests/Security/CWE-776/libxml.noent.js:5"]
+  },
+  "js/xss": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/addEventListener.js:12",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/addEventListener.js:2",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/addEventListener.js:6",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular-tempate-url.js:9",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:24",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:26",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:27",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:28",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:29",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:30",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:32",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:35",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:36",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:37",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:38",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:40",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:42",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:43",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/angular2-client.ts:47",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/clipboard.ts:15",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/clipboard.ts:24",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/clipboard.ts:29",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/clipboard.ts:33",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/clipboard.ts:50",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/clipboard.ts:73",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/clipboard.ts:99",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/d3.js:14",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/dragAndDrop.ts:15",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/dragAndDrop.ts:24",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/dragAndDrop.ts:29",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/dragAndDrop.ts:33",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/dragAndDrop.ts:50",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/dragAndDrop.ts:73",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/express.js:6",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/json-stringify.jsx:31",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/json-stringify.jsx:35",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/jwt-server.js:10",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/nodemailer.js:13",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/optionalSanitizer.js:17",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/pages/[id].jsx:13",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/pages/[id].jsx:16",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-native.js:8",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-native.js:9",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-context.js:10",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-context.js:16",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-router.js:11",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-router.js:23",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-router.js:33",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-router.js:8",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-state.js:11",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-state.js:17",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-state.js:23",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/sanitiser.js:48",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/stored-xss.js:12",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/stored-xss.js:5",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/stored-xss.js:8",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tooltip.jsx:10",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tooltip.jsx:11",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tooltip.jsx:18",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/trusted-types-lib.js:2",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/trusted-types.js:3",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:135",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:139",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:164",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:183",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:184",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:196",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:197",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:198",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:202",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:209",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:210",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:211",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:215",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:235",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:264",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:287",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:295",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:300",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:327",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:333",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:389",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:413",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:423",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:424",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:425",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:426",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:427",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:428",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:456",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:457",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:458",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:459",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:469",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:474",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:477",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:492",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:70",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:71",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:88",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst3.js:10",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst3.js:4",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst3.js:5",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst3.js:7",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst3.js:9",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/typeahead.js:25",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/v-html.vue:2",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/winjs.js:3",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/winjs.js:4",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/fetch-promise-chain.js:102",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/fetch-promise-chain.js:21",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/fetch-promise-chain.js:30",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/fetch-promise-chain.js:47",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/fetch-promise-chain.js:57",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/fetch-promise-chain.js:67",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/fetch-promise-chain.js:76",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/fetch-promise-chain.js:84",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/fetch-promise-chain.js:93",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/interceptors.js:9",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/non-fetch-promise-chain.js:13",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/non-fetch-promise-chain.js:21",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/non-fetch-promise-chain.js:29",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/non-fetch-promise-chain.js:37",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/non-fetch-promise-chain.js:5",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/test.jsx:27",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/test.ts:21",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/test.ts:24",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/test.vue:22",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:113",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:127",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:137",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:18",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:28",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:38",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:47",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:7",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:71",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactRelay.tsx:88",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testReactUseQueries.jsx:37",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testUseQueries.vue:25",
+      "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat/testUseQueries2.vue:40"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/addEventListener.js:22",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/aws.js:92",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/jquery.js:19",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/jquery.js:30",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/jquery.js:32",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/jquery.js:4",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/optionalSanitizer.js:13",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/optionalSanitizer.js:4",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/sanitiser.js:18",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/sanitiser.js:19",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/sanitiser.js:25",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/sanitiser.js:28",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/sanitiser.js:35",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/sanitiser.js:40",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/sanitiser.js:43",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/translate.js:10",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:104",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:109",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:114",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:126",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:280",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:360",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:73",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:99"
+    ]
+  },
+  "js/xss-through-dom": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/angular.ts:33",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:12",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:35",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:45",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:72",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:9",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:93",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:109",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:115",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:122",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:131",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:132",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:140",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:141",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:150",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:155",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:64",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:71",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:77"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/angular.ts:24",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/angular.ts:25",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:159",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:36",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:43",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:47",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:59",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:66",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:68",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:84",
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:90"
+    ]
+  },
+  "js/xss-through-exception": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/ajv.js:11",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/ajv.js:24",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:119",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:138",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:149",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:155",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:175",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:182"
+    ],
+    "extra": [
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:161",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:192",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:213",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:29",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:64",
+      "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:70"
+    ]
+  },
+  "js/zipslip": {
+    "missing": ["javascript/query-tests/Security/CWE-022/ZipSlip/TarSlipBad.js:9"],
+    "extra": [
+      "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipGood.js:10",
+      "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipGood.js:16",
+      "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipGood.js:29"
+    ]
+  },
+  "py/bad-tag-filter": {
+    "missing": [
+      "python/query-tests/Security/CWE-116-BadTagFilter/tst.py:23",
+      "python/query-tests/Security/CWE-116-BadTagFilter/tst.py:24",
+      "python/query-tests/Security/CWE-116-BadTagFilter/tst.py:25"
+    ],
+    "extra": []
+  },
+  "py/clear-text-logging-sensitive-data": {
+    "missing": ["python/query-tests/Security/CWE-312-CleartextLogging/test.py:27"],
+    "extra": []
+  },
+  "py/flask-debug": {
+    "missing": ["python/query-tests/Security/CWE-215-FlaskDebug/test.py:43"],
+    "extra": []
+  },
+  "py/full-ssrf": {
+    "missing": [
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_re_prefixmatch.py:19",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_re_prefixmatch.py:28"
+    ],
+    "extra": [
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_http_client.py:13",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_http_client.py:19",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_http_client.py:28",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_http_client.py:34",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:100",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:105",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:112",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:117",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:120",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:127",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:130",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:19",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:35",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:51",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:66",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:69",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:76",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:81",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:85",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:92",
+      "python/query-tests/Security/CWE-918-ServerSideRequestForgery/test_path_validation.py:97"
+    ]
+  },
+  "py/http-response-splitting": {
+    "missing": [],
+    "extra": [
+      "python/query-tests/Security/CWE-113-HeaderInjection/Tests1/extra_response_headers.py:30",
+      "python/query-tests/Security/CWE-113-HeaderInjection/Tests2-with-wsgi-validator/wsgiref_tests.py:12"
+    ]
+  },
+  "py/insecure-protocol": {
+    "missing": [
+      "python/query-tests/Security/CWE-327-InsecureProtocol/import_use.py:13",
+      "python/query-tests/Security/CWE-327-InsecureProtocol/import_use.py:17",
+      "python/query-tests/Security/CWE-327-InsecureProtocol/ssl_fluent.py:97"
+    ],
+    "extra": []
+  },
+  "py/nosql-injection": {
+    "missing": [
+      "python/query-tests/Security/CWE-943-NoSqlInjection/PoC/server.py:91",
+      "python/query-tests/Security/CWE-943-NoSqlInjection/PoC/server.py:92"
+    ],
+    "extra": [
+      "python/query-tests/Security/CWE-943-NoSqlInjection/PoC/server.py:38",
+      "python/query-tests/Security/CWE-943-NoSqlInjection/PoC/server.py:72",
+      "python/query-tests/Security/CWE-943-NoSqlInjection/PoC/server.py:86"
+    ]
+  },
+  "py/overly-large-range": {
+    "missing": [
+      "python/query-tests/Security/CWE-020-SuspiciousRegexpRange/test.py:3",
+      "python/query-tests/Security/CWE-020-SuspiciousRegexpRange/test.py:31"
+    ],
+    "extra": []
+  },
+  "py/path-injection": {
+    "missing": [
+      "python/query-tests/Security/CWE-022-PathInjection/test.py:33",
+      "python/query-tests/Security/CWE-022-PathInjection/test.py:49"
+    ],
+    "extra": [
+      "python/query-tests/Security/CWE-022-PathInjection/flask_path_injection.py:13",
+      "python/query-tests/Security/CWE-022-PathInjection/path_injection.py:140",
+      "python/query-tests/Security/CWE-022-PathInjection/path_injection.py:55"
+    ]
+  },
+  "py/polynomial-redos": {
+    "missing": [
+      "python/query-tests/Security/CWE-730-PolynomialReDoS/test.py:16",
+      "python/query-tests/Security/CWE-730-PolynomialReDoS/test.py:21"
+    ],
+    "extra": []
+  },
+  "py/redos": {
+    "missing": [
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:190",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:196",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:223",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:229",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:241",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:271",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:277",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:313",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:322",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:325",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:33",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:340",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:362",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:363",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:364",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:365",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:391",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:54",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:73"
+    ],
+    "extra": [
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:100",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:106",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:11",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:118",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:121",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:124",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:142",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:16",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:184",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:208",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:214",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:25",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:250",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:265",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:280",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:289",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:358",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:374",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:377",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:393",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:46",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:57",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:82",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:85",
+      "python/query-tests/Security/CWE-730-ReDoS/redos.py:88"
+    ]
+  },
+  "py/sql-injection": {
+    "missing": ["python/query-tests/Security/CWE-089-SqlInjection-local-threat-model/test.py:6"],
+    "extra": []
+  },
+  "py/url-redirection": {
+    "missing": [],
+    "extra": ["python/query-tests/Security/CWE-601-UrlRedirect/test.py:165"]
+  },
+  "py/use-of-input": {
+    "missing": ["python/2/query-tests/Expressions/expressions_test.py:6"],
+    "extra": []
+  }
+}

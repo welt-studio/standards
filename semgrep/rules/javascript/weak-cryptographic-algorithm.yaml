@@ -1,0 +1,269 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-weak-cryptographic-algorithm
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: "Dado sensível é processado por um algoritmo criptográfico fraco (DES, 3DES, RC2, RC4, Blowfish, ECB, MD5, SHA-1). Use um algoritmo moderno, como AES-256-GCM, e SHA-256 ou superior."
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      codeql: js/weak-cryptographic-algorithm
+    pattern-sources:
+      - patterns:
+          - pattern: "$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[A-Za-z_$][\\w$]*$"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)|(?:(cert)(?!.*(format|name|ification)))|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key))))"
+      - patterns:
+          - pattern: "$O.$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)|(?:(cert)(?!.*(format|name|ification)))|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key))))"
+      - patterns:
+          - pattern: "$N(...)"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[A-Za-z_$][\\w$]*$"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)|(?:(cert)(?!.*(format|name|ification)))|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key))))"
+      - patterns:
+          - pattern: "$O.$N(...)"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(?!(?is:.*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:.*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)|(?:(cert)(?!.*(format|name|ification)))|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key))))"
+      - patterns:
+          - pattern: "$O.$M($A, ...)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)|(?:(cert)(?!.*(format|name|ification)))|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key))))[\"'`]?$"
+    pattern-sinks:
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createCipher($ALG, ...);
+              ...
+          - pattern: "$C.update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createCipher($ALG, ...).update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createCipher($ALG, ...);
+              ...
+          - pattern: "$C.write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createCipher($ALG, ...).write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createDecipher($ALG, ...);
+              ...
+          - pattern: "$C.update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createDecipher($ALG, ...).update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createDecipher($ALG, ...);
+              ...
+          - pattern: "$C.write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createDecipher($ALG, ...).write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createCipheriv($ALG, ...);
+              ...
+          - pattern: "$C.update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createCipheriv($ALG, ...).update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createCipheriv($ALG, ...);
+              ...
+          - pattern: "$C.write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createCipheriv($ALG, ...).write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createDecipheriv($ALG, ...);
+              ...
+          - pattern: "$C.update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createDecipheriv($ALG, ...).update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createDecipheriv($ALG, ...);
+              ...
+          - pattern: "$C.write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createDecipheriv($ALG, ...).write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createHash($ALG, ...);
+              ...
+          - pattern: "$C.update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createHash($ALG, ...).update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createHash($ALG, ...);
+              ...
+          - pattern: "$C.write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createHash($ALG, ...).write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createHmac($ALG, ...);
+              ...
+          - pattern: "$C.update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createHmac($ALG, ...).update($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $C = crypto.createHmac($ALG, ...);
+              ...
+          - pattern: "$C.write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "crypto.createHmac($ALG, ...).write($X, ...)"
+          - metavariable-regex:
+              metavariable: "$ALG"
+              regex: "(?i)^[\"\\'`](?:des|des-.*|des3|3des|des-ede.*|tripledes|rc2|rc2-.*|rc4|rc4-.*|rc5|blowfish|bf|bf-.*|idea|idea-.*|cast5?(-.*)?|.*-ecb|md5|sha1|sha-1|md4|md2|ripemd160?)[\"\\'`]$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "CryptoJS.DES.encrypt($X, ...)"
+              - pattern: "CryptoJS.DES($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "CryptoJS.TripleDES.encrypt($X, ...)"
+              - pattern: "CryptoJS.TripleDES($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "CryptoJS.RC4.encrypt($X, ...)"
+              - pattern: "CryptoJS.RC4($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "CryptoJS.RC4Drop.encrypt($X, ...)"
+              - pattern: "CryptoJS.RC4Drop($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "CryptoJS.Rabbit.encrypt($X, ...)"
+              - pattern: "CryptoJS.Rabbit($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "CryptoJS.MD5.encrypt($X, ...)"
+              - pattern: "CryptoJS.MD5($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "CryptoJS.SHA1.encrypt($X, ...)"
+              - pattern: "CryptoJS.SHA1($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "CryptoJS.RIPEMD160.encrypt($X, ...)"
+              - pattern: "CryptoJS.RIPEMD160($X, ...)"
+          - focus-metavariable: "$X"

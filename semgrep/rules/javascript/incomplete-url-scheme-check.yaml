@@ -1,0 +1,167 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-incomplete-url-scheme-check
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta verificação de esquema de URL não considera 'vbscript:' (ou outro esquema perigoso: 'javascript:', 'data:', 'vbscript:'). Verifique os três esquemas ou use uma lista de esquemas permitidos."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incomplete-url-scheme-check
+    patterns:
+      - pattern-either:
+          - pattern: '$U.startsWith("javascript:")'
+          - patterns:
+              - pattern-either:
+                  - pattern: '$X === "javascript"'
+                  - pattern: '$X === "javascript:"'
+                  - pattern: '"javascript" === $X'
+                  - pattern: '"javascript:" === $X'
+              - metavariable-regex:
+                  metavariable: "$X"
+                  regex: "(?i).*(scheme|protocol|proto).*"
+          - patterns:
+              - pattern-either:
+                  - pattern: '$X == "javascript"'
+                  - pattern: '$X == "javascript:"'
+                  - pattern: '"javascript" == $X'
+                  - pattern: '"javascript:" == $X'
+              - metavariable-regex:
+                  metavariable: "$X"
+                  regex: "(?i).*(scheme|protocol|proto).*"
+          - pattern: 'switch ($X) { case "javascript": ... }'
+          - pattern: '$U.startsWith("data:")'
+          - patterns:
+              - pattern-either:
+                  - pattern: '$X === "data"'
+                  - pattern: '$X === "data:"'
+                  - pattern: '"data" === $X'
+                  - pattern: '"data:" === $X'
+              - metavariable-regex:
+                  metavariable: "$X"
+                  regex: "(?i).*(scheme|protocol|proto).*"
+          - patterns:
+              - pattern-either:
+                  - pattern: '$X == "data"'
+                  - pattern: '$X == "data:"'
+                  - pattern: '"data" == $X'
+                  - pattern: '"data:" == $X'
+              - metavariable-regex:
+                  metavariable: "$X"
+                  regex: "(?i).*(scheme|protocol|proto).*"
+          - pattern: 'switch ($X) { case "data": ... }'
+          - patterns:
+              - pattern-either:
+                  - pattern: "/$RE/.exec($X)"
+                  - pattern: "/$RE/.test($X)"
+              - metavariable-regex:
+                  metavariable: "$RE"
+                  regex: "^\\^?\\(?(?:\\?:)?(?:javascript|data)\\b(?!.*vbscript).*"
+          - patterns:
+              - pattern: '"$LIST".split("|").indexOf($X)'
+              - metavariable-regex:
+                  metavariable: "$LIST"
+                  regex: "(?!.*vbscript)(?=.*(?:javascript|data)).*"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "function $F(...) { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "function (...) { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "(...) => { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "async function $F(...) { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "$M(...) { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"
+  - id: welt-js-incomplete-url-scheme-check-list
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta verificação de esquema de URL não considera 'vbscript:' (ou outro esquema perigoso: 'javascript:', 'data:', 'vbscript:'). Verifique os três esquemas ou use uma lista de esquemas permitidos."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incomplete-url-scheme-check
+    patterns:
+      - pattern-either:
+          - pattern: "$A.includes(...)"
+          - pattern: "$A.indexOf(...)"
+      - pattern-either:
+          - pattern-inside: '$A = [..., "javascript", ...]; ...'
+          - pattern-inside: '$A = [..., "javascript:", ...]; ...'
+          - pattern-inside: '$A = [..., "data", ...]; ...'
+          - pattern-inside: '$A = [..., "data:", ...]; ...'
+      - pattern-not-inside: '$A = [..., "vbscript", ...]; ...'
+      - pattern-not-inside: '$A = [..., "vbscript:", ...]; ...'
+  - id: welt-js-incomplete-url-scheme-check-replace
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta verificação de esquema de URL não considera 'vbscript:' (ou outro esquema perigoso: 'javascript:', 'data:', 'vbscript:'). Verifique os três esquemas ou use uma lista de esquemas permitidos."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incomplete-url-scheme-check
+    patterns:
+      - pattern-either:
+          - pattern: "$U.replace(/javascript:/, ...).replace(/data:/, ...)"
+          - pattern: "$U.replace(/javascript:/, ...).replace(/(javascript|data):/, ...)"
+          - pattern: "$U.replace(/data:/, ...).replace(/javascript:/, ...)"
+          - pattern: "$U.replace(/data:/, ...).replace(/(data|javascript):/, ...)"
+          - pattern: "$U = $U.replace(/javascript:/, ...); ... $U = $U.replace(/data:/, ...);"
+          - pattern: "$U = $U.replace(/data:/, ...); ... $U = $U.replace(/javascript:/, ...);"
+      - pattern-not-inside: "$C.replace(/vbscript:/, ...)"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "function $F(...) { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "function (...) { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "(...) => { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "async function $F(...) { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"
+      - pattern-not-inside:
+          patterns:
+            - pattern: "$M(...) { $...BODY }"
+            - metavariable-regex:
+                metavariable: "$...BODY"
+                regex: "(?s).*vbscript.*"

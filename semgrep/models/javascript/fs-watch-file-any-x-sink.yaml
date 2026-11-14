@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.watchFile($X, ...)"
+    - focus-metavariable: "$X"

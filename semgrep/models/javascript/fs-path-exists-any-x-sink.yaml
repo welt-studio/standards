@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.pathExists($X, ...)"
+    - focus-metavariable: "$X"

@@ -1,0 +1,212 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-actions-untrusted-checkout-toctou-critical
+    message: "A verificação de acesso antes do checkout (environment ou comentário autorizado) não cobre mudanças feitas no PR depois dela (TOCTOU), e o código baixado é executado em seguida num workflow privilegiado. Faça o checkout de um SHA fixo (o `head.sha` registrado na aprovação) e confira a data do commit contra a do comentário."
+    severity: ERROR
+    languages:
+      - yaml
+    metadata:
+      category: security
+      cwe: "CWE-367: Time-of-check Time-of-use (TOCTOU) Race Condition"
+      codeql: actions/untrusted-checkout-toctou/critical
+      confidence: MEDIUM
+      technology:
+        - github-actions
+      notes: "Job sem privilégio: permissões só de leitura e sem segredos (hasExplicitSecretAccess)."
+    paths:
+      include:
+        - "*.yml"
+        - "*.yaml"
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-inside:
+                  pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:(?:(?:[ \\t]*(?:pull_request_target)[ \\t]*(?:\\#.*)?$)|(?:[ \\t]*\\[[^\\]\\n]*\\b(?:pull_request_target)\\b)|(?:[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^[ \\t]+(?:-[ \\t]+)?(?:pull_request_target)[ \\t]*:?[ \\t]*(?:\\#.*)?$)).*\\z"
+              - pattern-inside: |
+                  $JOB:
+                    runs-on: ...
+                    environment: ...
+                    ...
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $KEY:
+                          ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.pull_request\\.user\\.login\\b|\\bgithub\\.event\\.pull_request\\.author_association\\b|\\bgithub\\.repository(?:_owner)?\\b|\\bgithub\\.event\\.pull_request\\.head\\.repo\\.(?:full_name|owner\\.name)\\b)"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.pull_request\\.user\\.login\\b|\\bgithub\\.event\\.pull_request\\.author_association\\b|\\bgithub\\.repository(?:_owner)?\\b|\\bgithub\\.event\\.pull_request\\.head\\.repo\\.(?:full_name|owner\\.name)\\b)"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $JOB:
+                          ...
+                          needs: ...
+                          ...
+                    - pattern-inside:
+                        pattern-regex: "(?ims)\\A.*?(?:uses:[ \\t]*[\\\"']?(?:TheModdingInquisition/actions-team-membership|actions-cool/check-user-permission|sushichop/action-repository-permission|prince-chrismc/check-actor-permissions-action|lannonbr/repo-permission-check-action|xt0rted/slash-command-action)@|getMembershipForUserInOrg|getCollaboratorPermissionLevel|route:[ \\t]*[\\\"']?GET[^\\n]*(?:memberships|collaborators|permission)).*\\z"
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?ims)^.*?(?:^[ \\t]*|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action)@|^\\./"
+              - pattern-inside: |
+                  $JOB:
+                    ...
+                    steps: $BODY
+                    ...
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace)))"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:(?:(?:[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^(?<wi>[ \\t]+)workflow_run:[ \\t]*(?:\\#[^\\n]*)?\\n(?!(?:\\k<wi>[ \\t]+(?!branches:)[^\\n]*\\n|[ \\t]*\\n)*\\k<wi>[ \\t]+branches:))|(?:[ \\t]*workflow_run[ \\t]*(?:\\#.*)?$)|(?:[ \\t]*\\[[^\\]\\n]*\\bworkflow_run\\b)).*\\z"
+              - pattern-inside: |
+                  $JOB:
+                    runs-on: ...
+                    environment: ...
+                    ...
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $KEY:
+                          ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.workflow_run\\.head_repository\\.(?:full_name|owner\\.name)\\b)"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        - ...
+                          if: $COND
+                          ...
+                    - metavariable-regex:
+                        metavariable: "$COND"
+                        regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.workflow_run\\.head_repository\\.(?:full_name|owner\\.name)\\b)"
+              - pattern-not-inside:
+                  patterns:
+                    - pattern: |
+                        $JOB:
+                          ...
+                          needs: ...
+                          ...
+                    - pattern-inside:
+                        pattern-regex: "(?ims)\\A.*?(?:uses:[ \\t]*[\\\"']?(?:TheModdingInquisition/actions-team-membership|actions-cool/check-user-permission|sushichop/action-repository-permission|prince-chrismc/check-actor-permissions-action|lannonbr/repo-permission-check-action|xt0rted/slash-command-action)@|getMembershipForUserInOrg|getCollaboratorPermissionLevel|route:[ \\t]*[\\\"']?GET[^\\n]*(?:memberships|collaborators|permission)).*\\z"
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?ims)^.*?(?:^[ \\t]*|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action)@|^\\./"
+              - pattern-inside: |
+                  $JOB:
+                    ...
+                    steps: $BODY
+                    ...
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace)))"
+          - patterns:
+              - pattern-inside:
+                  pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:(?:(?:[ \\t]*(?:issue_comment)[ \\t]*(?:\\#.*)?$)|(?:[ \\t]*\\[[^\\]\\n]*\\b(?:issue_comment)\\b)|(?:[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^[ \\t]+(?:-[ \\t]+)?(?:issue_comment)[ \\t]*:?[ \\t]*(?:\\#.*)?$)).*\\z"
+              - pattern-inside:
+                  pattern-either:
+                    - patterns:
+                        - pattern: |
+                            $KEY:
+                              ...
+                              if: $COND
+                              ...
+                        - metavariable-regex:
+                            metavariable: "$COND"
+                            regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.comment\\.author_association\\b|\\bgithub\\.event\\.issue\\.author_association\\b)"
+                    - patterns:
+                        - pattern: |
+                            - ...
+                              if: $COND
+                              ...
+                        - metavariable-regex:
+                            metavariable: "$COND"
+                            regex: "(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.comment\\.author_association\\b|\\bgithub\\.event\\.issue\\.author_association\\b)"
+                    - pattern: |
+                        $JOB:
+                          runs-on: ...
+                          environment: ...
+                          ...
+                    - pattern-regex: "(?ims)\\A.*?(?:uses:[ \\t]*[\\\"']?(?:TheModdingInquisition/actions-team-membership|actions-cool/check-user-permission|sushichop/action-repository-permission|prince-chrismc/check-actor-permissions-action|lannonbr/repo-permission-check-action|xt0rted/slash-command-action)@|getMembershipForUserInOrg|getCollaboratorPermissionLevel|route:[ \\t]*[\\\"']?GET[^\\n]*(?:memberships|collaborators|permission)).*\\z"
+              - pattern-not-inside:
+                  pattern-regex: "(?ims)\\A(?=(?:.*?date[ \\t]+-d[^\\n]*?(?:commit|pushed|comment|commented)_at){2}).*\\z"
+              - pattern-either:
+                  - patterns:
+                      - pattern: |
+                          - run: $S
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$S"
+                          regex: "(?ims)^.*?(?:^[ \\t]*|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))"
+                  - patterns:
+                      - pattern: |
+                          - uses: $U
+                            ...
+                      - metavariable-regex:
+                          metavariable: "$U"
+                          regex: "^(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action)@|^\\./"
+              - pattern-inside: |
+                  $JOB:
+                    ...
+                    steps: $BODY
+                    ...
+              - metavariable-regex:
+                  metavariable: "$BODY"
+                  regex: "(?ims)\\A.*?(?:actions/checkout@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+ref:[ \\t]*[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|git[ \\t]+(?:fetch|pull)[^\\n]*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))|(?:gh|hub)[ \\t]+pr[ \\t]+checkout).*?(?:(?:(?:^[ \\t]*(?:-[ \\t]+)?(?:run:[ \\t]*(?:[|>][-+]?[ \\t]*)?)?|&&[ \\t]*|;[ \\t]*|\\|\\|[ \\t]*|\\$\\([ \\t]*)(?:(?:ant)|(?:asv)|(?:awk\\s+-f)|(?:bundle)|(?:bun)|(?:cargo)|(?:checkov)|(?:eslint)|(?:gcloud\\s+builds submit)|(?:golangci-lint)|(?:gomplate)|(?:goreleaser)|(?:gradle)|(?:java\\s+-jar)|(?:make)|(?:mdformat)|(?:mkdocs)|(?:msbuild)|(?:mvn)|(?:mypy)|(?:(p)?npm\\s+[a-z])|(?:pre-commit)|(?:prettier)|(?:phpstan)|(?:pip\\s+install(.*)\\s+-r)|(?:pip\\s+install(.*)\\s+--requirement)|(?:pip(x)?\\s+install(.*)\\s+\\.)|(?:poetry)|(?:pylint)|(?:pytest)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+-r)|(?:python[\\d\\.]*\\s+-m\\s+pip\\s+install\\s+--requirement)|(?:rake)|(?:rails\\s+db:create)|(?:rails\\s+assets:precompile)|(?:rubocop)|(?:sed\\s+-f)|(?:sonar-scanner)|(?:stylelint)|(?:terraform)|(?:tflint)|(?:yarn)|(?:webpack)|(?:(\\.\\/[^\\s]+)\\b)|(?:(\\.\\s+[^\\s]+)\\b)|(?:(source|sh|bash|zsh|fish)\\s+([^\\s]+)\\b)|(?:(node)\\s+([^\\s]+)(\\.js|\\.ts)\\b)|(?:(python[\\d\\.]*)\\s+([^\\s]+)\\.py\\b)|(?:(python[\\d\\.]*)\\s+-m\\s+([A-Za-z_][\\w\\.]*)\\b)|(?:(ruby)\\s+([^\\s]+)\\.rb\\b)|(?:(go)\\s+(generate|run)(?:\\s+-[^\\s]+)*\\s+([^\\s]+))|(?:(dotnet)\\s+([^\\s]+)\\.csproj\\b))|^[ \\t]*(?:-[ \\t]+)?uses:[ \\t]*[\\\"']?(?:azure/powershell|pre\\-commit/action|oxsecurity/megalinter|bridgecrewio/checkov\\-action|ruby/setup\\-ruby|actions/jekyll\\-build\\-pages|qcastel/github\\-actions\\-maven/actions/maven|sonarsource/sonarcloud\\-github\\-action|\\./)|actions/setup-node@[^\\n]*\\n(?:(?![ \\t]*-[ \\t])[^\\n]*\\n)*?[ \\t]+cache:[ \\t]*[\\\"']?yarn|(?:import|require)\\([\\\"'](?:\\./|[^\\\"')]*github\\.workspace)))"
+      - pattern-not-inside:
+          patterns:
+            - pattern: |
+                $JOB:
+                  ...
+                  permissions: $P
+                  ...
+                  steps: $BODY
+                  ...
+            - metavariable-regex:
+                metavariable: "$P"
+                regex: "(?is)^(?!.*write).*$"
+            - metavariable-regex:
+                metavariable: "$BODY"
+                regex: "(?is)^(?!.*\\bsecrets(?:\\.(?!GITHUB_TOKEN\\b)|\\[)).*$"
+            - pattern-inside:
+                pattern-regex: "(?ms)\\A(?!.*^env:[^\\n]*\\n(?:[ \\t]+[^\\n]*\\n)*?[ \\t]+[^\\n]*\\bsecrets(?:\\.(?!GITHUB_TOKEN\\b)|\\[)).*\\z"
+      - pattern-not-inside:
+          pattern-regex: "(?ms)\\A(?!.*\\bsecrets(?:\\.(?!GITHUB_TOKEN\\b)|\\[))(?!.*\\bwrite)(?=.*^[ \\t]*permissions:).*\\z"

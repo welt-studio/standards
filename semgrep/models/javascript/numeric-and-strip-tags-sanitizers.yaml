@@ -1,0 +1,2 @@
+- pattern: "isNaN($X)"
+- pattern: "$L.stripTags($X)"

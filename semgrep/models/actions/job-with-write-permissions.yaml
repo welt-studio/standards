@@ -1,0 +1,8 @@
+- pattern: |
+    $JOB:
+      ...
+      permissions: $P
+      ...
+- metavariable-regex:
+    metavariable: "$P"
+    regex: "(?is)^.*write"

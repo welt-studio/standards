@@ -1,0 +1,27 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-redos
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Expressão regular com quantificadores aninhados ou alternativas ambíguas sob repetição: o tempo de busca pode crescer exponencialmente com a entrada (ReDoS). Reescreva para remover a ambiguidade."
+    metadata:
+      category: security
+      cwe: "CWE-1333: Inefficient Regular Expression Complexity"
+      codeql: js/redos
+      note: "aproximação sintática; o CodeQL usa análise de autômato"
+    pattern-either:
+      - patterns:
+          - pattern-regex: "(?<![\\w$)\\]}])/(?![/*])(?:[^/\\n\\\\\\[]|\\\\.|\\[(?:[^\\]\\\\\\n]|\\\\.)*\\])+/[dgimsuvy]*"
+          - pattern-regex: "\\((?:\\?:)?(?:[^()\\\\\\[]|\\\\.|\\[(?:[^\\]\\\\]|\\\\.)*\\])*[+*](?:[^()\\\\\\[]|\\\\.|\\[(?:[^\\]\\\\]|\\\\.)*\\])*\\)[+*]"
+      - patterns:
+          - pattern-regex: "(?<![\\w$)\\]}])/(?![/*])(?:[^/\\n\\\\\\[]|\\\\.|\\[(?:[^\\]\\\\\\n]|\\\\.)*\\])+/[dgimsuvy]*"
+          - pattern-regex: "\\((?:\\?:)?(?:(?:[^()\\\\\\[]|\\\\.|\\[(?:[^\\]\\\\]|\\\\.)*\\])*\\)?[+*]\\)?)+[^|]*\\)[+*]"
+      - patterns:
+          - pattern-regex: "(?<![\\w$)\\]}])/(?![/*])(?:[^/\\n\\\\\\[]|\\\\.|\\[(?:[^\\]\\\\\\n]|\\\\.)*\\])+/[dgimsuvy]*"
+          - pattern-regex: "\\((?:\\?:)?(?:\\\\\\.|\\.|\\[\\^[^\\]]*\\])[^|()]*\\|[^()]*\\)[*+]"
+      - patterns:
+          - pattern-regex: "(?<![\\w$)\\]}])/(?![/*])(?:[^/\\n\\\\\\[]|\\\\.|\\[(?:[^\\]\\\\\\n]|\\\\.)*\\])+/[dgimsuvy]*"
+          - pattern-regex: "\\((?:\\?:)?[^()|]*\\|[^()|]*\\)\\*\\?"

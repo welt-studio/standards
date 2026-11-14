@@ -1,0 +1,18 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-paramiko-missing-host-key-validation
+    message: "A política de chave de host ausente do paramiko aceita servidores desconhecidos (AutoAddPolicy/WarningPolicy), o que abre a conexão a ataque man-in-the-middle. Use RejectPolicy e carregue as chaves conhecidas."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-295: Improper Certificate Validation"
+      codeql: py/paramiko-missing-host-key-validation
+    patterns:
+      - pattern: "$C.set_missing_host_key_policy($P)"
+      - metavariable-regex:
+          metavariable: "$P"
+          regex: "^(\\w+\\.)*(AutoAddPolicy|WarningPolicy)(\\(\\))?$"

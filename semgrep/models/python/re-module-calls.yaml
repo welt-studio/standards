@@ -1,0 +1,6 @@
+- pattern-either:
+    - pattern: "re.$F($R, ...)"
+    - pattern: "regex.$F($R, ...)"
+- metavariable-regex:
+    metavariable: "$F"
+    regex: "^(compile|match|search|fullmatch|findall|finditer|sub|subn|split)$"

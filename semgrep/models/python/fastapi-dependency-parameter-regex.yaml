@@ -1,0 +1,1 @@
+"^(?!.*\\b(Depends|Security)\\()(?!\\s*(Request|Response|BackgroundTasks|WebSocket|HTTPConnection|Session|AsyncSession|SecurityScopes)\\s*$)"

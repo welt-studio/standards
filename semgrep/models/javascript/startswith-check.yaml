@@ -1,0 +1,1 @@
+- pattern-inside: "if ($T.startsWith($P)) {...}"

@@ -1,0 +1,43 @@
+rules:
+  - id: welt-js-tainted-format-string
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "A string de formato desta chamada vem de um valor fornecido pelo usuário. Especificadores como `%s` ou `%d` podem ser injetados. Use uma string de formato fixa e passe o valor do usuário como argumento."
+    metadata:
+      category: security
+      cwe: "CWE-134: Use of Externally-Controlled Format String"
+      codeql: js/tainted-format-string
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-or-context
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "util.format($F, $A, ...)"
+              - pattern: "require('util').format($F, $A, ...)"
+              - pattern: "util.log($F, $A, ...)"
+              - pattern: "util.formatWithOptions($O, $F, $A, ...)"
+          - focus-metavariable: "$F"
+      - patterns:
+          - pattern: "console.$M($F, $A, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(log|error|info|debug|warn|trace)$"
+          - focus-metavariable: "$F"
+      - patterns:
+          - pattern: "console.assert($C, $F, $A, ...)"
+          - focus-metavariable: "$F"
+      - patterns:
+          - pattern-either:
+              - pattern: "require('printf')($F, $A, ...)"
+              - pattern: "require('printf')($W, $F, $A, ...)"
+              - pattern: "require('printj').$M($F, $A, ...)"
+              - pattern: "require('sprintf-js').$M($F, $A, ...)"
+              - pattern: "require('format-util')($F, $A, ...)"
+              - pattern: "require('string-template')($F, $A, ...)"
+              - pattern: "require('string-template/compile')($F, $A, ...)"
+          - focus-metavariable: "$F"

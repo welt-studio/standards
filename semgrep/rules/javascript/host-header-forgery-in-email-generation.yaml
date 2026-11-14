@@ -1,0 +1,41 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-host-header-forgery-in-email-generation
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: "O cabeçalho `Host` da requisição é usado para montar o conteúdo de um e-mail (por exemplo o link de redefinição de senha). Um atacante pode forjar o cabeçalho e fazer o link apontar para um domínio dele. Use um domínio fixo da configuração."
+    metadata:
+      category: security
+      cwe: "CWE-640: Weak Password Recovery Mechanism for Forgotten Password"
+      codeql: js/host-header-forgery-in-email-generation
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.headers.host"
+              - pattern: '$REQ.headers["host"]'
+              - pattern: '$REQ.get("host")'
+              - pattern: '$REQ.get("Host")'
+              - pattern: '$REQ.header("host")'
+              - pattern: '$REQ.headers["x-forwarded-host"]'
+              - pattern: "$REQ.headers.origin"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|context)$"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$T.sendMail({..., html: $V, ...})"
+              - pattern: "$T.sendMail({..., text: $V, ...})"
+              - pattern: "$T.sendMail({..., subject: $V, ...})"
+              - pattern: "$T.sendMail({..., body: $V, ...})"
+              - pattern: "$T.send({..., html: $V, ...})"
+              - pattern: "$T.send({..., text: $V, ...})"
+          - focus-metavariable: "$V"

@@ -1,0 +1,84 @@
+- patterns:
+    - pattern-inside: "module.exports.$F = function ($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "module.exports.$F = ($P, ...) => {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "module.exports = function ($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "module.exports = ($P, ...) => {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "exports.$F = function ($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "exports.$F = ($P, ...) => {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "module.exports.$F.$G = function ($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "$C.prototype.$M = function ($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "export function $F($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "export default function $F($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "export default function ($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "export const $F = ($P, ...) => {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "export const $F = function ($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "export async function $F($P, ...) {...}"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "class $C { constructor($P, ...) {...} }"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "class $C { static $M($P, ...) {...} }"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "class $C { $M($P, ...) {...} }"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "module.exports = { $F: function ($P, ...) {...} }"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "module.exports = { $F($P, ...) {...} }"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "module.exports = { $F: ($P, ...) => {...} }"
+    - pattern: "$P"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern-inside: "module.exports = { ..., $F: function ($P, ...) {...}, ... }"
+    - pattern: "$P"
+    - focus-metavariable: "$P"

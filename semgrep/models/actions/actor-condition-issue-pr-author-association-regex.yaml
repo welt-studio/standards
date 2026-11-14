@@ -1,0 +1,1 @@
+"(?is)^.*?(?:\\bgithub\\.actor\\b(?!.*\\[bot\\])|\\bgithub\\.triggering_actor\\b(?!.*\\[bot\\])|\\bgithub\\.event\\.sender\\.login\\b|(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==|\\bgithub\\.event\\.comment\\.author_association\\b|\\bgithub\\.event\\.issue\\.author_association\\b)"

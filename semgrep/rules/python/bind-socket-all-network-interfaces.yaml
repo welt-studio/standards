@@ -1,0 +1,39 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-bind-socket-all-network-interfaces
+    message: 'Socket ligado a todas as interfaces de rede (`0.0.0.0`, `""`, `::`); o serviço fica exposto em qualquer rede da máquina. Ligue só ao endereço necessário.'
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+      codeql: py/bind-socket-all-network-interfaces
+      notes: |-
+        Porta do `py/bind-socket-all-network-interfaces` (BindToAllInterfaces.ql + sink `bind-socket-all-interfaces`
+        de Stdlib.model.yml): literal de "todas as interfaces" que chega ao endereço (tupla) de socket.bind.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: '"0.0.0.0"'
+      - pattern: '""'
+      - pattern: '"::"'
+      - pattern: '"::0"'
+    pattern-sinks:
+      - patterns:
+          - pattern-inside: |
+              $S = $MOD.socket(...)
+              ...
+          - pattern: "$S.bind($ADDR)"
+          - pattern-not: '$S.bind("...")'
+          - focus-metavariable: "$ADDR"
+      - patterns:
+          - pattern-inside: |
+              $S = $MOD.socket(...)
+              ...
+          - pattern: "$S.bind($ADDR, ...)"
+          - pattern-not: '$S.bind("...")'
+          - focus-metavariable: "$ADDR"

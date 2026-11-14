@@ -1,0 +1,68 @@
+rules:
+  - id: welt-js-client-exposed-cookie
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Cookie sensível definido pelo servidor sem a flag `httpOnly`: o JavaScript do navegador consegue lê-lo. Defina `httpOnly: true`."
+    metadata:
+      category: security
+      cwe: "CWE-1004: Sensitive Cookie Without 'HttpOnly' Flag"
+      codeql: js/client-exposed-cookie
+      notes: |-
+        Cookies de sessão (cookie-session / express-session): o nome não importa.
+        res.cookie(nome, valor, opções)
+        Set-Cookie escrito direto na resposta
+    pattern-either:
+      - pattern: "session({..., httpOnly: false, ...})"
+      - pattern: "session({..., cookie: {..., httpOnly: false, ...}, ...})"
+      - pattern: |
+          $S.httpOnly = false;
+          ...
+          session($S)
+      - patterns:
+          - pattern: |
+              $F = false;
+              ...
+              session({..., httpOnly: $F, ...})
+      - patterns:
+          - pattern-either:
+              - pattern: "$RES.cookie($N, $V)"
+              - pattern: "$RES.cookie($N, $V, {..., httpOnly: false, ...})"
+              - pattern: |
+                  $O = {..., httpOnly: false, ...};
+                  ...
+                  $RES.cookie($N, $V, $O)
+              - pattern: |
+                  $O.httpOnly = false;
+                  ...
+                  $RES.cookie($N, $V, $O)
+              - pattern: |
+                  $O = {...};
+                  ...
+                  $RES.cookie($N, $V, $O)
+              - pattern: "$RES.cookie($N, $V, {...})"
+          - pattern-not: "$RES.cookie($N, $V, {..., httpOnly: true, ...})"
+          - pattern-not: |
+              $O.httpOnly = true;
+              ...
+              $RES.cookie($N, $V, $O)
+          - pattern-not: |
+              $O = {..., httpOnly: true, ...};
+              ...
+              $RES.cookie($N, $V, $O)
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "(?i).*(auth|session|login|token|key).*"
+      - patterns:
+          - pattern-either:
+              - pattern: '$RES.setHeader("Set-Cookie", $C)'
+              - pattern: '$RES.setHeader("set-cookie", $C)'
+              - pattern: '$RES.append("Set-Cookie", $C)'
+          - pattern-not: '$RES.setHeader($H, "...httponly...")'
+          - metavariable-regex:
+              metavariable: "$C"
+              regex: "(?i).*(auth|session|login|token|key).*"
+          - metavariable-regex:
+              metavariable: "$C"
+              regex: "(?is)^(?!.*httponly).*$"

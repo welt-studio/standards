@@ -1,0 +1,76 @@
+- patterns:
+    - pattern: "$L + $R"
+    - metavariable-regex:
+        metavariable: "$L"
+        regex: "^(?:[\"'`]/[^/\\\\\"'`]|[\"'`][^\"'`]*[?#]|[\"'`]https?://[^/\"'`]+/|[\"'`]//[^/\"'`]+/)"
+- patterns:
+    - pattern: "$L + $M + $R"
+    - metavariable-regex:
+        metavariable: "$L"
+        regex: "^(?:[\"'`]/[^/\\\\\"'`]|[\"'`][^\"'`]*[?#]|[\"'`]https?://[^/\"'`]+/|[\"'`]//[^/\"'`]+/)"
+- patterns:
+    - pattern: "`...${$X}...`"
+    - pattern-regex: "`(?:/[^/\\\\`$]|[^`$]*[?#]|https?://[^/`$]+/)[^`]*`"
+- patterns:
+    - pattern: "`...${$X}...`"
+    - pattern-regex: "`[^`]*\\$\\{[^}]*\\}[^`$]*[?#]"
+- patterns:
+    - pattern: "$A + $B"
+    - pattern-regex: "\\+\\s*[\"'`][?#]"
+- patterns:
+    - pattern: "[..., $X, ...].join($J)"
+    - pattern-regex: "\\[\\s*[\"'`][^\"'`]*[?/]"
+- patterns:
+    - "$model": javascript/startswith-check
+    - pattern: "$T"
+    - metavariable-regex:
+        metavariable: "$P"
+        regex: '^["''`](?:https?:)?//[^/"''`]+/'
+- patterns:
+    - pattern-inside: "if ($T.startsWith($P) && ...) {...}"
+    - pattern: "$T"
+    - metavariable-regex:
+        metavariable: "$P"
+        regex: '^["''`](?:https?:)?//[^/"''`]+/'
+- patterns:
+    - pattern-inside: "if ($T.hasOwnProperty($X)) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($S.hasOwnProperty($T)) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if (Object.hasOwn($S, $T)) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($T in $S) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($S[$T] != undefined) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($S[$T]) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($S.includes($T)) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($S.has($T)) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($S.indexOf($T) !== -1) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($S.indexOf($T) > -1) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($S.indexOf($T) >= 0) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if (isLocalUrl($T)) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if ($T.match(...)) {...}"
+    - pattern: "$T"
+- patterns:
+    - pattern-inside: "if (/.../.test($T)) {...}"
+    - pattern: "$T"

@@ -1,0 +1,411 @@
+{
+  "actions/query-tests/Security/CWE-077": {
+    "actions/envpath-injection/critical": "EnvPathInjectionCritical.expected",
+    "actions/envvar-injection/critical": "EnvVarInjectionCritical.expected"
+  },
+  "actions/query-tests/Security/CWE-094": {
+    "actions/code-injection/critical": "CodeInjectionCritical.expected"
+  },
+  "actions/query-tests/Security/CWE-1395": {
+    "actions/vulnerable-action": "UseOfKnownVulnerableAction.expected"
+  },
+  "actions/query-tests/Security/CWE-275": {
+    "actions/missing-workflow-permissions": "MissingActionsPermissions.expected"
+  },
+  "actions/query-tests/Security/CWE-285": {
+    "actions/improper-access-control": "ImproperAccessControl.expected"
+  },
+  "actions/query-tests/Security/CWE-312": {
+    "actions/excessive-secrets-exposure": "ExcessiveSecretsExposure.expected",
+    "actions/secrets-in-artifacts": "SecretsInArtifacts.expected",
+    "actions/unmasked-secret-exposure": "UnmaskedSecretExposure.expected"
+  },
+  "actions/query-tests/Security/CWE-349": {
+    "actions/cache-poisoning/code-injection": "CachePoisoningViaCodeInjection.expected",
+    "actions/cache-poisoning/direct-cache": "CachePoisoningViaDirectCache.expected",
+    "actions/cache-poisoning/poisonable-step": "CachePoisoningViaPoisonableStep.expected"
+  },
+  "actions/query-tests/Security/CWE-367": {
+    "actions/untrusted-checkout-toctou/critical": "UntrustedCheckoutTOCTOUCritical.expected",
+    "actions/untrusted-checkout-toctou/high": "UntrustedCheckoutTOCTOUHigh.expected"
+  },
+  "actions/query-tests/Security/CWE-829": {
+    "actions/artifact-poisoning/critical": "ArtifactPoisoningCritical.expected",
+    "actions/untrusted-checkout/critical": "UntrustedCheckoutCritical.expected",
+    "actions/untrusted-checkout/high": "UntrustedCheckoutHigh.expected"
+  },
+  "javascript/Security/CWE-1427/SystemPromptInjection": {
+    "js/system-prompt-injection": "SystemPromptInjection.expected"
+  },
+  "javascript/query-tests/AngularJS/DisablingSce": {
+    "js/angular/disabling-sce": "DisablingSce.expected"
+  },
+  "javascript/query-tests/AngularJS/DoubleCompilation": {
+    "js/angular/double-compilation": "DoubleCompilation.expected"
+  },
+  "javascript/query-tests/AngularJS/InsecureUrlWhitelist": {
+    "js/angular/insecure-url-whitelist": "InsecureUrlWhitelist.expected"
+  },
+  "javascript/query-tests/Electron/DangerousWebPreferencesSettings": {
+    "js/disabling-electron-websecurity": "DisablingWebSecurity.expected",
+    "js/enabling-electron-insecure-content": "AllowRunningInsecureContent.expected"
+  },
+  "javascript/query-tests/RegExp/IdentityReplacement": {
+    "js/identity-replacement": "IdentityReplacement.expected"
+  },
+  "javascript/query-tests/Security/CWE-020/IncompleteHostnameRegExp": {
+    "js/incomplete-hostname-regexp": "IncompleteHostnameRegExp.expected"
+  },
+  "javascript/query-tests/Security/CWE-020/IncompleteUrlSchemeCheck": {
+    "js/incomplete-url-scheme-check": "IncompleteUrlSchemeCheck.expected"
+  },
+  "javascript/query-tests/Security/CWE-020/IncompleteUrlSubstringSanitization": {
+    "js/incomplete-url-substring-sanitization": "IncompleteUrlSubstringSanitization.expected"
+  },
+  "javascript/query-tests/Security/CWE-020/IncorrectSuffixCheck": {
+    "js/incorrect-suffix-check": "IncorrectSuffixCheck.expected"
+  },
+  "javascript/query-tests/Security/CWE-020/SuspiciousRegexpRange": {
+    "js/overly-large-range": "OverlyLargeRangeQuery.expected"
+  },
+  "javascript/query-tests/Security/CWE-020/UselessCharacterEscape": {
+    "js/useless-regexp-character-escape": "UselessRegExpCharacterEscape.expected"
+  },
+  "javascript/query-tests/Security/CWE-022/TaintedPath": {
+    "js/path-injection": "TaintedPath.expected"
+  },
+  "javascript/query-tests/Security/CWE-022/ZipSlip": {
+    "js/zipslip": "ZipSlip.expected"
+  },
+  "javascript/query-tests/Security/CWE-073": {
+    "js/template-object-injection": "TemplateObjectInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-078/CommandInjection": {
+    "js/command-line-injection": "CommandInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-078/SecondOrderCommandInjection": {
+    "js/second-order-command-line-injection": "SecondOrderCommandInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-078/ShellCommandInjectionFromEnvironment": {
+    "js/shell-command-injection-from-environment": "ShellCommandInjectionFromEnvironment.expected"
+  },
+  "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction": {
+    "js/shell-command-constructed-from-input": "UnsafeShellCommandConstruction.expected"
+  },
+  "javascript/query-tests/Security/CWE-079/DomBasedXss": {
+    "js/xss": "Xss.expected"
+  },
+  "javascript/query-tests/Security/CWE-079/DomBasedXssWithResponseThreat": {
+    "js/xss": "Xss.expected"
+  },
+  "javascript/query-tests/Security/CWE-079/ExceptionXss": {
+    "js/xss-through-exception": "ExceptionXss.expected"
+  },
+  "javascript/query-tests/Security/CWE-079/ReflectedXss": {
+    "js/reflected-xss": "ReflectedXss.expected"
+  },
+  "javascript/query-tests/Security/CWE-079/StoredXss": {
+    "js/stored-xss": "StoredXss.expected"
+  },
+  "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction": {
+    "js/html-constructed-from-input": "UnsafeHtmlConstruction.expected"
+  },
+  "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin": {
+    "js/unsafe-jquery-plugin": "UnsafeJQueryPlugin.expected"
+  },
+  "javascript/query-tests/Security/CWE-079/XssThroughDom": {
+    "js/xss-through-dom": "XssThroughDom.expected"
+  },
+  "javascript/query-tests/Security/CWE-089/local-threat-source": {
+    "js/sql-injection": "SqlInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-089/typed": {
+    "js/sql-injection": "SqlInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-089/untyped": {
+    "js/sql-injection": "SqlInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-094/CodeInjection": {
+    "js/bad-code-sanitization": "ImproperCodeSanitization.expected",
+    "js/code-injection": "CodeInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-094/UnsafeDynamicMethodAccess": {
+    "js/unsafe-dynamic-method-access": "UnsafeDynamicMethodAccess.expected"
+  },
+  "javascript/query-tests/Security/CWE-1004": {
+    "js/client-exposed-cookie": "ClientExposedCookie.expected"
+  },
+  "javascript/query-tests/Security/CWE-116/BadTagFilter": {
+    "js/bad-tag-filter": "BadTagFilter.expected"
+  },
+  "javascript/query-tests/Security/CWE-116/DoubleEscaping": {
+    "js/double-escaping": "DoubleEscaping.expected"
+  },
+  "javascript/query-tests/Security/CWE-116/IncompleteSanitization": {
+    "js/incomplete-html-attribute-sanitization": "IncompleteHtmlAttributeSanitization.expected",
+    "js/incomplete-multi-character-sanitization": "IncompleteMultiCharacterSanitization.expected",
+    "js/incomplete-sanitization": "IncompleteSanitization.expected",
+    "js/unsafe-html-expansion": "UnsafeHtmlExpansion.expected"
+  },
+  "javascript/query-tests/Security/CWE-134": {
+    "js/tainted-format-string": "TaintedFormatString.expected"
+  },
+  "javascript/query-tests/Security/CWE-178": {
+    "js/case-sensitive-middleware-path": "CaseSensitiveMiddlewarePath.expected"
+  },
+  "javascript/query-tests/Security/CWE-200": {
+    "js/exposure-of-private-files": "PrivateFileExposure.expected"
+  },
+  "javascript/query-tests/Security/CWE-201": {
+    "js/cross-window-information-leak": "PostMessageStar.expected"
+  },
+  "javascript/query-tests/Security/CWE-209": {
+    "js/stack-trace-exposure": "StackTraceExposure.expected"
+  },
+  "javascript/query-tests/Security/CWE-295": {
+    "js/disabling-certificate-validation": "DisablingCertificateValidation.expected"
+  },
+  "javascript/query-tests/Security/CWE-300": {
+    "js/insecure-dependency": "InsecureDependencyResolution.expected"
+  },
+  "javascript/query-tests/Security/CWE-312": {
+    "js/build-artifact-leak": "BuildArtifactLeak.expected",
+    "js/clear-text-logging": "CleartextLogging.expected",
+    "js/clear-text-storage-of-sensitive-data": "CleartextStorage.expected"
+  },
+  "javascript/query-tests/Security/CWE-326": {
+    "js/insufficient-key-size": "InsufficientKeySize.expected"
+  },
+  "javascript/query-tests/Security/CWE-327": {
+    "js/biased-cryptographic-random": "BadRandomness.expected",
+    "js/weak-cryptographic-algorithm": "BrokenCryptoAlgorithm.expected"
+  },
+  "javascript/query-tests/Security/CWE-338": {
+    "js/insecure-randomness": "InsecureRandomness.expected"
+  },
+  "javascript/query-tests/Security/CWE-346": {
+    "js/cors-misconfiguration-for-credentials": "CorsMisconfigurationForCredentials.expected"
+  },
+  "javascript/query-tests/Security/CWE-347": {
+    "js/jwt-missing-verification": "MissingJWTKeyVerification.expected"
+  },
+  "javascript/query-tests/Security/CWE-352": {
+    "js/missing-token-validation": "MissingCsrfMiddleware.expected"
+  },
+  "javascript/query-tests/Security/CWE-400/DeepObjectResourceExhaustion": {
+    "js/resource-exhaustion-from-deep-object-traversal": "DeepObjectResourceExhaustion.expected"
+  },
+  "javascript/query-tests/Security/CWE-400/ReDoS": {
+    "js/polynomial-redos": "PolynomialReDoS.expected",
+    "js/redos": "ReDoS.expected"
+  },
+  "javascript/query-tests/Security/CWE-502": {
+    "js/unsafe-deserialization": "UnsafeDeserialization.expected"
+  },
+  "javascript/query-tests/Security/CWE-598": {
+    "js/sensitive-get-query": "SensitiveGetQuery.expected"
+  },
+  "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect": {
+    "js/client-side-unvalidated-url-redirection": "ClientSideUrlRedirect.expected"
+  },
+  "javascript/query-tests/Security/CWE-601/ServerSideUrlRedirect": {
+    "js/server-side-unvalidated-url-redirection": "ServerSideUrlRedirect.expected"
+  },
+  "javascript/query-tests/Security/CWE-611": {
+    "js/xxe": "Xxe.expected"
+  },
+  "javascript/query-tests/Security/CWE-614": {
+    "js/clear-text-cookie": "ClearTextCookie.expected"
+  },
+  "javascript/query-tests/Security/CWE-640": {
+    "js/host-header-forgery-in-email-generation": "HostHeaderPoisoningInEmailGeneration.expected"
+  },
+  "javascript/query-tests/Security/CWE-643": {
+    "js/xpath-injection": "XpathInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-693": {
+    "js/insecure-helmet-configuration": "InsecureHelmet.expected"
+  },
+  "javascript/query-tests/Security/CWE-730/Threat-models-disabled": {
+    "js/regex-injection": "RegExpInjection.expected",
+    "js/server-crash": "ServerCrash.expected"
+  },
+  "javascript/query-tests/Security/CWE-730/Threat-models-enabled": {
+    "js/regex-injection": "RegExpInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-754": {
+    "js/unvalidated-dynamic-method-call": "UnvalidatedDynamicMethodCall.expected"
+  },
+  "javascript/query-tests/Security/CWE-770/MissingRateLimit": {
+    "js/missing-rate-limiting": "MissingRateLimiting.expected"
+  },
+  "javascript/query-tests/Security/CWE-770/ResourceExhaustion": {
+    "js/resource-exhaustion": "ResourceExhaustion.expected"
+  },
+  "javascript/query-tests/Security/CWE-776": {
+    "js/xml-bomb": "XmlBomb.expected"
+  },
+  "javascript/query-tests/Security/CWE-829": {
+    "js/insecure-download": "InsecureDownload.expected"
+  },
+  "javascript/query-tests/Security/CWE-830": {
+    "js/functionality-from-untrusted-domain": "FunctionalityFromUntrustedDomain.expected",
+    "js/functionality-from-untrusted-source": "FunctionalityFromUntrustedSource.expected"
+  },
+  "javascript/query-tests/Security/CWE-834": {
+    "js/loop-bound-injection": "LoopBoundInjection.expected"
+  },
+  "javascript/query-tests/Security/CWE-843": {
+    "js/type-confusion-through-parameter-tampering": "TypeConfusionThroughParameterTampering.expected"
+  },
+  "javascript/query-tests/Security/CWE-915/PrototypePollutingAssignment": {
+    "js/prototype-polluting-assignment": "PrototypePollutingAssignment.expected"
+  },
+  "javascript/query-tests/Security/CWE-915/PrototypePollutingFunction": {
+    "js/prototype-pollution-utility": "PrototypePollutingFunction.expected"
+  },
+  "javascript/query-tests/Security/CWE-915/PrototypePollutingMergeCall": {
+    "js/prototype-pollution": "PrototypePollutingMergeCall.expected"
+  },
+  "javascript/query-tests/Security/CWE-916": {
+    "js/insufficient-password-hash": "InsufficientPasswordHash.expected"
+  },
+  "javascript/query-tests/Security/CWE-918": {
+    "js/request-forgery": "RequestForgery.expected"
+  },
+  "javascript/query-tests/Security/CWE-942": {
+    "js/cors-permissive-configuration": "CorsPermissiveConfiguration.expected"
+  },
+  "python/2/query-tests/Expressions": {
+    "py/use-of-input": "UseofInput.expected"
+  },
+  "python/query-tests/Security/CVE-2018-1281": {
+    "py/bind-socket-all-network-interfaces": "BindToAllInterfaces.expected"
+  },
+  "python/query-tests/Security/CWE-020-CookieInjection": {
+    "py/cookie-injection": "CookieInjection.expected"
+  },
+  "python/query-tests/Security/CWE-020-IncompleteHostnameRegExp": {
+    "py/incomplete-hostname-regexp": "IncompleteHostnameRegExp.expected"
+  },
+  "python/query-tests/Security/CWE-020-IncompleteUrlSubstringSanitization": {
+    "py/incomplete-url-substring-sanitization": "IncompleteUrlSubstringSanitization.expected"
+  },
+  "python/query-tests/Security/CWE-020-SuspiciousRegexpRange": {
+    "py/overly-large-range": "OverlyLargeRangeQuery.expected"
+  },
+  "python/query-tests/Security/CWE-022-PathInjection": {
+    "py/path-injection": "PathInjection.expected"
+  },
+  "python/query-tests/Security/CWE-074-TemplateInjection": {
+    "py/template-injection": "TemplateInjection.expected"
+  },
+  "python/query-tests/Security/CWE-078-CommandInjection": {
+    "py/command-line-injection": "CommandInjection.expected"
+  },
+  "python/query-tests/Security/CWE-078-CommandInjection-py2": {
+    "py/command-line-injection": "CommandInjection.expected"
+  },
+  "python/query-tests/Security/CWE-079-ReflectedXss": {
+    "py/reflective-xss": "ReflectedXss.expected"
+  },
+  "python/query-tests/Security/CWE-089-SqlInjection": {
+    "py/sql-injection": "SqlInjection.expected"
+  },
+  "python/query-tests/Security/CWE-089-SqlInjection-local-threat-model": {
+    "py/sql-injection": "SqlInjection.expected"
+  },
+  "python/query-tests/Security/CWE-090-LdapInjection": {
+    "py/ldap-injection": "LdapInjection.expected"
+  },
+  "python/query-tests/Security/CWE-094-CodeInjection": {
+    "py/code-injection": "CodeInjection.expected"
+  },
+  "python/query-tests/Security/CWE-1004-NonHttpOnlyCookie": {
+    "py/client-exposed-cookie": "NonHttpOnlyCookie.expected"
+  },
+  "python/query-tests/Security/CWE-113-HeaderInjection/Tests1": {
+    "py/http-response-splitting": "HeaderInjection.expected"
+  },
+  "python/query-tests/Security/CWE-113-HeaderInjection/Tests2-with-wsgi-validator": {
+    "py/http-response-splitting": "HeaderInjection.expected"
+  },
+  "python/query-tests/Security/CWE-116-BadTagFilter": {
+    "py/bad-tag-filter": "BadTagFilter.expected"
+  },
+  "python/query-tests/Security/CWE-1275-SameSiteNoneCookie": {
+    "py/samesite-none-cookie": "SameSiteNoneCookie.expected"
+  },
+  "python/query-tests/Security/CWE-209-StackTraceExposure": {
+    "py/stack-trace-exposure": "StackTraceExposure.expected"
+  },
+  "python/query-tests/Security/CWE-215-FlaskDebug": {
+    "py/flask-debug": "FlaskDebug.expected"
+  },
+  "python/query-tests/Security/CWE-285-PamAuthorization": {
+    "py/pam-auth-bypass": "PamAuthorization.expected"
+  },
+  "python/query-tests/Security/CWE-295-MissingHostKeyValidation": {
+    "py/paramiko-missing-host-key-validation": "MissingHostKeyValidation.expected"
+  },
+  "python/query-tests/Security/CWE-312-CleartextLogging": {
+    "py/clear-text-logging-sensitive-data": "CleartextLogging.expected"
+  },
+  "python/query-tests/Security/CWE-312-CleartextStorage": {
+    "py/clear-text-storage-sensitive-data": "CleartextStorage.expected"
+  },
+  "python/query-tests/Security/CWE-312-CleartextStorage-py3": {
+    "py/clear-text-storage-sensitive-data": "CleartextStorage.expected"
+  },
+  "python/query-tests/Security/CWE-326-WeakCryptoKey": {
+    "py/weak-crypto-key": "WeakCryptoKey.expected"
+  },
+  "python/query-tests/Security/CWE-327-BrokenCryptoAlgorithm": {
+    "py/weak-cryptographic-algorithm": "BrokenCryptoAlgorithm.expected"
+  },
+  "python/query-tests/Security/CWE-327-InsecureDefaultProtocol": {
+    "py/insecure-default-protocol": "InsecureDefaultProtocol.expected"
+  },
+  "python/query-tests/Security/CWE-327-InsecureProtocol": {
+    "py/insecure-protocol": "InsecureProtocol.expected"
+  },
+  "python/query-tests/Security/CWE-327-WeakSensitiveDataHashing": {
+    "py/weak-sensitive-data-hashing": "WeakSensitiveDataHashing.expected"
+  },
+  "python/query-tests/Security/CWE-377-InsecureTemporaryFile": {
+    "py/insecure-temporary-file": "InsecureTemporaryFile.expected"
+  },
+  "python/query-tests/Security/CWE-502-UnsafeDeserialization": {
+    "py/unsafe-deserialization": "UnsafeDeserialization.expected"
+  },
+  "python/query-tests/Security/CWE-601-UrlRedirect": {
+    "py/url-redirection": "UrlRedirect.expected"
+  },
+  "python/query-tests/Security/CWE-611-Xxe": {
+    "py/xxe": "Xxe.expected"
+  },
+  "python/query-tests/Security/CWE-614-InsecureCookie": {
+    "py/insecure-cookie": "InsecureCookie.expected"
+  },
+  "python/query-tests/Security/CWE-643-XPathInjection": {
+    "py/xpath-injection": "XpathInjection.expected"
+  },
+  "python/query-tests/Security/CWE-730-PolynomialReDoS": {
+    "py/polynomial-redos": "PolynomialReDoS.expected"
+  },
+  "python/query-tests/Security/CWE-730-ReDoS": {
+    "py/redos": "ReDoS.expected"
+  },
+  "python/query-tests/Security/CWE-730-RegexInjection": {
+    "py/regex-injection": "RegexInjection.expected"
+  },
+  "python/query-tests/Security/CWE-776-XmlBomb": {
+    "py/xml-bomb": "XmlBomb.expected"
+  },
+  "python/query-tests/Security/CWE-918-ServerSideRequestForgery": {
+    "py/full-ssrf": "FullServerSideRequestForgery.expected"
+  },
+  "python/query-tests/Security/CWE-943-NoSqlInjection": {
+    "py/nosql-injection": "NoSqlInjection.expected"
+  }
+}

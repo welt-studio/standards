@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.lutimes($X, ...)"
+    - focus-metavariable: "$X"

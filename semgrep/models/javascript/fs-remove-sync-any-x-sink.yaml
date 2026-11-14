@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.removeSync($X, ...)"
+    - focus-metavariable: "$X"

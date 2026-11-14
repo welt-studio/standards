@@ -1,0 +1,37 @@
+rules:
+  - id: welt-js-prototype-pollution
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: "Dado controlado pelo usuário é mesclado profundamente em um objeto com uma função de merge vulnerável a poluição de protótipo (`__proto__`). Use uma versão corrigida da biblioteca, ou filtre as chaves `__proto__`, `constructor` e `prototype`."
+    metadata:
+      category: security
+      cwe: "CWE-1321: Improperly Controlled Modification of Object Prototype Attributes"
+      codeql: js/prototype-pollution
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/dom-xss-sources
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "_.merge($T, ..., $X)"
+              - pattern: "_.mergeWith($T, ..., $X, ...)"
+              - pattern: "_.defaultsDeep($T, ..., $X)"
+              - pattern: "_.extend(true, $T, ..., $X)"
+              - pattern: "lodash.merge($T, ..., $X)"
+              - pattern: "lodash.defaultsDeep($T, ..., $X)"
+              - pattern: "merge($T, ..., $X)"
+              - pattern: "deepmerge($T, $X)"
+              - pattern: "deepExtend($T, ..., $X)"
+              - pattern: "mergeDeep($T, ..., $X)"
+              - pattern: "$.extend(true, $T, ..., $X)"
+              - pattern: "jQuery.extend(true, $T, ..., $X)"
+              - pattern: "angular.merge($T, ..., $X)"
+              - pattern: "webix.extend($T, $X, ...)"
+              - pattern: "webix.copy($T, $X, ...)"
+              - pattern: "$M.extend($T, $X, true)"
+          - focus-metavariable: "$X"

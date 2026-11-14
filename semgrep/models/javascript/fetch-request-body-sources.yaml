@@ -1,0 +1,7 @@
+- pattern: "$REQ.getHeader(...)"
+- pattern: "$REQ.json()"
+- pattern: "$REQ.text()"
+- pattern: "$REQ.formData()"
+- pattern: "$REQ.blob()"
+- pattern: "$REQ.arrayBuffer()"
+- pattern: "$REQ.nextUrl.$K"

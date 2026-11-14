@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.mkdirsSync($X, ...)"
+    - focus-metavariable: "$X"

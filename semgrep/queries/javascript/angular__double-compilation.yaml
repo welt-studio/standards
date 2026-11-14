@@ -1,0 +1,27 @@
+rules:
+  - id: welt-js-angular-double-compilation
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta chamada a `$compile` recompila o elemento `$ELEM` da própria diretiva, o que pode causar dupla compilação. Passe `maxPriority` como terceiro argumento ou compile só o conteúdo filho."
+    metadata:
+      category: security
+      cwe: "CWE-1176: Inefficient CPU Computation"
+      codeql: js/angular/double-compilation
+    patterns:
+      - pattern-either:
+          - pattern: "$COMPILE($ELEM)"
+          - pattern: "$COMPILE($ELEM, $T)"
+      - pattern-either:
+          - pattern-inside: |
+              {..., link: function ($SCOPE, $ELEM, ...) {...}, ...}
+          - pattern-inside: |
+              {..., link: ($SCOPE, $ELEM, ...) => {...}, ...}
+          - pattern-inside: |
+              {..., link: { ..., post: function ($SCOPE, $ELEM, ...) {...}, ...}, ...}
+          - pattern-inside: |
+              $D.link = function ($SCOPE, $ELEM, ...) {...}
+      - metavariable-regex:
+          metavariable: "$COMPILE"
+          regex: "^\\$?compile$"

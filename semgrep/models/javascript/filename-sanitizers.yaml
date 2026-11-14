@@ -1,0 +1,3 @@
+- pattern: "path.basename($X, ...)"
+- pattern: "sanitizeFilename($X, ...)"
+- pattern: "sanitize($X, ...)"

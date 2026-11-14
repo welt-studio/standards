@@ -1,0 +1,43 @@
+- patterns:
+    - "$model": python/django-class-view-parameters
+    - focus-metavariable: "$P"
+- patterns:
+    - "$model": python/django-function-view-parameters
+    - focus-metavariable: "$P"
+- patterns:
+    - "$model": python/request-attribute-sources
+- patterns:
+    - "$model": python/request-method-call-sources
+- patterns:
+    - pattern: "self.$M(...)"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex:
+          "$text": python/tornado-argument-method-regex
+- patterns:
+    - pattern-either:
+        - pattern-inside: |
+            @$APP.$VERB(...)
+            def $F(..., $P: $T, ...):
+              ...
+        - pattern-inside: |
+            @$APP.$VERB(...)
+            async def $F(..., $P: $T, ...):
+              ...
+        - pattern-inside: |
+            @$APP.$VERB(...)
+            def $F(..., $P: $T = $D, ...):
+              ...
+        - pattern-inside: |
+            @$APP.$VERB(...)
+            async def $F(..., $P: $T = $D, ...):
+              ...
+    - metavariable-regex:
+        metavariable: "$VERB"
+        regex:
+          "$text": python/http-verb-decorator-regex
+    - metavariable-regex:
+        metavariable: "$T"
+        regex:
+          "$text": python/fastapi-dependency-parameter-regex
+    - focus-metavariable: "$P"

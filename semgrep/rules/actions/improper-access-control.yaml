@@ -1,0 +1,87 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-actions-improper-access-control
+    message: "O checkout acontece depois de uma verificação por rótulo (label), mas um `pull_request_target` com `synchronize` roda de novo quando o autor empurra um novo commit: o código muda depois da autorização. Remova o rótulo a cada push, faça checkout de um SHA fixo ou use um `environment` com aprovação."
+    severity: WARNING
+    languages:
+      - yaml
+    metadata:
+      category: security
+      cwe: "CWE-285: Improper Authorization"
+      codeql: actions/improper-access-control
+      confidence: MEDIUM
+      technology:
+        - github-actions
+    paths:
+      include:
+        - "*.yml"
+        - "*.yaml"
+    patterns:
+      - pattern-inside:
+          pattern-regex: "(?ms)\\A.*?^[\"']?on[\"']?:(?:[ \\t]*(?:pull_request_target)[ \\t]*(?:\\#.*)?$|[ \\t]*\\[[^\\]\\n]*\\bpull_request_target\\b|[ \\t]*(?:\\#.*)?\\n(?:(?!^[^\\s\\#])(?s:.))*?^(?<pi>[ \\t]+)(?:-[ \\t]+)?pull_request_target:?[ \\t]*(?:\\#[^\\n]*)?\\n(?:(?!(?:\\k<pi>[ \\t]+(?!types:)[^\\n]*\\n|[ \\t]*\\n)*\\k<pi>[ \\t]+types:)|(?:\\k<pi>[ \\t]+[^\\n]*\\n|[ \\t]*\\n)*?[^\\n]*\\bsynchronize\\b)).*\\z"
+      - pattern-either:
+          - patterns:
+              - pattern: |
+                  - uses: $U
+                    ...
+                    if: $COND
+                    ...
+                    with:
+                      ...
+                      ref: $REF
+                      ...
+              - metavariable-regex:
+                  metavariable: "$U"
+                  regex: "^actions/checkout@"
+              - metavariable-regex:
+                  metavariable: "$REF"
+                  regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))"
+              - metavariable-regex:
+                  metavariable: "$COND"
+                  regex: "(?is)^.*?(?:(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==)"
+          - patterns:
+              - pattern: |
+                  - uses: $U
+                    ...
+                    with:
+                      ...
+                      ref: $REF
+                      ...
+              - pattern-inside: |
+                  $JOB:
+                    ...
+                    if: $JCOND
+                    ...
+              - metavariable-regex:
+                  metavariable: "$U"
+                  regex: "^actions/checkout@"
+              - metavariable-regex:
+                  metavariable: "$REF"
+                  regex: "(?is)^.*(?:github\\.event\\.pull_request\\.head\\.(?:ref|label)|github\\.head_ref|github\\.event\\.workflow_run\\.head_branch|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.check_run\\.(?:check_suite\\.)?pull_requests\\[\\d+\\]\\.head\\.ref|github\\.event\\.merge_group\\.head_ref|github\\.event\\.(?:number|issue\\.number|pull_request\\.(?:number|id))\\b|github\\.event\\.check_suite\\.pull_requests\\[\\d+\\]\\.(?:id|number)\\b|\\bhead\\.ref\\b|\\bhead_ref\\b|\\bmerge_ref\\b|\\bpr_head_ref\\b|GITHUB_HEAD_REF|\\bpr_number\\b|\\bpr_id\\b|\\b(?:steps|needs|inputs|matrix|vars)\\.[^}\\n]*?(?:head|branch|ref))"
+              - metavariable-regex:
+                  metavariable: "$JCOND"
+                  regex: "(?is)^.*?(?:(?<!!)contains\\(\\s*github\\.event\\.pull_request\\.labels\\b|\\bgithub\\.event\\.label\\.name\\s*==)"
+      - pattern-either:
+          - pattern-inside:
+              patterns:
+                - pattern: |
+                    $JOB:
+                      ...
+                      permissions: $P
+                      ...
+                - metavariable-regex:
+                    metavariable: "$P"
+                    regex: "(?is)^.*write"
+          - pattern-inside:
+              patterns:
+                - pattern: |
+                    $JOB:
+                      ...
+                      steps: $BODY
+                      ...
+                - metavariable-regex:
+                    metavariable: "$BODY"
+                    regex: "(?is)^.*\\bsecrets(?:\\.(?!GITHUB_TOKEN\\b)|\\[)"
+          - pattern-inside:
+              pattern-regex: "(?ms)\\A.*?^permissions:[ \\t]*(?:write-all|\\n(?:[ \\t]+[^\\n]*\\n)*?[ \\t]+[\\w-]+:[ \\t]*write).*\\z"

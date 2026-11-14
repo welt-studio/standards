@@ -1,0 +1,21 @@
+rules:
+  - id: welt-py-use-of-input
+    message: "`input()` do Python 2 avalia o texto digitado como código (equivale a `eval(raw_input())`). Use `raw_input()` ou migre para Python 3."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+        - "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+      codeql: py/use-of-input
+      notes: |-
+        Porta do `py/use-of-input` (UseofInput.ql). O CodeQL só alerta quando o código analisado é Python 2.
+        O Semgrep não sabe a versão; o único indício local é o arquivo usar `raw_input`, que só existe no Python 2.
+    patterns:
+      - pattern: "input(...)"
+      - pattern-inside: |
+          ...
+          raw_input(...)
+          ...

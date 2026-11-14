@@ -1,0 +1,37 @@
+rules:
+  - id: welt-js-functionality-from-untrusted-domain-html
+    languages:
+      - html
+    severity: ERROR
+    message: "Conteúdo carregado de domínio não confiável (já usado em ataques à cadeia de suprimento) sem verificação de integridade. Hospede o arquivo você mesmo ou use `integrity` (SRI)."
+    metadata:
+      category: security
+      cwe: "CWE-830: Inclusion of Web Functionality from an Untrusted Source"
+      codeql: js/functionality-from-untrusted-domain
+    patterns:
+      - pattern-either:
+          - "$model": javascript/script-src-url-script
+          - pattern: '<link href="$URL" ...>'
+          - "$model": javascript/iframe-src-url-iframe
+      - "$model": javascript/script-without-integrity
+      - metavariable-regex:
+          metavariable: "$URL"
+          regex: "(?i)^(https?:)?//([\\w.-]+\\.)?(polyfill\\.io|bootcss\\.com|bootcdn\\.net|staticfile\\.org|staticfile\\.net|staticfile\\.com|unionadjs\\.com|xhsbpza\\.com|union\\.macoms\\.la|newcrbpc\\.com)([:/?#]|$)"
+  - id: welt-js-functionality-from-untrusted-domain-dynamic
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Conteúdo carregado dinamicamente de domínio não confiável (já usado em ataques à cadeia de suprimento). Hospede o arquivo você mesmo ou use `integrity` (SRI)."
+    metadata:
+      category: security
+      cwe: "CWE-830: Inclusion of Web Functionality from an Untrusted Source"
+      codeql: js/functionality-from-untrusted-domain
+    patterns:
+      - pattern-either:
+          - pattern: '$E.src = "$URL"'
+          - pattern: '$E.setAttribute("src", "$URL")'
+      - "$model": javascript/integrity-assignment-exclusions
+      - metavariable-regex:
+          metavariable: "$URL"
+          regex: "(?i)^(https?:)?//([\\w.-]+\\.)?(polyfill\\.io|bootcss\\.com|bootcdn\\.net|staticfile\\.org|staticfile\\.net|staticfile\\.com|unionadjs\\.com|xhsbpza\\.com|union\\.macoms\\.la|newcrbpc\\.com)([:/?#]|$)"

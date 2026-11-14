@@ -1,0 +1,182 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-incorrect-suffix-check
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta verificação de sufixo não compara os comprimentos, então não trata indexOf retornando -1."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incorrect-suffix-check
+    patterns:
+      - pattern-either:
+          - pattern: "$X.indexOf($Y) === $X.length - $Y.length"
+          - pattern: "$X.indexOf($Y) === $X.length - $Y.length - 1"
+          - pattern: "$X.indexOf($P + $Y) === $X.length - $Y.length - 1"
+          - pattern: "$X.indexOf($Y) === $X.length - ($Y.length + 1)"
+          - pattern: "$X.indexOf($P + $Y) === $X.length - ($Y.length + 1)"
+          - pattern: "$X.indexOf($Y) == $X.length - $Y.length"
+          - pattern: "$X.indexOf($Y) == $X.length - $Y.length - 1"
+          - pattern: "$X.indexOf($P + $Y) == $X.length - $Y.length - 1"
+          - pattern: "$X.indexOf($Y) == $X.length - ($Y.length + 1)"
+          - pattern: "$X.indexOf($P + $Y) == $X.length - ($Y.length + 1)"
+          - pattern: "$X.lastIndexOf($Y) === $X.length - $Y.length"
+          - pattern: "$X.lastIndexOf($Y) === $X.length - $Y.length - 1"
+          - pattern: "$X.lastIndexOf($P + $Y) === $X.length - $Y.length - 1"
+          - pattern: "$X.lastIndexOf($Y) === $X.length - ($Y.length + 1)"
+          - pattern: "$X.lastIndexOf($P + $Y) === $X.length - ($Y.length + 1)"
+          - pattern: "$X.lastIndexOf($Y) == $X.length - $Y.length"
+          - pattern: "$X.lastIndexOf($Y) == $X.length - $Y.length - 1"
+          - pattern: "$X.lastIndexOf($P + $Y) == $X.length - $Y.length - 1"
+          - pattern: "$X.lastIndexOf($Y) == $X.length - ($Y.length + 1)"
+          - pattern: "$X.lastIndexOf($P + $Y) == $X.length - ($Y.length + 1)"
+      - pattern-not-inside: "$X.length >= $Y.length && ..."
+      - pattern-not-inside: "$X.length > $Y.length && ..."
+      - pattern-not-inside: "$X.length >= $N && ..."
+      - pattern-not-inside: "$X.length > $N && ..."
+      - pattern-not-inside: "$X.indexOf($Z) !== -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) != -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) >= 0 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) > -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) > 0 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) !== -1 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) >= 0 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) > -1 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) > 0 && ..."
+      - pattern-not-inside: "$J !== -1 && ..."
+      - pattern-not-inside: "$J >= 0 && ..."
+      - pattern-not-inside: "$J > -1 && ..."
+      - pattern-not-inside: "$J > 0 && ..."
+      - pattern-not-inside: "!($J < 0) && ..."
+      - pattern-not-inside: "!($J <= -1) && ..."
+      - pattern-not-inside: "!($X.indexOf($Z) < 0) && ..."
+      - pattern-not-inside: "!($X.indexOf($Z) <= -1) && ..."
+      - pattern-not-inside: "$J === -1 || ... && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) === -1 || ..."
+      - pattern-not-inside: "$X.indexOf($Z) === -1 || ..."
+  - id: welt-js-incorrect-suffix-check-literal
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta verificação de sufixo não compara os comprimentos, então não trata indexOf retornando -1."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incorrect-suffix-check
+    patterns:
+      - pattern-either:
+          - pattern: '$X.indexOf("$S") === $X.length - $N'
+          - pattern: '$X.lastIndexOf("$S") === $X.length - $N'
+      - metavariable-comparison:
+          metavariable: "$N"
+          comparison: "$N > 1"
+      - pattern-not-inside: "$X.length >= $Y.length && ..."
+      - pattern-not-inside: "$X.length > $Y.length && ..."
+      - pattern-not-inside: "$X.length >= $N && ..."
+      - pattern-not-inside: "$X.length > $N && ..."
+      - pattern-not-inside: "$X.indexOf($Z) !== -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) != -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) >= 0 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) > -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) > 0 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) !== -1 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) >= 0 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) > -1 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) > 0 && ..."
+      - pattern-not-inside: "$J !== -1 && ..."
+      - pattern-not-inside: "$J >= 0 && ..."
+      - pattern-not-inside: "$J > -1 && ..."
+      - pattern-not-inside: "$J > 0 && ..."
+      - pattern-not-inside: "!($J < 0) && ..."
+      - pattern-not-inside: "!($J <= -1) && ..."
+      - pattern-not-inside: "!($X.indexOf($Z) < 0) && ..."
+      - pattern-not-inside: "!($X.indexOf($Z) <= -1) && ..."
+      - pattern-not-inside: "$J === -1 || ... && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) === -1 || ..."
+      - pattern-not-inside: "$X.indexOf($Z) === -1 || ..."
+  - id: welt-js-incorrect-suffix-check-literal-length
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta verificação de sufixo não compara os comprimentos, então não trata indexOf retornando -1."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incorrect-suffix-check
+    patterns:
+      - pattern-either:
+          - pattern: '$X.indexOf("$S") === $X.length - "$S".length'
+          - pattern: '$X.lastIndexOf("$S") === $X.length - "$S".length'
+      - pattern-not-inside: "$X.length >= $Y.length && ..."
+      - pattern-not-inside: "$X.length > $Y.length && ..."
+      - pattern-not-inside: "$X.length >= $N && ..."
+      - pattern-not-inside: "$X.length > $N && ..."
+      - pattern-not-inside: "$X.indexOf($Z) !== -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) != -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) >= 0 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) > -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) > 0 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) !== -1 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) >= 0 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) > -1 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) > 0 && ..."
+      - pattern-not-inside: "$J !== -1 && ..."
+      - pattern-not-inside: "$J >= 0 && ..."
+      - pattern-not-inside: "$J > -1 && ..."
+      - pattern-not-inside: "$J > 0 && ..."
+      - pattern-not-inside: "!($J < 0) && ..."
+      - pattern-not-inside: "!($J <= -1) && ..."
+      - pattern-not-inside: "!($X.indexOf($Z) < 0) && ..."
+      - pattern-not-inside: "!($X.indexOf($Z) <= -1) && ..."
+      - pattern-not-inside: "$J === -1 || ... && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) === -1 || ..."
+      - pattern-not-inside: "$X.indexOf($Z) === -1 || ..."
+  - id: welt-js-incorrect-suffix-check-variable
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta verificação de sufixo não compara os comprimentos, então não trata indexOf retornando -1."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incorrect-suffix-check
+    patterns:
+      - pattern-either:
+          - pattern: "$I === $X.length - $Y.length - 1"
+          - pattern: "$I === $X.length - $Y.length"
+          - pattern: "$I === $X.length - ($Y.length + 1)"
+          - pattern: "$I === $D"
+      - pattern-either:
+          - pattern-inside: "$I = $X.indexOf($Y); ..."
+          - pattern-inside: "$I = $X.lastIndexOf($Y); ..."
+          - pattern-inside: "$D = $X.length - $Y.length; ..."
+      - pattern-not-inside: "$X.length >= $Y.length && ..."
+      - pattern-not-inside: "$X.length > $Y.length && ..."
+      - pattern-not-inside: "$X.length >= $N && ..."
+      - pattern-not-inside: "$X.length > $N && ..."
+      - pattern-not-inside: "$X.indexOf($Z) !== -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) != -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) >= 0 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) > -1 && ..."
+      - pattern-not-inside: "$X.indexOf($Z) > 0 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) !== -1 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) >= 0 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) > -1 && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) > 0 && ..."
+      - pattern-not-inside: "$J !== -1 && ..."
+      - pattern-not-inside: "$J >= 0 && ..."
+      - pattern-not-inside: "$J > -1 && ..."
+      - pattern-not-inside: "$J > 0 && ..."
+      - pattern-not-inside: "!($J < 0) && ..."
+      - pattern-not-inside: "!($J <= -1) && ..."
+      - pattern-not-inside: "!($X.indexOf($Z) < 0) && ..."
+      - pattern-not-inside: "!($X.indexOf($Z) <= -1) && ..."
+      - pattern-not-inside: "$J === -1 || ... && ..."
+      - pattern-not-inside: "$X.lastIndexOf($Z) === -1 || ..."
+      - pattern-not-inside: "$X.indexOf($Z) === -1 || ..."

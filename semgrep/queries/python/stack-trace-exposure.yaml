@@ -1,0 +1,95 @@
+rules:
+  - id: welt-py-stack-trace-exposure
+    message: "Informação da exceção (mensagem ou stack trace) chega ao corpo da resposta HTTP e vaza detalhe interno ao cliente. Registre no log e devolva uma mensagem genérica."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-209: Generation of Error Message Containing Sensitive Information"
+      codeql: py/stack-trace-exposure
+      notes: |-
+        ExceptionInfo.qll: a exceção capturada, o traceback e o sys.exc_info().
+        Como no CodeQL: atributo da exceção (`exc.detail`, `exc.messages`, `e.errors()`) é dado que a
+        exceção carrega de propósito para o cliente, não o texto interno dela. Só o `args` continua.
+        Flask: o retorno da rota, make_response/jsonify/Response (Flask.qll).
+        RestFramework.qll: Response(arg0 | data=) e o `detail` das exceções da API.
+        Django.qll / FastApi.qll / Starlette.qll: o conteúdo das classes de resposta.
+        FastApi.qll (FastApiRequestHandlerReturn): o retorno da rota é o corpo da resposta.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern-inside: |
+              try:
+                ...
+              except $T as $E:
+                ...
+          - pattern: "$E"
+      - pattern: "traceback.$FMT(...)"
+      - pattern: "sys.exc_info()"
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$OBJ.$ATTR"
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: "^(?!args$|__traceback__$).+"
+    pattern-sinks:
+      - "$model": python/flask-route-return-value-sinks
+      - patterns:
+          - pattern-either:
+              - pattern: "flask.jsonify($X, ...)"
+              - pattern: "jsonify($X, ...)"
+              - "$model": python/flask-make-response-x
+              - "$model": python/make-response-x
+              - "$model": python/flask-response-x
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "Response($X, ...)"
+              - pattern: "Response(..., data=$X, ...)"
+              - pattern: "$M.Response($X, ...)"
+              - pattern: "$M.Response(..., data=$X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$EXC($X, ...)"
+              - pattern: "$EXC(..., detail=$X, ...)"
+              - pattern: "$M.$EXC($X, ...)"
+              - pattern: "$M.$EXC(..., detail=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$EXC"
+              regex: "^(APIException|ValidationError|ParseError|AuthenticationFailed|NotAuthenticated|PermissionDenied|NotFound|MethodNotAllowed|NotAcceptable|UnsupportedMediaType|Throttled)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$R($X, ...)"
+              - pattern: "$R(..., content=$X, ...)"
+              - pattern: "$M.$R($X, ...)"
+              - pattern: "$M.$R(..., content=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "^(HttpResponse\\w*|JsonResponse|StreamingHttpResponse|HTMLResponse|PlainTextResponse|JSONResponse|UJSONResponse|ORJSONResponse)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              @$APP.$VERB(...)
+              async def $F(...):
+                ...
+          - metavariable-regex:
+              metavariable: "$VERB"
+              regex: "^(get|post|put|patch|delete|api_route)$"
+          - pattern: "return $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              @$APP.$VERB(...)
+              def $F(...):
+                ...
+          - metavariable-regex:
+              metavariable: "$VERB"
+              regex: "^(get|post|put|patch|delete|api_route)$"
+          - pattern: "return $X"
+          - focus-metavariable: "$X"

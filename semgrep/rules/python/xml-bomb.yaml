@@ -1,0 +1,144 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-xml-bomb
+    message: "Dado controlado pelo usuário é lido por um parser XML da biblioteca padrão, vulnerável a expansão de entidades internas (billion laughs). Use `defusedxml`."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-776: Improper Restriction of Recursive Entity References in DTDs ('XML Entity Expansion')"
+      codeql: py/xml-bomb
+      notes: |-
+        Porta do `py/xml-bomb` (XmlBombCustomizations.qll + XmlParsing.vulnerableTo(XML bomb) de Stdlib.qll:
+        xml.etree, xml.sax, xml.dom.minidom/pulldom; Xmltodict.qll). O lxml não entra: libxml2 já se protege.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  def $V(self, request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $V(self, request, ..., $P, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(get|post|put|patch|delete|head|options|list|retrieve|create|update|partial_update|destroy|dispatch|form_valid|get_object|get_queryset)$"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$D
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$D(...)
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$D
+                  async def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$D(...)
+                  async def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $V(request, ..., $P, ...):
+                    ...
+          - pattern-not-inside: |
+              def $V2(request: $T, ...):
+                ...
+          - pattern-not-inside: |
+              async def $V2(request: $T, ...):
+                ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!_)"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-either:
+              - pattern: "request.$A"
+              - pattern: "self.request.$A"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "^(args|form|values|json|data|files|cookies|headers|GET|POST|body|META|COOKIES|FILES|query_params|path_params|query|match_info|query_string|full_path|view_args|stream|environ|path|url|referrer|content_type)$"
+      - patterns:
+          - pattern-either:
+              - pattern: "request.$M(...)"
+              - pattern: "self.request.$M(...)"
+              - pattern: "await request.$M(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get_json|get_data|json|form|body|post|text|read|get_full_path|get_host)$"
+      - patterns:
+          - pattern: "self.$M(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get_argument|get_arguments|get_query_argument|get_query_arguments|get_body_argument|get_body_arguments|get_cookie|get_secure_cookie)$"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  def $F(..., $P: $T, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  async def $F(..., $P: $T, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  def $F(..., $P: $T = $D, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  async def $F(..., $P: $T = $D, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$VERB"
+              regex: "^(get|post|put|patch|delete|api_route|head|options|route|websocket)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?!.*\\b(Depends|Security)\\()(?!\\s*(Request|Response|BackgroundTasks|WebSocket|HTTPConnection|Session|AsyncSession|SecurityScopes)\\s*$)"
+          - focus-metavariable: "$P"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "xml.etree.ElementTree.$FN($X, ...)"
+              - pattern: "xml.etree.cElementTree.$FN($X, ...)"
+              - pattern: "ElementTree.$FN($X, ...)"
+              - pattern: "ET.$FN($X, ...)"
+          - metavariable-regex:
+              metavariable: "$FN"
+              regex: "^(fromstring|fromstringlist|XML|XMLID|parse|iterparse)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "xml.sax.parse($X, ...)"
+              - pattern: "xml.sax.parseString($X, ...)"
+              - pattern: "xml.dom.minidom.parse($X, ...)"
+              - pattern: "xml.dom.minidom.parseString($X, ...)"
+              - pattern: "xml.dom.pulldom.parse($X, ...)"
+              - pattern: "xml.dom.pulldom.parseString($X, ...)"
+              - pattern: "xmltodict.parse($X, ..., disable_entities=False, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $P = xml.sax.make_parser(...)
+              ...
+          - pattern: "$P.parse($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $P = xml.etree.ElementTree.XMLParser(...)
+              ...
+          - pattern: "$P.feed($X)"
+          - focus-metavariable: "$X"

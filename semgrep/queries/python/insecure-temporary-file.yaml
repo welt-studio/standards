@@ -1,0 +1,16 @@
+rules:
+  - id: welt-py-insecure-temporary-file
+    message: "Função descontinuada que só gera um nome de arquivo temporário, sem criá-lo; outro processo pode criar o arquivo antes (condição de corrida). Use `tempfile.NamedTemporaryFile` ou `tempfile.mkstemp`."
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-377: Insecure Temporary File"
+      codeql: py/insecure-temporary-file
+      notes: "Porta do `py/insecure-temporary-file` (InsecureTemporaryFile.ql): tempfile.mktemp, os.tempnam, os.tmpnam."
+    pattern-either:
+      - pattern: "tempfile.mktemp(...)"
+      - pattern: "os.tempnam(...)"
+      - pattern: "os.tmpnam(...)"

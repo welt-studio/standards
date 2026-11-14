@@ -1,0 +1,44 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-functionality-from-untrusted-domain-html
+    languages:
+      - html
+    severity: ERROR
+    message: "Conteúdo carregado de domínio não confiável (já usado em ataques à cadeia de suprimento) sem verificação de integridade. Hospede o arquivo você mesmo ou use `integrity` (SRI)."
+    metadata:
+      category: security
+      cwe: "CWE-830: Inclusion of Web Functionality from an Untrusted Source"
+      codeql: js/functionality-from-untrusted-domain
+    patterns:
+      - pattern-either:
+          - pattern: '<script src="$URL" ...></script>'
+          - pattern: '<link href="$URL" ...>'
+          - pattern: '<iframe src="$URL" ...></iframe>'
+      - pattern-not: "<script ... integrity=... ...></script>"
+      - metavariable-regex:
+          metavariable: "$URL"
+          regex: "(?i)^(https?:)?//([\\w.-]+\\.)?(polyfill\\.io|bootcss\\.com|bootcdn\\.net|staticfile\\.org|staticfile\\.net|staticfile\\.com|unionadjs\\.com|xhsbpza\\.com|union\\.macoms\\.la|newcrbpc\\.com)([:/?#]|$)"
+  - id: welt-js-functionality-from-untrusted-domain-dynamic
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Conteúdo carregado dinamicamente de domínio não confiável (já usado em ataques à cadeia de suprimento). Hospede o arquivo você mesmo ou use `integrity` (SRI)."
+    metadata:
+      category: security
+      cwe: "CWE-830: Inclusion of Web Functionality from an Untrusted Source"
+      codeql: js/functionality-from-untrusted-domain
+    patterns:
+      - pattern-either:
+          - pattern: '$E.src = "$URL"'
+          - pattern: '$E.setAttribute("src", "$URL")'
+      - pattern-not-inside: |
+          $E.integrity = ...;
+          ...
+      - pattern-not-inside: |
+          ...
+          $E.integrity = ...;
+      - metavariable-regex:
+          metavariable: "$URL"
+          regex: "(?i)^(https?:)?//([\\w.-]+\\.)?(polyfill\\.io|bootcss\\.com|bootcdn\\.net|staticfile\\.org|staticfile\\.net|staticfile\\.com|unionadjs\\.com|xhsbpza\\.com|union\\.macoms\\.la|newcrbpc\\.com)([:/?#]|$)"

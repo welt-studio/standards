@@ -1,0 +1,204 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-nosql-injection
+    message: "Consulta NoSQL (MongoDB) montada com dado controlado pelo usuário. Um dicionário vindo do cliente injeta operadores (`$ne`, `$where`...); valide o formato ou use `mongosanitizer.sanitize`."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-943: Improper Neutralization of Special Elements in Data Query Logic"
+      codeql: py/nosql-injection
+      notes: |-
+        Porta do `py/nosql-injection` (NoSqlInjectionCustomizations.qll + PyMongo.qll). O CodeQL separa dado
+        "string" de dado "dicionário": só o dicionário (JSON decodificado) vira operador do MongoDB, e um
+        valor string solto dentro de `{"campo": valor}` não é injeção. Aqui os rótulos STR e DICT fazem isso:
+        `json.loads` troca STR por DICT. `$where`/`$function` executam JavaScript e aceitam string.
+        Filtro passado a métodos da coleção (find, find_one, ...): só dicionário.
+        $where, $function, $accumulator e map_reduce executam JavaScript: vulneráveis também a string.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - label: STR
+        patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  def $V(self, request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $V(self, request, ..., $P, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(get|post|put|patch|delete|head|options|list|retrieve|create|update|partial_update|destroy|dispatch|form_valid|get_object|get_queryset)$"
+          - focus-metavariable: "$P"
+      - label: STR
+        patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$D
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$D(...)
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$D
+                  async def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$D(...)
+                  async def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $V(request, ..., $P, ...):
+                    ...
+          - pattern-not-inside: |
+              def $V2(request: $T, ...):
+                ...
+          - pattern-not-inside: |
+              async def $V2(request: $T, ...):
+                ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!_)"
+          - focus-metavariable: "$P"
+      - label: STR
+        patterns:
+          - pattern-either:
+              - pattern: "request.$A"
+              - pattern: "self.request.$A"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "^(args|form|values|json|data|files|cookies|headers|GET|POST|body|META|COOKIES|FILES|query_params|path_params|query|match_info|query_string|full_path|view_args|stream|environ|path|url|referrer|content_type)$"
+      - label: STR
+        patterns:
+          - pattern-either:
+              - pattern: "request.$M(...)"
+              - pattern: "self.request.$M(...)"
+              - pattern: "await request.$M(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get_json|get_data|json|form|body|post|text|read|get_full_path|get_host)$"
+      - label: STR
+        patterns:
+          - pattern: "self.$M(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(get_argument|get_arguments|get_query_argument|get_query_arguments|get_body_argument|get_body_arguments|get_cookie|get_secure_cookie)$"
+      - label: STR
+        patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  def $F(..., $P: $T, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  async def $F(..., $P: $T, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  def $F(..., $P: $T = $D, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  async def $F(..., $P: $T = $D, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$VERB"
+              regex: "^(get|post|put|patch|delete|api_route|head|options|route|websocket)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?!.*\\b(Depends|Security)\\()(?!\\s*(Request|Response|BackgroundTasks|WebSocket|HTTPConnection|Session|AsyncSession|SecurityScopes)\\s*$)"
+          - focus-metavariable: "$P"
+      - label: DICT
+        pattern-either:
+          - pattern: request.json
+          - pattern: "request.get_json(...)"
+          - pattern: "await request.json()"
+    pattern-propagators:
+      - pattern: "$TO = json.loads($FROM)"
+        from: "$FROM"
+        to: "$TO"
+        requires: STR
+        replace-labels:
+          - STR
+        label: DICT
+      - pattern: "$TO = json.loads($FROM)"
+        from: "$FROM"
+        to: "$TO"
+        requires: DICT
+        label: DICT
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: "sanitize(...)"
+          - pattern: "mongosanitizer.sanitizer.sanitize(...)"
+    pattern-sinks:
+      - requires: DICT
+        patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  import pymongo
+                  ...
+              - pattern-inside: |
+                  from pymongo import $A
+                  ...
+              - pattern-inside: |
+                  from pymongo.$B import $A
+                  ...
+              - pattern-inside: |
+                  from flask_pymongo import $A
+                  ...
+              - pattern-inside: |
+                  import motor.motor_asyncio
+                  ...
+              - pattern-inside: |
+                  from motor.motor_asyncio import $A
+                  ...
+              - pattern-inside: |
+                  import mongoengine
+                  ...
+              - pattern-inside: |
+                  import mongoengine as $A
+                  ...
+              - pattern-inside: |
+                  from mongoengine import $A
+                  ...
+              - pattern-inside: |
+                  from mongoengine.$B import $A
+                  ...
+              - pattern-inside: |
+                  from flask_mongoengine import $A
+                  ...
+          - pattern-either:
+              - pattern: "$C.$M($X, ...)"
+              - pattern: "$C.$M(filter=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(find|find_raw_batches|find_one|find_one_and_delete|find_and_modify|find_one_and_replace|find_one_and_update|find_one_or_404)$"
+          - focus-metavariable: "$X"
+      - requires: DICT
+        patterns:
+          - pattern: "$DOC.objects(..., $K=$X, ...)"
+          - focus-metavariable: "$X"
+      - requires: DICT
+        patterns:
+          - pattern: "$C.aggregate([..., $X, ...], ...)"
+          - focus-metavariable: "$X"
+      - requires: STR or DICT
+        patterns:
+          - pattern-either:
+              - pattern: '{..., "$where": $X}'
+              - pattern: '{..., "$function": $X}'
+              - pattern: '{..., "$accumulator": $X}'
+              - pattern: "$C.map_reduce($X, ...)"
+              - pattern: "$C.map_reduce($A, $X, ...)"
+          - focus-metavariable: "$X"

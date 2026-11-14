@@ -1,0 +1,17 @@
+rules:
+  - id: welt-py-incomplete-hostname-regexp
+    message: "A expressão regular tem um '.' sem escape antes do domínio, então casa mais hosts do que o esperado (o '.' casa qualquer caractere). Escape com `\\.`."
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-20: Improper Input Validation"
+      codeql: py/incomplete-hostname-regexp
+      notes: "Literal de regex com um domínio de TLD comum cujo ponto não foi escapado."
+    patterns:
+      - "$model": python/re-module-calls
+      - metavariable-regex:
+          metavariable: "$R"
+          regex: "(?is)^[rRuUbB]*(\"\"\"|'''|\"|')(?!.*(re\\.escape)).*[a-z0-9)\\]-](?<!\\\\)\\.(com|org|edu|gov|uk|net|io)(?![a-z0-9])"

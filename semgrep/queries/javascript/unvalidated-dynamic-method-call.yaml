@@ -1,0 +1,41 @@
+rules:
+  - id: welt-js-unvalidated-dynamic-method-call
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Método chamado dinamicamente a partir de um nome controlado pelo usuário, sem validar que o valor é uma função própria do objeto. O nome pode apontar para `__proto__`, `valueOf` ou outro membro herdado. Valide a chave (`hasOwnProperty`, lista fixa) antes de chamar."
+    metadata:
+      category: security
+      cwe: "CWE-754: Improper Check for Unusual or Exceptional Conditions"
+      codeql: js/unvalidated-dynamic-method-call
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/dom-xss-sources
+    pattern-propagators:
+      - pattern: "$V = $O[$K]"
+        from: "$K"
+        to: "$V"
+      - pattern: "$V = $O.get($K)"
+        from: "$K"
+        to: "$V"
+    pattern-sanitizers:
+      - pattern: "$K.startsWith(...)"
+      - pattern: "$K in $O"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$O[$K](...)"
+              - pattern: "new $O[$K](...)"
+              - pattern: "$F(...)"
+              - pattern: "new $F(...)"
+          - pattern-not-inside: |
+              try { ... } catch ($E) {...}
+          - pattern-not-inside: |
+              if (<... typeof $F === "function" ...>) { ... }
+          - pattern-not-inside: |
+              if (<... typeof $F == "function" ...>) { ... }
+          - focus-metavariable: "$F"

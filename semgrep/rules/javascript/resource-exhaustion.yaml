@@ -1,0 +1,62 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-resource-exhaustion
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Valor controlado pelo usuário determina o tamanho de uma alocação ou o tempo de uma espera sem limite. Um atacante pode esgotar memória ou CPU. Imponha um limite máximo ao valor."
+    metadata:
+      category: security
+      cwe: "CWE-770: Allocation of Resources Without Limits or Throttling"
+      codeql: js/resource-exhaustion
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.headers"
+              - pattern: "$REQ.cookies"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.hostname"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.get(...)"
+          - metavariable-regex:
+              metavariable: "$REQ"
+              regex: "^(req|request|ctx|ctx\\.request|this\\.request)$"
+      - pattern: process.argv
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$N"
+          - pattern-inside: |
+              if ($N < $L) {...}
+      - patterns:
+          - pattern: "$N"
+          - pattern-inside: |
+              if ($N <= $L) {...}
+      - pattern: "Math.min(...)"
+      - pattern: "$N.length"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "Buffer.alloc($X, ...)"
+              - pattern: "Buffer.allocUnsafe($X)"
+              - pattern: "Buffer.allocUnsafeSlow($X)"
+              - pattern: "new Buffer($Y, $Z, $X)"
+              - pattern: "new SlowBuffer($X)"
+              - pattern: "Array($X).$M(...)"
+              - pattern: "new Array($X).$M(...)"
+              - pattern: "Array($X) + $Y"
+              - pattern: "$S.repeat($X)"
+              - pattern: "setTimeout($F, $X, ...)"
+              - pattern: "setInterval($F, $X, ...)"
+          - focus-metavariable: "$X"

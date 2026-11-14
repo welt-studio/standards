@@ -1,0 +1,65 @@
+rules:
+  - id: welt-js-command-line-injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Injeção de comando: este comando de sistema é construído a partir de um valor controlado pelo usuário e pode executar comandos arbitrários. Use execFile/spawn com lista de argumentos fixa e valide a entrada."
+    metadata:
+      category: security
+      cwe: "CWE-078: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      codeql: js/command-line-injection
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/express-request-sources-signed-cookies
+      - "$model": javascript/nextjs-server-side-sources
+      - patterns:
+          - pattern: "$GH.context.payload.$...P"
+          - metavariable-regex:
+              metavariable: "$GH"
+              regex: "^(?:github|gh)$"
+      - patterns:
+          - pattern: "$F"
+          - pattern-inside: "$B.on('file', function($N, $FILE, $F, ...) {...})"
+      - patterns:
+          - pattern: "$F"
+          - pattern-inside: "$B.on('file', ($N, $FILE, $F, ...) => {...})"
+      - patterns:
+          - pattern: "$F.originalname"
+          - pattern-inside: "$R.forEach(function($F) {...})"
+      - patterns:
+          - pattern: "$F.originalname"
+          - pattern-inside: "$R.forEach(($F) => {...})"
+      - pattern: "core.getInput(...)"
+    pattern-sinks:
+      - "$model": javascript/child-process-exec-sinks
+      - patterns:
+          - pattern: "child_process.execFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.execFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.spawn($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.spawnSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.fork($X, ...)"
+          - focus-metavariable: "$X"
+      - "$model": javascript/child-process-sinks
+      - "$model": javascript/execa-x-sink
+      - "$model": javascript/execa-sinks
+    pattern-sanitizers:
+      - pattern: "+$X"
+      - pattern: "typeof $X"
+      - "$model": javascript/shell-escape-sanitizers
+      - pattern: "shellQuote($X)"
+      - pattern: "shell_quote.quote($X)"
+      - "$model": javascript/l-quote-x-sanitizer
+      - "$model": javascript/parse-int-x-sanitizer
+      - "$model": javascript/number-x-sanitizer
+      - "$model": javascript/x-length
+    options:
+      interfile: true

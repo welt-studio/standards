@@ -1,0 +1,41 @@
+rules:
+  - id: welt-js-incomplete-url-substring-sanitization
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Verificação de segurança sobre uma substring de URL sem parse: '$T' pode estar em qualquer parte da URL, e hosts arbitrários podem vir antes ou depois dela. Faça o parse da URL e compare o host."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incomplete-url-substring-sanitization
+    pattern-either:
+      - patterns:
+          - pattern-either:
+              - pattern: '$X.startsWith("$T")'
+              - pattern: '$X.indexOf("$T") === 0'
+              - pattern: '$X.indexOf("$T") !== 0'
+              - pattern: '$X.indexOf("$T") == 0'
+              - pattern: '$X.indexOf("$T") != 0'
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?!.*(:[0-9]+|/)$)(?:(?i)([a-z]*:?//)?\\.?([a-z0-9-]+\\.)+(?:com|org|edu|gov|uk|net|io)(?![a-z0-9])(:[0-9]+)?/?|(?i)https?://([a-z0-9-]+\\.)+([a-z]+)(:[0-9]+)?/?)$"
+      - patterns:
+          - pattern-either:
+              - pattern: '$X.endsWith("$T")'
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?!(?i)\\.([a-z0-9-]+)(\\.[a-z0-9-]+)+$)(?:(?i)([a-z]*:?//)?\\.?([a-z0-9-]+\\.)+(?:com|org|edu|gov|uk|net|io)(?![a-z0-9])(:[0-9]+)?/?|(?i)https?://([a-z0-9-]+\\.)+([a-z]+)(:[0-9]+)?/?)$"
+      - patterns:
+          - pattern-either:
+              - pattern: '$X.includes("$T")'
+              - pattern: '$X.indexOf("$T") !== -1'
+              - pattern: '$X.indexOf("$T") === -1'
+              - pattern: '$X.indexOf("$T") != -1'
+              - pattern: '$X.indexOf("$T") == -1'
+              - pattern: '$X.indexOf("$T") >= 0'
+              - pattern: '$X.indexOf("$T") < 0'
+              - pattern: '$X.indexOf("$T") > -1'
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?:(?i)([a-z]*:?//)?\\.?([a-z0-9-]+\\.)+(?:com|org|edu|gov|uk|net|io)(?![a-z0-9])(:[0-9]+)?/?|(?i)https?://([a-z0-9-]+\\.)+([a-z]+)(:[0-9]+)?/?|(?i)https?://([a-z0-9-]+\\.)+([a-z]+)(:[0-9]+)?/[a-z0-9/_-]+)$"

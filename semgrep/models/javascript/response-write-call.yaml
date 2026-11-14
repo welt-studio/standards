@@ -1,0 +1,2 @@
+- pattern-either:
+    - "$model": javascript/express-response-write-sinks

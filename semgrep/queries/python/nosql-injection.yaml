@@ -1,0 +1,154 @@
+rules:
+  - id: welt-py-nosql-injection
+    message: "Consulta NoSQL (MongoDB) montada com dado controlado pelo usuário. Um dicionário vindo do cliente injeta operadores (`$ne`, `$where`...); valide o formato ou use `mongosanitizer.sanitize`."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-943: Improper Neutralization of Special Elements in Data Query Logic"
+      codeql: py/nosql-injection
+      notes: |-
+        Porta do `py/nosql-injection` (NoSqlInjectionCustomizations.qll + PyMongo.qll). O CodeQL separa dado
+        "string" de dado "dicionário": só o dicionário (JSON decodificado) vira operador do MongoDB, e um
+        valor string solto dentro de `{"campo": valor}` não é injeção. Aqui os rótulos STR e DICT fazem isso:
+        `json.loads` troca STR por DICT. `$where`/`$function` executam JavaScript e aceitam string.
+        Filtro passado a métodos da coleção (find, find_one, ...): só dicionário.
+        $where, $function, $accumulator e map_reduce executam JavaScript: vulneráveis também a string.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - label: STR
+        patterns:
+          - "$model": python/django-class-view-parameters
+          - focus-metavariable: "$P"
+      - label: STR
+        patterns:
+          - "$model": python/django-function-view-parameters
+          - focus-metavariable: "$P"
+      - label: STR
+        patterns:
+          - "$model": python/request-attribute-sources
+      - label: STR
+        patterns:
+          - "$model": python/request-method-call-sources
+      - label: STR
+        patterns:
+          - pattern: "self.$M(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex:
+                "$text": python/tornado-argument-method-regex
+      - label: STR
+        patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  def $F(..., $P: $T, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  async def $F(..., $P: $T, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  def $F(..., $P: $T = $D, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  async def $F(..., $P: $T = $D, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$VERB"
+              regex:
+                "$text": python/http-verb-decorator-regex
+          - metavariable-regex:
+              metavariable: "$T"
+              regex:
+                "$text": python/fastapi-dependency-parameter-regex
+          - focus-metavariable: "$P"
+      - label: DICT
+        pattern-either:
+          - pattern: request.json
+          - pattern: "request.get_json(...)"
+          - pattern: "await request.json()"
+    pattern-propagators:
+      - pattern: "$TO = json.loads($FROM)"
+        from: "$FROM"
+        to: "$TO"
+        requires: STR
+        replace-labels:
+          - STR
+        label: DICT
+      - pattern: "$TO = json.loads($FROM)"
+        from: "$FROM"
+        to: "$TO"
+        requires: DICT
+        label: DICT
+    pattern-sanitizers:
+      - pattern-either:
+          - pattern: "sanitize(...)"
+          - pattern: "mongosanitizer.sanitizer.sanitize(...)"
+    pattern-sinks:
+      - requires: DICT
+        patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  import pymongo
+                  ...
+              - pattern-inside: |
+                  from pymongo import $A
+                  ...
+              - pattern-inside: |
+                  from pymongo.$B import $A
+                  ...
+              - pattern-inside: |
+                  from flask_pymongo import $A
+                  ...
+              - pattern-inside: |
+                  import motor.motor_asyncio
+                  ...
+              - pattern-inside: |
+                  from motor.motor_asyncio import $A
+                  ...
+              - pattern-inside: |
+                  import mongoengine
+                  ...
+              - pattern-inside: |
+                  import mongoengine as $A
+                  ...
+              - pattern-inside: |
+                  from mongoengine import $A
+                  ...
+              - pattern-inside: |
+                  from mongoengine.$B import $A
+                  ...
+              - pattern-inside: |
+                  from flask_mongoengine import $A
+                  ...
+          - pattern-either:
+              - pattern: "$C.$M($X, ...)"
+              - pattern: "$C.$M(filter=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(find|find_raw_batches|find_one|find_one_and_delete|find_and_modify|find_one_and_replace|find_one_and_update|find_one_or_404)$"
+          - focus-metavariable: "$X"
+      - requires: DICT
+        patterns:
+          - pattern: "$DOC.objects(..., $K=$X, ...)"
+          - focus-metavariable: "$X"
+      - requires: DICT
+        patterns:
+          - pattern: "$C.aggregate([..., $X, ...], ...)"
+          - focus-metavariable: "$X"
+      - requires: STR or DICT
+        patterns:
+          - pattern-either:
+              - pattern: '{..., "$where": $X}'
+              - pattern: '{..., "$function": $X}'
+              - pattern: '{..., "$accumulator": $X}'
+              - pattern: "$C.map_reduce($X, ...)"
+              - pattern: "$C.map_reduce($A, $X, ...)"
+          - focus-metavariable: "$X"

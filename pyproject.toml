@@ -23,6 +23,14 @@ dev = [
     "pytest-timeout==2.4.0",
     "pytest-socket==0.8.1",
     "time-machine==3.5.1",
+    # Gerador das regras do Semgrep (`hooks/generate_semgrep.py`): lê os modelos e as consultas em
+    # YAML e escreve as regras. Roda só aqui, não nos projetos.
+    "pyyaml==6.0.3",
+    "types-pyyaml==6.0.12.20261103",
+    # O motor das regras, nos testes de paridade com o CodeQL (`tests/test_semgrep_parity.py`). Pelo
+    # lockfile, a versão e as dependências ficam fixas, como as das outras ferramentas; o motor Pro
+    # (fluxo entre arquivos) é instalado à parte, pelo `semgrep install-semgrep-pro`, com o token.
+    "semgrep==1.184.0",
 ]
 
 [tool.uv]
@@ -47,8 +55,16 @@ known_first_party = [
     "parsed",
     "pyproject",
     "repo",
+    "semgrep_files",
     "sync_base",
 ]
+# O `yaml` vem do grupo `dev` de propósito: o gerador das regras do Semgrep, a cópia dos testes do
+# CodeQL e a paridade (`generate_semgrep.py`, `sync_codeql_tests.py`, `semgrep_parity.py` e o
+# `semgrep_files.py` deles) rodam só neste repo, não são hooks publicados. Os hooks dos projetos continuam só com a stdlib.
+per_rule_ignores = { DEP004 = ["yaml"] }
+# Os testes do CodeQL copiados (`semgrep/test/vendor/`) importam os frameworks que testam (Flask,
+# Django...): são alvo das regras, não código deste repo.
+extend_exclude = ["semgrep/test/vendor"]
 
 [tool.pytest.ini_options]
 strict = true
@@ -61,7 +77,13 @@ pythonpath = ["hooks"]
 timeout = 60
 # Cobertura em toda rodada (o `fail_under` só vale com `--cov`), com as linhas que faltam no relatório.
 # Os scripts não usam rede: nenhum host liberado além do loopback.
+markers = [
+    "semgrep: paridade das regras do Semgrep com o CodeQL; roda o motor Pro (login) e é lenta",
+]
 addopts = [
+    # A paridade com o CodeQL fica fora da rodada de sempre: `-m semgrep` no job próprio da CI.
+    "-m",
+    "not semgrep",
     "--cov",
     "--cov-report=term-missing:skip-covered",
     "--disable-socket",

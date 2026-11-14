@@ -1,0 +1,259 @@
+rules:
+  - id: welt-js-code-injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Injeção de código: este valor, controlado pelo usuário, é interpretado como código (eval, new Function, setTimeout com string, vm, motor de template). Não execute dados do usuário como código."
+    metadata:
+      category: security
+      cwe: "CWE-094: Improper Control of Generation of Code ('Code Injection')"
+      codeql: js/code-injection
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/express-request-sources-signed-cookies
+      - "$model": javascript/nextjs-server-side-sources
+      - "$model": javascript/location-hash
+      - "$model": javascript/location-search
+      - "$model": javascript/location-href-and-pathname-sources
+      - "$model": javascript/window-location-hash
+      - "$model": javascript/window-location-search
+      - "$model": javascript/window-location-href
+      - "$model": javascript/window-location-pathname-source
+      - "$model": javascript/document-location-hash
+      - "$model": javascript/document-location-search
+      - "$model": javascript/document-location-href
+      - "$model": javascript/document-location-pathname-source
+      - "$model": javascript/document-url-sources
+      - "$model": javascript/document-base-uri-source
+      - "$model": javascript/document-referrer
+      - "$model": javascript/window-name
+      - "$model": javascript/window-location-and-message-sources
+    pattern-sinks:
+      - patterns:
+          - pattern: "eval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new Function(..., $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Function(..., $X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "setTimeout($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "setInterval($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "setImmediate($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "vm.runInThisContext($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "vm.runInNewContext($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "vm.runInContext($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "vm.compileFunction($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new vm.Script($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "vm.Script($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$VM.runInNewContext($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$VM.runInThisContext($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$VM.runInContext($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$VM.Script($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new $VM.Script($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$.globalEval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jQuery.globalEval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$SCOPE.$eval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$SCOPE.$evalAsync($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$SCOPE.$apply($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$SCOPE.$watch($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$SCOPE.$applyAsync($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$parse($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$compile($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$interpolate($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$WINDOW.eval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "window.eval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "self.eval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "globalThis.eval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "global.eval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W.injectJavaScript($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W.executeJavaScript($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W.evaluateJavaScript($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$PAGE.evaluate($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$PAGE.evaluateOnNewDocument($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$PAGE.addScriptTag({..., content: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new Function($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Function($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "pug.compile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "pug.render($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jade.compile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "jade.render($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "dot.template($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "dot.compile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "ejs.render($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "ejs.compile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "nunjucks.renderString($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "lodash.template($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "_.template($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "handlebars.compile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Handlebars.compile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "mustache.render($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Mustache.render($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Hogan.compile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Eta.render($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Eta.compile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Sqrl.render($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "squirrelly.render($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "webix.ui($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "webix.ui({..., template: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new Vue({..., template: $X, ...})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Vue.compile($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "require('safer-eval')($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "saferEval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "safeEval($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$VM2.run($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new VM().run($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new NodeVM().run($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new vm2.VM().run($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "executeJavaScript($X)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - "$model": javascript/parse-int-x-sanitizer
+      - "$model": javascript/number-x-sanitizer
+      - "$model": javascript/parse-float-x-sanitizer
+      - pattern: "+$X"
+      - "$model": javascript/json-stringify-x-sanitizer
+      - "$model": javascript/x-length
+      - "$model": javascript/encode-uri-component-x-sanitizer
+      - "$model": javascript/boolean-x-sanitizer
+    options:
+      interfile: true

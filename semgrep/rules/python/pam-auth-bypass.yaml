@@ -1,0 +1,105 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-pam-auth-bypass
+    message: "A autenticação PAM depende de um valor vindo da requisição e `pam_acct_mgmt` não é chamado em seguida, então contas expiradas ou bloqueadas passam. Chame pam_acct_mgmt depois de pam_authenticate."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-285: Improper Authorization"
+      codeql: py/pam-auth-bypass
+      notes: |-
+        Flask/Werkzeug: atributos do `request` (Flask.qll, Werkzeug.qll).
+        Parâmetros de rota (Flask, FastAPI, Starlette, Bottle...): variáveis da URL e do corpo.
+        Django/DRF: parâmetros da view depois do `request` (vêm da URL).
+        Tornado: argumentos e dados do RequestHandler (Tornado.qll).
+        O usuário entra no `handle` pelo `pam_start(service, username, conv, byref(handle))`.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "flask.request.$A"
+              - pattern: "flask.request.$A(...)"
+              - pattern: "bottle.request.$A"
+              - pattern: "request.$A"
+              - pattern: "self.request.$A"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "^(args|form|values|json|data|cookies|headers|files|stream|environ|view_args|query_string|url|base_url|full_path|path|path_info|script_root|url_root|host|host_url|referrer|user_agent|authorization|get_json|get_data|input_stream|GET|POST|COOKIES|META|FILES|body|get_full_path|get_full_path_info|get_host|build_absolute_uri|query_params|query|match_info|rel_url|json|text|read|content|path_params|params|matchdict|post|headers|raw_post_data)$"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$APP.$ROUTE(...)
+                  def $F(..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$ROUTE(...)
+                  async def $F(..., $P, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$ROUTE"
+              regex: "^(route|get|post|put|delete|patch|api_route|head|options)$"
+          - focus-metavariable: "$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!self$|cls$|request$|response$)"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  def $F(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  def $F(self, request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $F(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $F(self, request, ..., $P, ...):
+                    ...
+          - focus-metavariable: "$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!self$|cls$|request$|args$|kwargs$)"
+      - pattern-either:
+          - pattern: "self.get_argument(...)"
+          - pattern: "self.get_arguments(...)"
+          - pattern: "self.get_query_argument(...)"
+          - pattern: "self.get_query_arguments(...)"
+          - pattern: "self.get_body_argument(...)"
+          - pattern: "self.get_body_arguments(...)"
+          - pattern: "self.get_cookie(...)"
+          - pattern: "self.get_secure_cookie(...)"
+          - pattern: self.path_args
+          - pattern: self.path_kwargs
+    pattern-propagators:
+      - pattern: "$PAMSTART($SERVICE, $U, $CONV, byref($H))"
+        from: "$U"
+        to: "$H"
+      - pattern: "$PAMSTART($SERVICE, $U, $CONV, ctypes.byref($H))"
+        from: "$U"
+        to: "$H"
+      - pattern: "$PAMSTART($SERVICE, $U, $CONV, pointer($H))"
+        from: "$U"
+        to: "$H"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "pam_authenticate($H, ...)"
+              - pattern: "$LIB.pam_authenticate($H, ...)"
+          - pattern-not-inside: |
+              def $F(...):
+                ...
+                pam_acct_mgmt(...)
+                ...
+          - pattern-not-inside: |
+              def $F(...):
+                ...
+                $LIB.pam_acct_mgmt(...)
+                ...
+          - focus-metavariable: "$H"

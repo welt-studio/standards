@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.chown($X, ...)"
+    - focus-metavariable: "$X"

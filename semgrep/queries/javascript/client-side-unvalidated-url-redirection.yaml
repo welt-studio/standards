@@ -1,0 +1,89 @@
+rules:
+  - id: welt-js-client-side-unvalidated-url-redirection
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Um valor vindo da URL, de uma mensagem (postMessage/WebSocket) ou de `window.name` define o destino de uma navegação ou de um atributo de URL sem validação. Um atacante pode redirecionar a vítima a um site malicioso ou injetar `javascript:`. Valide o destino contra uma lista de permitidos ou aceite só caminhos locais."
+    metadata:
+      category: security
+      cwe: "CWE-601: URL Redirection to Untrusted Site (Open Redirect)"
+      codeql: js/client-side-unvalidated-url-redirection
+    pattern-sources:
+      - "$model": javascript/document-location-hash
+      - "$model": javascript/document-location-search
+      - "$model": javascript/document-location-href
+      - "$model": javascript/document-location-pathname-source
+      - "$model": javascript/window-location-hash
+      - "$model": javascript/window-location-search
+      - "$model": javascript/window-location-href
+      - "$model": javascript/window-location-pathname-source
+      - "$model": javascript/location-hash
+      - "$model": javascript/location-search
+      - "$model": javascript/location-href-and-pathname-sources
+      - "$model": javascript/document-url-sources
+      - "$model": javascript/document-referrer
+      - "$model": javascript/window-name
+      - patterns:
+          - "$model": javascript/event-data
+          - pattern-either:
+              - pattern-inside: "$S.onmessage = function($E) {...}"
+              - pattern-inside: "$S.onmessage = ($E) => {...}"
+              - pattern-inside: '$S.addEventListener("message", function($E) {...})'
+              - pattern-inside: '$S.addEventListener("message", ($E) => {...})'
+              - pattern-inside: '$S.addEventListener("message", async ($E) => {...})'
+              - "$model": javascript/window-onmessage-handler
+              - pattern-inside: "self.onmessage = function($E) {...}"
+      - "$model": javascript/window-name
+    pattern-sanitizers:
+      - "$model": javascript/url-prefix-concatenation-sanitizers
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "window.location = $X"
+              - pattern: "document.location = $X"
+              - pattern: "location = $X"
+              - pattern: "$W.location = $X"
+              - pattern: "location.href = $X"
+              - pattern: "window.location.href = $X"
+              - pattern: "document.location.href = $X"
+              - pattern: "$W.location.href = $X"
+              - pattern: "location.assign($X)"
+              - pattern: "location.replace($X)"
+              - pattern: "window.location.assign($X)"
+              - pattern: "window.location.replace($X)"
+              - pattern: "$W.location.assign($X)"
+              - pattern: "$W.location.replace($X)"
+              - pattern: "document.location.assign($X)"
+              - pattern: "document.location.replace($X)"
+              - pattern: "window.open($X, ...)"
+              - pattern: "navigate($X)"
+              - pattern: "$L.url($X)"
+              - pattern: "shell.openExternal($X)"
+              - pattern: "new Worker($X, ...)"
+              - pattern: "importScripts(..., $X, ...)"
+              - pattern: "self.importScripts(..., $X, ...)"
+              - pattern: "history.push($X, ...)"
+              - pattern: "history.replace($X, ...)"
+              - pattern: "router.push($X, ...)"
+              - pattern: "router.replace($X, ...)"
+              - pattern: "$EL.href = $X"
+              - pattern: "$EL.src = $X"
+              - pattern: "$EL.action = $X"
+              - pattern: "$EL.formaction = $X"
+              - pattern: "$EL.data = $X"
+              - pattern: '$J.attr("href", $X)'
+              - pattern: '$J.attr("src", $X)'
+              - pattern: "$J.attr({..., href: $X, ...})"
+              - pattern: "$J.attr({..., src: $X, ...})"
+              - pattern: '$J("<$T>", {..., href: $X, ...})'
+              - pattern: '$J("<$T>", {..., src: $X, ...})'
+              - pattern: "<a href={$X} ...>...</a>"
+              - pattern: "<a href={$X} />"
+              - pattern: "<script src={$X} />"
+              - pattern: "<Link href={$X}>...</Link>"
+              - pattern: "<iframe src={$X} ...>...</iframe>"
+          - focus-metavariable: "$X"

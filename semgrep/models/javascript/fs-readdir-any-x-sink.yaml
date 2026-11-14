@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.readdir($X, ...)"
+    - focus-metavariable: "$X"

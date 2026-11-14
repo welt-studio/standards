@@ -1,0 +1,802 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-zipslip
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "Zip Slip: o caminho de uma entrada de arquivo compactado é usado para gravar arquivos sem validação e pode escapar do diretório de extração (entradas com '..'). Resolva o caminho e confira que ele fica dentro do destino."
+    metadata:
+      category: security
+      cwe: "CWE-022: Improper Limitation of a Pathname to a Restricted Directory"
+      codeql: js/zipslip
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: "$E.path"
+          - pattern-inside: "$S.on('entry', ($E) => {...})"
+      - patterns:
+          - pattern: "$E.path"
+          - pattern-inside: "$S.on('entry', function($E) {...})"
+      - patterns:
+          - pattern: "$E.fileName"
+          - pattern-inside: "$S.on('entry', ($E) => {...})"
+      - patterns:
+          - pattern: "$E.fileName"
+          - pattern-inside: "$S.on('entry', function($E) {...})"
+      - patterns:
+          - pattern: "$E.header.name"
+          - pattern-inside: "$S.on('entry', function($E) {...})"
+      - patterns:
+          - pattern: "$E.entryName"
+          - pattern-inside: "$Z.forEach(function($E) {...})"
+      - patterns:
+          - pattern: "$E.entryName"
+          - pattern-inside: "$Z.forEach(($E) => {...})"
+      - patterns:
+          - pattern: "$E.entryName"
+          - pattern-inside: "for (const $E of $Z.getEntries()) {...}"
+      - pattern: "$Z.getEntries()"
+      - patterns:
+          - pattern: "$NAME"
+          - pattern-inside: "for ($NAME in $Z.files) {...}"
+      - patterns:
+          - pattern: "$NAME"
+          - pattern-inside: "$Z.forEach(function($NAME, ...) {...})"
+      - patterns:
+          - pattern: "$NAME"
+          - pattern-inside: "$Z.forEach(($NAME, ...) => {...})"
+      - patterns:
+          - pattern: "$H.name"
+          - pattern-inside: "$X.on('entry', function($H, ...) {...})"
+      - patterns:
+          - pattern: "$E.path"
+          - pattern-inside: "tar.extract({..., filter: ($E) => {...}})"
+      - patterns:
+          - pattern: "$ENTRY.$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?:fileName|entryName|path)$"
+          - pattern-inside: "$Y.eachEntry(function($ENTRY) {...})"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$FS.readFile($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.readFileSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.writeFile($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.writeFileSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.appendFile($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.appendFileSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.createReadStream($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.createWriteStream($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.open($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.openSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.readdir($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.readdirSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.stat($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.statSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.lstat($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.lstatSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.access($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.accessSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.unlink($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.unlinkSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.rmdir($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.rmdirSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.rm($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.rmSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.mkdir($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.mkdirSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.truncate($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.truncateSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.chmod($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.chmodSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.chown($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.chownSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.readlink($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.readlinkSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.realpath($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.realpathSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.exists($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.existsSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.watch($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.watchFile($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.opendir($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.opendirSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.utimes($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.utimesSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.mkdtemp($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.mkdtempSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.ensureDir($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.ensureFile($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.ensureDirSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.ensureFileSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.emptyDir($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.emptyDirSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.outputFile($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.outputFileSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.outputJson($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.outputJsonSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.readJson($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.readJsonSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.writeJson($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.writeJsonSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.remove($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.removeSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.pathExists($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.pathExistsSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.createFile($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.createFileSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.mkdirs($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.mkdirsSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.mkdirp($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.mkdirpSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.readJSON($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.readJSONSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.writeJSON($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.writeJSONSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.outputJSON($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.lutimes($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.statfs($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.cp($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "$FS.cpSync($X, ...)"
+          - focus-metavariable: "$X"
+          - metavariable-regex:
+              metavariable: "$FS"
+              regex: "^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"
+      - patterns:
+          - pattern: "fs.readFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.readFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.writeFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.writeFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.appendFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.appendFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.createReadStream($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.createWriteStream($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.open($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.openSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.readdir($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.readdirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.stat($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.statSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.lstat($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.lstatSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.access($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.accessSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.unlink($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.unlinkSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.rmdir($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.rmdirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.rm($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.rmSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.mkdir($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.mkdirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.truncate($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.truncateSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.chmod($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.chmodSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.chown($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.chownSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.readlink($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.readlinkSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.realpath($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.realpathSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.exists($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.existsSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.watch($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.watchFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.opendir($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.opendirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.utimes($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.utimesSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.mkdtemp($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.mkdtempSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.ensureDir($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.ensureFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.ensureDirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.ensureFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.emptyDir($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.emptyDirSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.outputFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.outputFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.outputJson($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.outputJsonSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.readJson($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.readJsonSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.writeJson($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.writeJsonSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.remove($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.removeSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.pathExists($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.pathExistsSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.createFile($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.createFileSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.mkdirs($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.mkdirsSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.mkdirp($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.mkdirpSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.readJSON($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.readJSONSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.writeJSON($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.writeJSONSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.outputJSON($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.lutimes($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.statfs($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.cp($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fs.cpSync($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "Writer({path: $X})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "fstream.Writer({path: $X})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$W.Writer({path: $X})"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new Writer({path: $X})"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - pattern: "path.basename($X, ...)"
+      - pattern: "sanitizeFilename($X, ...)"
+      - pattern: "sanitize($X, ...)"
+      - pattern: "parseInt($X, ...)"
+      - pattern: "Number($X)"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($T.startsWith($P)) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!$T.startsWith($P)) { throw ...; } ..."
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!$T.startsWith($P)) { return ...; } ..."
+    options:
+      interfile: true

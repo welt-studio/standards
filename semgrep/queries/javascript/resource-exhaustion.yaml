@@ -1,0 +1,43 @@
+rules:
+  - id: welt-js-resource-exhaustion
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Valor controlado pelo usuário determina o tamanho de uma alocação ou o tempo de uma espera sem limite. Um atacante pode esgotar memória ou CPU. Imponha um limite máximo ao valor."
+    metadata:
+      category: security
+      cwe: "CWE-770: Allocation of Resources Without Limits or Throttling"
+      codeql: js/resource-exhaustion
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/process-argv-source
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$N"
+          - pattern-inside: |
+              if ($N < $L) {...}
+      - patterns:
+          - pattern: "$N"
+          - pattern-inside: |
+              if ($N <= $L) {...}
+      - pattern: "Math.min(...)"
+      - pattern: "$N.length"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "Buffer.alloc($X, ...)"
+              - pattern: "Buffer.allocUnsafe($X)"
+              - pattern: "Buffer.allocUnsafeSlow($X)"
+              - pattern: "new Buffer($Y, $Z, $X)"
+              - pattern: "new SlowBuffer($X)"
+              - pattern: "Array($X).$M(...)"
+              - pattern: "new Array($X).$M(...)"
+              - pattern: "Array($X) + $Y"
+              - pattern: "$S.repeat($X)"
+              - pattern: "setTimeout($F, $X, ...)"
+              - pattern: "setInterval($F, $X, ...)"
+          - focus-metavariable: "$X"

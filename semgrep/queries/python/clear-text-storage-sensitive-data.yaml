@@ -1,0 +1,50 @@
+rules:
+  - id: welt-py-clear-text-storage-sensitive-data
+    message: "Dado sensível (senha, segredo ou dado pessoal) é gravado em claro em arquivo ou cookie. Criptografe ou faça hash antes de guardar."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-312: Cleartext Storage of Sensitive Information"
+      codeql: py/clear-text-storage-sensitive-data
+      notes: |-
+        Dado sensível pelo nome (SensitiveDataSources.qll): parâmetro, variável atribuída, atributo,
+        chave de dicionário e função com nome de senha, segredo ou dado pessoal. `id` e `certificate`
+        ficam de fora, como no CodeQL.
+    mode: taint
+    options:
+      interfile: true
+      taint_assume_safe_functions: true
+    pattern-sources:
+      - "$model": python/sensitive-parameter-sources
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$F.write($X)"
+              - pattern: "$F.writelines($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  with open(...) as $F:
+                    ...
+              - pattern-inside: |
+                  $F = open(...)
+                  ...
+              - pattern-inside: |
+                  with $P.open(...) as $F:
+                    ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$P.write_text($X, ...)"
+              - pattern: "$P.write_bytes($X, ...)"
+              - pattern: "$P.open(...).write($X)"
+              - pattern: "open(...).write($X)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$R.set_cookie($N, $X, ...)"
+              - pattern: "$R.set_cookie(..., value=$X, ...)"
+              - pattern: "$R.set_signed_cookie($N, $X, ...)"
+          - focus-metavariable: "$X"

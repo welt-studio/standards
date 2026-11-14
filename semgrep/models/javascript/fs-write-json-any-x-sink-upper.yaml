@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.writeJSON($X, ...)"
+    - focus-metavariable: "$X"

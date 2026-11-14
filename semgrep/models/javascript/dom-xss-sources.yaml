@@ -1,0 +1,25 @@
+- pattern-either:
+    - "$model": javascript/location-search
+    - "$model": javascript/location-hash
+    - "$model": javascript/location-href-and-pathname-sources
+    - "$model": javascript/window-location-search
+    - "$model": javascript/window-location-hash
+    - "$model": javascript/window-location-href
+    - "$model": javascript/document-location-search
+    - "$model": javascript/document-location-hash
+    - "$model": javascript/document-location-href
+    - "$model": javascript/document-url-sources
+    - "$model": javascript/document-referrer
+    - pattern: document.cookie
+    - "$model": javascript/window-name
+- patterns:
+    - pattern: "$EV.data"
+    - pattern-either:
+        - pattern-inside: |
+            $W.addEventListener("message", function ($EV, ...) {...})
+        - pattern-inside: |
+            $W.addEventListener("message", ($EV, ...) => {...})
+        - pattern-inside: |
+            addEventListener("message", ($EV, ...) => {...})
+        - pattern-inside: |
+            $W.onmessage = ($EV) => {...}

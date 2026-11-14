@@ -12,6 +12,12 @@ default_install_hook_types: [pre-commit, commit-msg, pre-push]
 # mensagem do commit e no push. Quem precisa de outro estágio declara `stages:` (testes, mensagem).
 default_stages: [pre-commit]
 
+# Os testes do CodeQL copiados sem mudança (`hooks/sync_codeql_tests.py`): código de terceiros, com
+# falha de propósito (segredo falso, workflow vulnerável) e o `.expected` apontando para a linha
+# exata. Nenhum hook confere, reformata ou "conserta" esses arquivos: um espaço tirado ou uma linha
+# a mais desloca o que o teste de paridade compara.
+exclude: ^semgrep/test/vendor/
+
 repos:
   - repo: local
     hooks:

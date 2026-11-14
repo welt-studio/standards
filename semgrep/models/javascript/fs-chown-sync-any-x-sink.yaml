@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.chownSync($X, ...)"
+    - focus-metavariable: "$X"

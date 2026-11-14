@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.rm($X, ...)"
+    - focus-metavariable: "$X"

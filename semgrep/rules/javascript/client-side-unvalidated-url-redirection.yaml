@@ -1,0 +1,168 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-client-side-unvalidated-url-redirection
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Um valor vindo da URL, de uma mensagem (postMessage/WebSocket) ou de `window.name` define o destino de uma navegação ou de um atributo de URL sem validação. Um atacante pode redirecionar a vítima a um site malicioso ou injetar `javascript:`. Valide o destino contra uma lista de permitidos ou aceite só caminhos locais."
+    metadata:
+      category: security
+      cwe: "CWE-601: URL Redirection to Untrusted Site (Open Redirect)"
+      codeql: js/client-side-unvalidated-url-redirection
+    pattern-sources:
+      - pattern: document.location.hash
+      - pattern: document.location.search
+      - pattern: document.location.href
+      - pattern: document.location.pathname
+      - pattern: window.location.hash
+      - pattern: window.location.search
+      - pattern: window.location.href
+      - pattern: window.location.pathname
+      - pattern: location.hash
+      - pattern: location.search
+      - pattern: location.href
+      - pattern: location.pathname
+      - pattern: document.URL
+      - pattern: document.documentURI
+      - pattern: document.referrer
+      - pattern: window.name
+      - patterns:
+          - pattern: "$E.data"
+          - pattern-either:
+              - pattern-inside: "$S.onmessage = function($E) {...}"
+              - pattern-inside: "$S.onmessage = ($E) => {...}"
+              - pattern-inside: '$S.addEventListener("message", function($E) {...})'
+              - pattern-inside: '$S.addEventListener("message", ($E) => {...})'
+              - pattern-inside: '$S.addEventListener("message", async ($E) => {...})'
+              - pattern-inside: "window.onmessage = ($E) => {...}"
+              - pattern-inside: "self.onmessage = function($E) {...}"
+      - pattern: window.name
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$L + $R"
+          - metavariable-regex:
+              metavariable: "$L"
+              regex: "^(?:[\"'`]/[^/\\\\\"'`]|[\"'`][^\"'`]*[?#]|[\"'`]https?://[^/\"'`]+/|[\"'`]//[^/\"'`]+/)"
+      - patterns:
+          - pattern: "$L + $M + $R"
+          - metavariable-regex:
+              metavariable: "$L"
+              regex: "^(?:[\"'`]/[^/\\\\\"'`]|[\"'`][^\"'`]*[?#]|[\"'`]https?://[^/\"'`]+/|[\"'`]//[^/\"'`]+/)"
+      - patterns:
+          - pattern: "`...${$X}...`"
+          - pattern-regex: "`(?:/[^/\\\\`$]|[^`$]*[?#]|https?://[^/`$]+/)[^`]*`"
+      - patterns:
+          - pattern: "`...${$X}...`"
+          - pattern-regex: "`[^`]*\\$\\{[^}]*\\}[^`$]*[?#]"
+      - patterns:
+          - pattern: "$A + $B"
+          - pattern-regex: "\\+\\s*[\"'`][?#]"
+      - patterns:
+          - pattern: "[..., $X, ...].join($J)"
+          - pattern-regex: "\\[\\s*[\"'`][^\"'`]*[?/]"
+      - patterns:
+          - pattern-inside: "if ($T.startsWith($P)) {...}"
+          - pattern: "$T"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: '^["''`](?:https?:)?//[^/"''`]+/'
+      - patterns:
+          - pattern-inside: "if ($T.startsWith($P) && ...) {...}"
+          - pattern: "$T"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: '^["''`](?:https?:)?//[^/"''`]+/'
+      - patterns:
+          - pattern-inside: "if ($T.hasOwnProperty($X)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.hasOwnProperty($T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if (Object.hasOwn($S, $T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($T in $S) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S[$T] != undefined) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S[$T]) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.includes($T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.has($T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.indexOf($T) !== -1) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.indexOf($T) > -1) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($S.indexOf($T) >= 0) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if (isLocalUrl($T)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if ($T.match(...)) {...}"
+          - pattern: "$T"
+      - patterns:
+          - pattern-inside: "if (/.../.test($T)) {...}"
+          - pattern: "$T"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "window.location = $X"
+              - pattern: "document.location = $X"
+              - pattern: "location = $X"
+              - pattern: "$W.location = $X"
+              - pattern: "location.href = $X"
+              - pattern: "window.location.href = $X"
+              - pattern: "document.location.href = $X"
+              - pattern: "$W.location.href = $X"
+              - pattern: "location.assign($X)"
+              - pattern: "location.replace($X)"
+              - pattern: "window.location.assign($X)"
+              - pattern: "window.location.replace($X)"
+              - pattern: "$W.location.assign($X)"
+              - pattern: "$W.location.replace($X)"
+              - pattern: "document.location.assign($X)"
+              - pattern: "document.location.replace($X)"
+              - pattern: "window.open($X, ...)"
+              - pattern: "navigate($X)"
+              - pattern: "$L.url($X)"
+              - pattern: "shell.openExternal($X)"
+              - pattern: "new Worker($X, ...)"
+              - pattern: "importScripts(..., $X, ...)"
+              - pattern: "self.importScripts(..., $X, ...)"
+              - pattern: "history.push($X, ...)"
+              - pattern: "history.replace($X, ...)"
+              - pattern: "router.push($X, ...)"
+              - pattern: "router.replace($X, ...)"
+              - pattern: "$EL.href = $X"
+              - pattern: "$EL.src = $X"
+              - pattern: "$EL.action = $X"
+              - pattern: "$EL.formaction = $X"
+              - pattern: "$EL.data = $X"
+              - pattern: '$J.attr("href", $X)'
+              - pattern: '$J.attr("src", $X)'
+              - pattern: "$J.attr({..., href: $X, ...})"
+              - pattern: "$J.attr({..., src: $X, ...})"
+              - pattern: '$J("<$T>", {..., href: $X, ...})'
+              - pattern: '$J("<$T>", {..., src: $X, ...})'
+              - pattern: "<a href={$X} ...>...</a>"
+              - pattern: "<a href={$X} />"
+              - pattern: "<script src={$X} />"
+              - pattern: "<Link href={$X}>...</Link>"
+              - pattern: "<iframe src={$X} ...>...</iframe>"
+          - focus-metavariable: "$X"

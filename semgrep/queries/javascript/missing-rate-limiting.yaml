@@ -1,0 +1,218 @@
+rules:
+  - id: welt-js-missing-rate-limiting
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta rota executa uma operação cara (acesso a arquivo, banco, processo ou autenticação), mas não há limitação de taxa (rate limit) no arquivo. Um atacante pode esgotar recursos com requisições repetidas. Use `express-rate-limit` ou equivalente."
+    metadata:
+      category: security
+      cwe: "CWE-770: Allocation of Resources Without Limits or Throttling"
+      codeql: js/missing-rate-limiting
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern: "$APP.$V($P, ..., $FN)"
+              - metavariable-regex:
+                  metavariable: "$FN"
+                  regex: "(?s)^(async\\s+)?(function\\b|\\()"
+              - metavariable-pattern:
+                  metavariable: "$FN"
+                  pattern-either:
+                    - pattern: "fs.$M(...)"
+                    - pattern: "$RES.sendFile(...)"
+                    - pattern: "child_process.$M(...)"
+                    - pattern: "$DB.query(...)"
+                    - pattern: "login(...)"
+                    - pattern: "verifyUser(...)"
+                    - pattern: "authenticate(...)"
+                    - pattern: "exec(...)"
+                    - pattern: "execSync(...)"
+                    - pattern: "$C.exec(...)"
+                    - pattern: "$C.execSync(...)"
+                    - pattern: "$C.execFile(...)"
+                    - pattern: "$C.spawn(...)"
+                    - pattern: "$C.run(...)"
+                    - pattern: "$C.findOne(...)"
+                    - pattern: "$C.find(...)"
+                    - pattern: "$C.save(...)"
+                    - pattern: "bcrypt.$M(...)"
+                    - pattern: "$R.sendFile(...)"
+                    - pattern: "nodemailer.$M(...)"
+                    - pattern: "$T.sendMail(...)"
+          - patterns:
+              - pattern: "$APP.$V($P, ..., $H)"
+              - pattern-inside: |
+                  function $H($REQ, $RES, ...) { $...BODY }
+                  ...
+              - metavariable-pattern:
+                  metavariable: "$...BODY"
+                  pattern-either:
+                    - pattern: "fs.$M(...)"
+                    - pattern: "$RES.sendFile(...)"
+                    - pattern: "child_process.$M(...)"
+                    - pattern: "$DB.query(...)"
+                    - pattern: "login(...)"
+                    - pattern: "verifyUser(...)"
+                    - pattern: "authenticate(...)"
+                    - pattern: "exec(...)"
+                    - pattern: "execSync(...)"
+                    - pattern: "$C.exec(...)"
+                    - pattern: "$C.execSync(...)"
+                    - pattern: "$C.execFile(...)"
+                    - pattern: "$C.spawn(...)"
+                    - pattern: "$C.run(...)"
+                    - pattern: "$C.findOne(...)"
+                    - pattern: "$C.find(...)"
+                    - pattern: "$C.save(...)"
+                    - pattern: "bcrypt.$M(...)"
+                    - pattern: "$R.sendFile(...)"
+                    - pattern: "nodemailer.$M(...)"
+                    - pattern: "$T.sendMail(...)"
+      - metavariable-regex:
+          metavariable: "$V"
+          regex: "^(get|post|put|delete|patch|all|use|head|options)$"
+      - pattern-not-inside: |
+          $X = require("express-rate-limit");
+          ...
+      - pattern-not-inside: |
+          $X = require("express-rate-limit")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "express-rate-limit";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("express-rate-limit"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("express-brute");
+          ...
+      - pattern-not-inside: |
+          $X = require("express-brute")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "express-brute";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("express-brute"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("express-limiter");
+          ...
+      - pattern-not-inside: |
+          $X = require("express-limiter")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "express-limiter";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("express-limiter"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("rate-limiter-flexible");
+          ...
+      - pattern-not-inside: |
+          $X = require("rate-limiter-flexible")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "rate-limiter-flexible";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("rate-limiter-flexible"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("fastify-rate-limit");
+          ...
+      - pattern-not-inside: |
+          $X = require("fastify-rate-limit")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "fastify-rate-limit";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("fastify-rate-limit"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("@fastify/rate-limit");
+          ...
+      - pattern-not-inside: |
+          $X = require("@fastify/rate-limit")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "@fastify/rate-limit";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("@fastify/rate-limit"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("koa-ratelimit");
+          ...
+      - pattern-not-inside: |
+          $X = require("koa-ratelimit")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "koa-ratelimit";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("koa-ratelimit"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("koa-ratelimit-lru");
+          ...
+      - pattern-not-inside: |
+          $X = require("koa-ratelimit-lru")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "koa-ratelimit-lru";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("koa-ratelimit-lru"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("limiter");
+          ...
+      - pattern-not-inside: |
+          $X = require("limiter")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "limiter";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("limiter"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("bottleneck");
+          ...
+      - pattern-not-inside: |
+          $X = require("bottleneck")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "bottleneck";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("bottleneck"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("@nestjs/throttler");
+          ...
+      - pattern-not-inside: |
+          $X = require("@nestjs/throttler")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "@nestjs/throttler";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("@nestjs/throttler"), ...);
+          ...
+      - pattern-not-inside: |
+          $X = require("hono-rate-limiter");
+          ...
+      - pattern-not-inside: |
+          $X = require("hono-rate-limiter")(...);
+          ...
+      - pattern-not-inside: |
+          import $X from "hono-rate-limiter";
+          ...
+      - pattern-not-inside: |
+          $APP.register(require("hono-rate-limiter"), ...);
+          ...

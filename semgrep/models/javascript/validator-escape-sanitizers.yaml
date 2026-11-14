@@ -1,0 +1,2 @@
+- pattern: "validator.escape($X)"
+- pattern: "_.escape($X)"

@@ -1,0 +1,10 @@
+- pattern-either:
+    - pattern-inside: |
+        def $V(self, request, ..., $P, ...):
+          ...
+    - pattern-inside: |
+        async def $V(self, request, ..., $P, ...):
+          ...
+- metavariable-regex:
+    metavariable: "$V"
+    regex: "^(get|post|put|patch|delete|head|options|list|retrieve|create|update|partial_update|destroy|dispatch|form_valid|get_object|get_queryset)$"

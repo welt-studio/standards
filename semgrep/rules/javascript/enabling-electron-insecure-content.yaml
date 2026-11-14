@@ -1,0 +1,27 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-enabling-electron-insecure-content
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "A opção `allowRunningInsecureContent: true` permite executar conteúdo inseguro (HTTP) em páginas HTTPS no Electron. Remova a opção."
+    metadata:
+      category: security
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation"
+      codeql: js/enabling-electron-insecure-content
+    pattern-either:
+      - pattern: "new BrowserWindow({..., webPreferences: {..., allowRunningInsecureContent: true, ...}, ...})"
+      - pattern: "new electron.BrowserWindow({..., webPreferences: {..., allowRunningInsecureContent: true, ...}, ...})"
+      - pattern: |
+          $P = {..., allowRunningInsecureContent: true, ...};
+          ...
+          new BrowserWindow({..., webPreferences: $P, ...})
+      - pattern: "new BrowserView({..., webPreferences: {..., allowRunningInsecureContent: true, ...}, ...})"
+      - pattern: "new electron.BrowserView({..., webPreferences: {..., allowRunningInsecureContent: true, ...}, ...})"
+      - pattern: |
+          $P = {..., allowRunningInsecureContent: true, ...};
+          ...
+          new BrowserView({..., webPreferences: $P, ...})
+      - pattern: "$W.webPreferences = {..., allowRunningInsecureContent: true, ...}"

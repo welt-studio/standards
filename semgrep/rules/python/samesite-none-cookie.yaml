@@ -1,0 +1,27 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-samesite-none-cookie
+    message: 'Cookie sensível com `samesite="None"`; ele acompanha requisições entre sites e abre espaço para CSRF.'
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-1275: Sensitive Cookie with Improper SameSite Attribute"
+      codeql: py/samesite-none-cookie
+      notes: |-
+        Porta do `py/samesite-none-cookie` (CookieWrite de Concepts.qll + modelos Flask.qll, Django.qll, Aiohttp.qll).
+        Sensível = nome do cookie pelo regex de SensitiveDataHeuristics.qll (notSensitive incluído).
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-either:
+                  - pattern: "$R.set_cookie($NAME, ...)"
+                  - pattern: "$R.set_cookie(..., key=$NAME, ...)"
+                  - pattern: "$R.set_cookie(..., name=$NAME, ...)"
+              - pattern: '$R.set_cookie(..., samesite="None", ...)'
+      - metavariable-regex:
+          metavariable: "$NAME"
+          regex: "(?is)^(?!.*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(?:ant|ab|ing|ed)|(?<!pro)file|path|(?:[_-]|\\b)url)).*(?:pass(?:wd|word|code|.?phrase)(?!.*question)|auth(?:entication|ori[sz]ation)?.?key|oauth|api.?(?:key|tok)|(?:[_-]|\\b)mfa(?:[_-]|\\b)|(?<!is)(?<!is_)secret|(?<!un)(?<!un_)(?<!is)(?<!is_)trusted|confidential|acc(?:ou)?nt|puid|user.?(?:name|id)|session.?(?:id|key)|(?:^|_)uid|cert(?!.*(?:format|name|ification))|social.?security|passport.?(?:num|no)|(?:[_-]|\\b)ssn(?:[_-]|\\b)|post.?code|zip.?code|home.?addr|(?:mob(?:ile)?|home).?(?:num|no|tel|phone)|(?:tel|fax|phone).?(?:num|no)|telephone|emergency.?contact|(?:credit|debit|bank|visa).?(?:card|num|no|acc(?:ou)?nt)|(?:card|acc(?:ou)?nt).?(?:no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(?:rating|score)|(?:[_-]|\\b)(?:ccn|cvv|iban)(?:[_-]|\\b)|security.?code|birth.?da(?:te|y)|da(?:te|y).?(?:of.?)?birth|gender|medical|(?:health|care).?plan|patient.?(?:id|record)|employ(?:er|ee)|spouse|maiden.?name|mac.?addr)"

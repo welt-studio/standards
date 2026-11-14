@@ -1,0 +1,22 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-disabling-certificate-validation
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: "A validação do certificado TLS foi desligada (`rejectUnauthorized: false` ou `NODE_TLS_REJECT_UNAUTHORIZED=0`), o que permite ataques de homem no meio. Mantenha a validação ligada e, se preciso, confie em uma CA própria com a opção `ca`."
+    metadata:
+      category: security
+      cwe: "CWE-295: Improper Certificate Validation"
+      codeql: js/disabling-certificate-validation
+    pattern-either:
+      - pattern: "{..., rejectUnauthorized: false, ...}"
+      - pattern: "{..., rejectUnauthorized: !!false, ...}"
+      - pattern: "{..., rejectUnauthorized: !true, ...}"
+      - pattern: "{..., rejectUnauthorized: !1, ...}"
+      - pattern: "{..., rejectUnauthorized: 0, ...}"
+      - pattern: 'process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"'
+      - pattern: "process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'"
+      - pattern: "process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0"

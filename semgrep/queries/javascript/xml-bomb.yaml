@@ -1,0 +1,35 @@
+rules:
+  - id: welt-js-xml-bomb
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: "O parse de XML depende de um valor controlado pelo usuário e não protege contra a expansão descontrolada de entidades (XML bomb). Use um parser que não expanda entidades."
+    metadata:
+      category: security
+      cwe: "CWE-776: Improper Restriction of Recursive Entity References in DTDs"
+      codeql: js/xml-bomb
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/dom-xss-sources
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "new DOMParser().parseFromString($X, ...)"
+              - pattern: "new ActiveXObject(...).loadXML($X)"
+              - pattern: "$.parseXML($X)"
+              - pattern: "jQuery.parseXML($X)"
+              - pattern: "goog.dom.xml.loadXml($X)"
+              - "$model": javascript/libxmljs-noent-calls
+              - pattern: |
+                  $P = new expat.Parser(...);
+                  ...
+                  $P.write($X)
+              - pattern: |
+                  $P = new expat.Parser(...);
+                  ...
+                  $P.parse($X)
+          - focus-metavariable: "$X"

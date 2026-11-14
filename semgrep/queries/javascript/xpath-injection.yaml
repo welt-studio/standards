@@ -1,0 +1,58 @@
+rules:
+  - id: welt-js-xpath-injection
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    mode: taint
+    options:
+      interfile: true
+    message: "Um valor controlado pelo usuário é usado para montar uma expressão XPath, o que permite injeção e a leitura de dados do XML. Use expressões parametrizadas (variáveis do XPath) ou valide o valor contra uma lista de permitidos."
+    metadata:
+      category: security
+      cwe: "CWE-643: Improper Neutralization of Data within XPath Expressions"
+      codeql: js/xpath-injection
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-or-context
+      - "$model": javascript/document-location-hash
+      - "$model": javascript/document-location-search
+      - "$model": javascript/document-location-href
+      - "$model": javascript/document-location-pathname-source
+      - "$model": javascript/window-location-hash
+      - "$model": javascript/window-location-search
+      - "$model": javascript/window-location-href
+      - "$model": javascript/window-location-pathname-source
+      - "$model": javascript/location-hash
+      - "$model": javascript/location-search
+      - "$model": javascript/location-href-and-pathname-sources
+      - "$model": javascript/document-url-sources
+      - "$model": javascript/document-referrer
+      - "$model": javascript/window-name
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "xpath.parse($X, ...)"
+              - pattern: "xpath.select($X, ...)"
+              - pattern: "xpath.select1($X, ...)"
+              - pattern: "xpath.evaluate($X, ...)"
+              - pattern: 'require("xpath").parse($X, ...)'
+              - pattern: 'require("xpath").select($X, ...)'
+              - pattern: 'require("xpath").select1($X, ...)'
+              - pattern: "xpath.js.parse($X, ...)"
+              - pattern: "xpath.js.select($X, ...)"
+              - pattern: "xpath.js.select1($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $E = xpath.useNamespaces(...);
+              ...
+          - pattern: "$E($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "xpath.useNamespaces(...)($X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "document.createExpression($X, ...)"
+              - pattern: "document.evaluate($X, ...)"
+          - focus-metavariable: "$X"

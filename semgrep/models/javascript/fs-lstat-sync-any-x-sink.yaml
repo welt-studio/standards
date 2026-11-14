@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.lstatSync($X, ...)"
+    - focus-metavariable: "$X"

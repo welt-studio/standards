@@ -1,0 +1,134 @@
+rules:
+  - id: welt-js-clear-text-cookie
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Este cookie sensível é enviado sem a flag `Secure`, e por isso pode trafegar em HTTP puro e ser interceptado. Defina `secure: true` (ou o atributo `Secure` no cabeçalho `Set-Cookie`)."
+    metadata:
+      category: security
+      cwe: "CWE-614: Sensitive Cookie in HTTPS Session Without Secure Attribute"
+      codeql: js/clear-text-cookie
+    pattern-either:
+      - patterns:
+          - pattern: "$R.cookie($N, $V, {..., secure: false, ...})"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "^(res|response|reply|resp|ctx|context)$"
+      - patterns:
+          - pattern-either:
+              - pattern: "$R.cookie($N, $V)"
+              - pattern: "$R.cookie($N, $V, {...})"
+          - pattern-not: "$R.cookie($N, $V, {..., secure: $E, ...})"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "^(res|response|reply|resp|ctx|context)$"
+      - patterns:
+          - pattern-inside: |
+              $O = {..., secure: false, ...};
+              ...
+          - pattern: "$R.cookie($N, $V, $O)"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "^(res|response|reply|resp|ctx|context)$"
+      - patterns:
+          - pattern: "$J.set($N, $V, {..., secure: false, ...})"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$J"
+              regex: "^(js_?[cC]ookie|Cookies|cookies|jsCookie|browserCookies|Cookie)$"
+      - patterns:
+          - pattern-either:
+              - pattern: "$J.set($N, $V)"
+              - pattern: "$J.set($N, $V, {...})"
+          - pattern-not: "$J.set($N, $V, {..., secure: $E, ...})"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$J"
+              regex: "^(js_?[cC]ookie|Cookies|cookies|jsCookie|browserCookies|Cookie)$"
+      - patterns:
+          - pattern-inside: |
+              $O = {..., secure: false, ...};
+              ...
+          - pattern: "$J.set($N, $V, $O)"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$J"
+              regex: "^(js_?[cC]ookie|Cookies|cookies|jsCookie|browserCookies|Cookie)$"
+      - patterns:
+          - pattern: "$C.serialize($N, $V, {..., secure: false, ...})"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$C"
+              regex: "^cookie$"
+      - patterns:
+          - pattern-either:
+              - pattern: "$C.serialize($N, $V)"
+              - pattern: "$C.serialize($N, $V, {...})"
+          - pattern-not: "$C.serialize($N, $V, {..., secure: $E, ...})"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$C"
+              regex: "^cookie$"
+      - patterns:
+          - pattern-inside: |
+              $O = {..., secure: false, ...};
+              ...
+          - pattern: "$C.serialize($N, $V, $O)"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^[\"'`](?!(?is:[^\"'`]*(?:[^\\w$.\"\\'`-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)))(?is:[^\"'`]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))[\"'`]?$"
+          - metavariable-regex:
+              metavariable: "$C"
+              regex: "^cookie$"
+      - patterns:
+          - pattern-either:
+              - pattern: '$R.setHeader("Set-Cookie", $S)'
+              - pattern: '$R.setHeader("Set-Cookie", [..., $S, ...])'
+              - pattern: '$R.append("Set-Cookie", $S)'
+              - pattern: '$R.set("Set-Cookie", $S)'
+          - focus-metavariable: "$S"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "(?is)^[\"'`](?=[^\"'`=;]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))(?![^\"'`=;]*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url))(?!.*;\\s*secure\\b)[^\"'`]*[\"'`]?$"
+      - patterns:
+          - pattern: "document.cookie = $S"
+          - focus-metavariable: "$S"
+          - metavariable-regex:
+              metavariable: "$S"
+              regex: "(?is)^[\"'`](?=[^\"'`=;]*(?:(?:(?<!is|is_)secret|(?<!un|un_|is|is_)trusted(?!_iter|_?schema)|confidential)|(?:acc(ou)?nt|puid|user.?(name|id)|session.?(id|key)|(?-i:(?:[uU]|^|_|[a-z](?=U))[uU][iI][dD]))|(?:pass(wd|word|code|.?phrase)(?!.*question)|(auth(entication|ori[sz]ation)?).?key|oauth|api.?(key|tok)|([_-]|\\b)mfa([_-]|\\b))|(?:(cert)(?!.*(format|name|ification)))|(?:social.?security|employer.?identification|national.?insurance|resident.?id|passport.?(num|no)|([_-]|\\b)ssn([_-]|\\b)|post.?code|zip.?code|home.?addr|(mob(ile)?|home).?(num|no|tel|phone)|(tel|fax|phone).?(num|no)|telephone|emergency.?contact|latitude|longitude|nationality|(credit|debit|bank|visa).?(card|num|no|acc(ou)?nt)|(card|acc(ou)?nt).?(no|num|credit)|routing.?num|salary|billing|beneficiary|credit.?(rating|score)|([_-]|\\b)(ccn|cvv|iban)([_-]|\\b)|security.?code|birth.?da(te|y)|da(te|y).?(of.?)?birth|gender|([_-]|\\b)sex([_-]|\\b)|medical|(health|care).?plan|healthkit|appointment|prescription|patient.?(id|record)|blood.?(type|alcohol|glucose|pressure)|heart.?(rate|rhythm)|body.?(mass|fat)|menstrua|pregnan|insulin|inhaler|employ(er|ee)|spouse|maiden.?name|mac.?addr)))(?![^\"'`=;]*(?:redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url))(?!.*;\\s*secure\\b)[^\"'`]*[\"'`]?$"
+      - patterns:
+          - pattern: "session({...})"
+          - pattern-not: "session({..., cookie: {..., secure: $E, ...}, ...})"
+          - pattern-not: "session({..., secure: $E, ...})"
+          - pattern-not: "session({..., cookie: $C, ...})"
+      - patterns:
+          - pattern: "session({..., cookie: {..., secure: false, ...}, ...})"
+      - patterns:
+          - pattern: "session({..., secure: false, ...})"
+      - patterns:
+          - pattern: "session({..., cookie: {}, ...})"
+      - patterns:
+          - pattern-inside: |
+              $S = {..., cookie: {..., secure: false, ...}, ...};
+              ...
+          - pattern: "session($S)"

@@ -1,0 +1,95 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-unsafe-jquery-plugin
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Plugin jQuery inseguro: a opção do plugin é passada para $(...), que interpreta strings como HTML; um valor controlado pelo usuário vira XSS. Use $(document).find(opcao) ou valide que o valor é seletor/elemento."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/unsafe-jquery-plugin
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-inside: "$.fn.$N = function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "jQuery.fn.$N = function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "$.fn.$N = function $F($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "jQuery.fn.$N = function $F($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "$.fn[$N] = function ($P, ...) {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "$.fn.$N = ($P, ...) => {...}"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "$.fn.extend({..., $N: function ($P, ...) {...}, ...})"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-inside: "$.extend($.fn, {..., $N: function ($P, ...) {...}, ...})"
+          - pattern: "$P"
+          - focus-metavariable: "$P"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$($X)"
+              - pattern: "jQuery($X)"
+              - pattern: "$Y.appendTo($X)"
+              - pattern: "$Y.prependTo($X)"
+              - pattern: "$Y.insertAfter($X)"
+              - pattern: "$Y.insertBefore($X)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (isElement($X)) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (typeof $X != 'string') {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (typeof $X !== 'string') {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (typeof $X === 'object') {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.jquery === undefined) {...} else {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.jquery !== undefined) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if ($X.jquery) {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (typeof $X.jquery !== 'undefined') {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (!$X.jquery) {...} else {...}"
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: "if (safe.has($X)) {...}"
+      - patterns:
+          - pattern: '"$P" + $X'
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!\\s*<).+"
+    options:
+      interfile: true

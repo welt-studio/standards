@@ -1,0 +1,38 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-server-crash
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "`throw` dentro de um callback assíncrono, sem `try/catch` dentro do próprio callback: a exceção não pode ser capturada por quem chamou e derruba o processo do servidor. Trate o erro (por exemplo, responda com erro ou chame `next(err)`)."
+    metadata:
+      category: security
+      cwe: "CWE-730: OWASP Top Ten 2004 Category A9 - Denial of Service"
+      codeql: js/server-crash
+    patterns:
+      - pattern: "throw $E"
+      - pattern-either:
+          - pattern-inside: |
+              $FS.$M(..., $CB)
+          - pattern-inside: |
+              $M(..., $CB)
+      - metavariable-regex:
+          metavariable: "$CB"
+          regex: "(?s)^(?!async\\b)(function\\b|\\()"
+      - metavariable-regex:
+          metavariable: "$M"
+          regex: "^(readFile|writeFile|appendFile|readdir|stat|lstat|access|mkdir|rmdir|unlink|rename|copyFile|open|close|exec|execFile|spawn|fork|get|request|setTimeout|setInterval|setImmediate|nextTick|query|connect|lookup|resolve|resolve4|resolve6|randomBytes|pbkdf2|scrypt|readlink|realpath|chmod|chown|truncate|utimes|watch|createReadStream|end|write)$"
+      - pattern-not-inside: |
+          function (...) {
+            ...
+            try { ... throw $E; ... } catch ($X) {...}
+            ...
+          }
+      - pattern-not-inside: |
+          (...) => {
+            ...
+            try { ... throw $E; ... } catch ($X) {...}
+            ...
+          }

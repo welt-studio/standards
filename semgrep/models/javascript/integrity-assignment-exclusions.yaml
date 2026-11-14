@@ -1,0 +1,6 @@
+- pattern-not-inside: |
+    $E.integrity = ...;
+    ...
+- pattern-not-inside: |
+    ...
+    $E.integrity = ...;

@@ -1,0 +1,52 @@
+rules:
+  - id: welt-py-xml-bomb
+    message: "Dado controlado pelo usuário é lido por um parser XML da biblioteca padrão, vulnerável a expansão de entidades internas (billion laughs). Use `defusedxml`."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-776: Improper Restriction of Recursive Entity References in DTDs ('XML Entity Expansion')"
+      codeql: py/xml-bomb
+      notes: |-
+        Porta do `py/xml-bomb` (XmlBombCustomizations.qll + XmlParsing.vulnerableTo(XML bomb) de Stdlib.qll:
+        xml.etree, xml.sax, xml.dom.minidom/pulldom; Xmltodict.qll). O lxml não entra: libxml2 já se protege.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/django-view-parameter-sources
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "xml.etree.ElementTree.$FN($X, ...)"
+              - pattern: "xml.etree.cElementTree.$FN($X, ...)"
+              - pattern: "ElementTree.$FN($X, ...)"
+              - pattern: "ET.$FN($X, ...)"
+          - metavariable-regex:
+              metavariable: "$FN"
+              regex: "^(fromstring|fromstringlist|XML|XMLID|parse|iterparse)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "xml.sax.parse($X, ...)"
+              - pattern: "xml.sax.parseString($X, ...)"
+              - pattern: "xml.dom.minidom.parse($X, ...)"
+              - pattern: "xml.dom.minidom.parseString($X, ...)"
+              - pattern: "xml.dom.pulldom.parse($X, ...)"
+              - pattern: "xml.dom.pulldom.parseString($X, ...)"
+              - pattern: "xmltodict.parse($X, ..., disable_entities=False, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $P = xml.sax.make_parser(...)
+              ...
+          - "$model": python/parse-call
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              $P = xml.etree.ElementTree.XMLParser(...)
+              ...
+          - pattern: "$P.feed($X)"
+          - focus-metavariable: "$X"

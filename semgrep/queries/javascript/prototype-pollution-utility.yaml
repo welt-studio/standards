@@ -1,0 +1,68 @@
+rules:
+  - id: welt-js-prototype-pollution-utility
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Função recursiva de mesclagem/cópia que atribui `$DST[$K]` para toda chave `$K` enumerada do objeto de origem, sem proteger `__proto__` e `constructor`. Um objeto de origem malicioso polui `Object.prototype`. Ignore essas chaves ou copie só chaves próprias seguras."
+    metadata:
+      category: security
+      cwe: "CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes"
+      codeql: js/prototype-pollution-utility
+    patterns:
+      - pattern-either:
+          - pattern: "$DST[$K] = $V"
+          - pattern: "$DST[$K][$K2] = $V"
+      - pattern-either:
+          - pattern-inside: |
+              for (let $K in $S) {...}
+          - pattern-inside: |
+              for (var $K in $S) {...}
+          - pattern-inside: |
+              for (const $K in $S) {...}
+          - pattern-inside: |
+              for ($K in $S) {...}
+          - pattern-inside: |
+              Object.keys($S).forEach(($K) => {...})
+          - pattern-inside: |
+              Object.keys($S).forEach(function ($K) {...})
+          - pattern-inside: |
+              Object.keys($S).forEach(($K, ...) => {...})
+          - pattern-inside: |
+              Object.getOwnPropertyNames($S).forEach(($K) => {...})
+          - pattern-inside: |
+              Reflect.ownKeys($S).forEach(($K) => {...})
+          - pattern-inside: |
+              for (let $K of Object.keys($S)) {...}
+          - pattern-inside: |
+              for (const $K of Object.keys($S)) {...}
+          - pattern-inside: |
+              for (const [$K, $W] of Object.entries($S)) {...}
+          - pattern-inside: |
+              for (let [$K, $W] of Object.entries($S)) {...}
+      - pattern-inside: |
+          function $F($DST, ...) {...}
+      - pattern-not:
+          patterns:
+            - pattern-either:
+                - pattern: "$DST[$K] = $V"
+                - pattern: "$DST[$K][$K2] = $V"
+            - pattern-inside: |
+                if (<... $K === "__proto__" ...>) {...}
+                ...
+            - pattern-inside: |
+                if (<... $K === "constructor" ...>) {...}
+                ...
+      - pattern-not:
+          patterns:
+            - pattern-either:
+                - pattern: "$DST[$K] = $V"
+                - pattern: "$DST[$K][$K2] = $V"
+            - pattern-inside: |
+                if (<... $K === "__proto__" ...>) {...}
+                ...
+            - pattern-inside: |
+                if (<... $K === "prototype" ...>) {...}
+                ...
+      - pattern-not-inside: |
+          if ($DST.hasOwnProperty($K)) {...}

@@ -1,0 +1,67 @@
+rules:
+  - id: welt-js-biased-cryptographic-random
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Esta operação (módulo por um valor que não é potência de 2, divisão com arredondamento ou concatenação em número) sobre um valor aleatório criptográfico produz resultados enviesados. Descarte os valores que causam o viés (por exemplo `if (byte >= 250) continue`) ou use `crypto.randomInt`."
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      codeql: js/biased-cryptographic-random
+    pattern-sources:
+      - pattern: "crypto.randomBytes(...)"
+      - pattern: 'require("crypto").randomBytes(...)'
+      - pattern: "secureRandom(...)"
+      - pattern: "crypto.randomFillSync(...)"
+      - pattern: "window.crypto.getRandomValues(...)"
+      - pattern: "crypto.getRandomValues(...)"
+      - "$model": javascript/crypto-pseudo-random-bytes
+      - pattern: "random.randomBytes(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$Z % $B"
+          - metavariable-regex:
+              metavariable: "$B"
+              regex: "^(?!(?:1|2|4|8|16|32|64|128|256|512|1024|2048|4096|8192|16384|32768|65536|131072|262144|524288|1048576|2097152|4194304|8388608|16777216|33554432|67108864|134217728|268435456|536870912|1073741824|2147483648|4294967296|0x1|0x2|0x4|0x8|0x10|0x20|0x40|0x80|0x100|0x200|0x400|0x800|0x1000|0x2000|0x4000|0x8000|0x10000|0x20000|0x40000|0x80000|0x100000|0x200000|0x400000|0x800000|0x1000000|0x2000000|0x4000000|0x8000000|0x10000000|0x20000000|0x40000000|0x80000000|0x100000000|0b1|0b10)$)"
+          - focus-metavariable: "$Z"
+          - pattern-not-inside: "if ($Z < ...) {...}"
+          - pattern-not-inside: "if ($Z <= ...) {...}"
+      - patterns:
+          - pattern-either:
+              - pattern: "Math.floor(<... $Z / $B ...>)"
+              - pattern: "Math.round(<... $Z / $B ...>)"
+              - pattern: "Math.ceil(<... $Z / $B ...>)"
+          - metavariable-regex:
+              metavariable: "$B"
+              regex: "^(?!(?:1|3|7|15|31|63|127|255|511|1023|2047|4095|8191|16383|32767|65535|131071|262143|524287|1048575|2097151|4194303|8388607|16777215|33554431|67108863|134217727|268435455|536870911|1073741823|2147483647|4294967295|0x1|0x3|0x7|0xf|0x1f|0x3f|0x7f|0xff|0x1ff|0x3ff|0x7ff|0xfff|0x1fff|0x3fff|0x7fff|0xffff|0x1ffff|0x3ffff|0x7ffff|0xfffff|0x1fffff|0x3fffff|0x7fffff|0xffffff|0x1ffffff|0x3ffffff|0x7ffffff|0xfffffff|0x1fffffff|0x3fffffff|0x7fffffff|0xffffffff)$)"
+          - focus-metavariable: "$Z"
+      - patterns:
+          - pattern-either:
+              - pattern: 'Number(<... "..." + $Z ...>)'
+              - pattern: 'parseInt(<... "..." + $Z ...>)'
+              - pattern: 'parseFloat(<... "..." + $Z ...>)'
+          - pattern-inside: "$F($S)"
+          - focus-metavariable: "$Z"
+  - id: welt-js-biased-cryptographic-random-arith
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Somar ou multiplicar dois valores aleatórios criptográficos produz um resultado enviesado (não uniforme). Gere um único valor com `crypto.randomInt`."
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      codeql: js/biased-cryptographic-random
+    pattern-either:
+      - pattern: "crypto.randomBytes(...)[...] + crypto.randomBytes(...)[...]"
+      - pattern: "crypto.randomBytes(...)[...] + secureRandom(...)[...]"
+      - pattern: "secureRandom(...)[...] + crypto.randomBytes(...)[...]"
+      - pattern: "secureRandom(...)[...] + secureRandom(...)[...]"
+      - pattern: "crypto.randomBytes(...)[...] * crypto.randomBytes(...)[...]"
+      - pattern: "crypto.randomBytes(...)[...] * secureRandom(...)[...]"
+      - pattern: "secureRandom(...)[...] * crypto.randomBytes(...)[...]"
+      - pattern: "secureRandom(...)[...] * secureRandom(...)[...]"

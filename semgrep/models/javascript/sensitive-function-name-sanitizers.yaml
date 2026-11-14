@@ -1,0 +1,13 @@
+- patterns:
+    - pattern: "$F(...)"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "(?is).*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)"
+- patterns:
+    - pattern: "$O.$F(...)"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "(?is).*(?:[^\\w$.-]|redact|censor|obfuscate|hash|md5|sha|random|(?<!unen)crypt|(?<!un)encode|certain|concert|secretar|wildcard|coauthor|account(ant|ab|ing|ed)|(?<!pro)file|path|([_-]|\\b)url)"
+- patterns:
+    - pattern: "$X.replace(...)"
+    - pattern-regex: "\\.replace\\(\\s*/\\.[+*]?/[a-z]*g[a-z]*\\s*,"

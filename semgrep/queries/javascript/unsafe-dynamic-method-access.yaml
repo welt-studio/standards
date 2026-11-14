@@ -1,0 +1,75 @@
+rules:
+  - id: welt-js-unsafe-dynamic-method-access
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Acesso dinâmico a método com nome vindo de dados não confiáveis: o atacante pode chamar métodos inesperados (eval, o construtor Function, etc.). Use uma lista de nomes permitidos."
+    metadata:
+      category: security
+      cwe: "CWE-094: Improper Control of Generation of Code ('Code Injection')"
+      codeql: js/unsafe-dynamic-method-access
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/express-request-sources-cookies
+      - "$model": javascript/nextjs-server-side-sources
+      - "$model": javascript/location-hash
+      - "$model": javascript/location-search
+      - "$model": javascript/location-href-and-pathname-sources
+      - "$model": javascript/window-location-hash
+      - "$model": javascript/window-location-search
+      - "$model": javascript/window-location-href
+      - "$model": javascript/window-location-pathname-source
+      - "$model": javascript/document-location-hash
+      - "$model": javascript/document-location-search
+      - "$model": javascript/document-location-href
+      - "$model": javascript/document-location-pathname-source
+      - "$model": javascript/document-url-sources
+      - "$model": javascript/document-base-uri-source
+      - "$model": javascript/document-referrer
+      - "$model": javascript/window-name
+      - "$model": javascript/window-location-and-message-sources
+    pattern-sinks:
+      - patterns:
+          - pattern: "window[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "new window[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "self[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "globalThis[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "global[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "document[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "this[$X](...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$F[$X](...)(...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$F[$X](...)"
+          - pattern-inside: "function $F(...) {...}"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "window[$X]"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$P + $X"
+          - pattern-not: '"" + $X'
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: '^(?!""$|''''$).+'
+      - patterns:
+          - pattern: "`...${$X}...`"
+          - pattern-not: "`${$X}`"
+    options:
+      interfile: true

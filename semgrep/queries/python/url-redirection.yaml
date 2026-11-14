@@ -1,0 +1,90 @@
+rules:
+  - id: welt-py-url-redirection
+    message: "O destino do redirecionamento vem de dado controlado pelo usuário (open redirect). Valide o host contra uma lista permitida ou use um caminho relativo fixo."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+      codeql: py/url-redirection
+      notes: |-
+        Porta do `py/url-redirection` (UrlRedirectCustomizations.qll + HttpRedirectResponse de Flask, Django,
+        FastAPI, Starlette, aiohttp, Tornado, Pyramid). Saneadores: operando direito de `+`,
+        `url_has_allowed_host_and_scheme` e o par `replace("\\", "/")` + checagem de netloc/is_absolute
+        (aproximação por sequência no mesmo bloco; o CodeQL usa um estado "pode ter barra invertida").
+        ConstCompareAsSanitizerGuard: x == "literal" / x in ("a", "b").
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/django-view-parameter-sources
+    pattern-sanitizers:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  if $U == "...":
+                    ...
+              - pattern-inside: |
+                  if $U in [...]:
+                    ...
+              - pattern-inside: |
+                  if $U in (...):
+                    ...
+          - pattern: "$U"
+      - patterns:
+          - pattern-either:
+              - pattern: "$L + $X"
+              - pattern: "$L += $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-inside: |
+              if url_has_allowed_host_and_scheme($U, ...):
+                ...
+          - pattern: "$U"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $U = $U.replace("\\", ...)
+                  ...
+                  if not urlparse($U).netloc:
+                    ...
+              - pattern-inside: |
+                  $U = $U.replace("\\", ...)
+                  ...
+                  if urlparse($U).netloc == "":
+                    ...
+              - pattern-inside: |
+                  $U = $U.replace("\\", ...)
+                  ...
+                  if not yarl.URL($U).is_absolute():
+                    ...
+              - pattern-inside: |
+                  $U = $U.replace("\\", ...)
+                  ...
+                  if urlparse($U).netloc in [...]:
+                    ...
+          - pattern: "$U"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "redirect($X, ...)"
+              - pattern: "redirect(to=$X, ...)"
+              - pattern: "redirect(location=$X, ...)"
+              - pattern: "$M.redirect($X, ...)"
+              - pattern: "HttpResponseRedirect($X, ...)"
+              - pattern: "HttpResponsePermanentRedirect($X, ...)"
+              - pattern: "RedirectResponse($X, ...)"
+              - pattern: "RedirectResponse(url=$X, ...)"
+              - pattern: "$M.RedirectResponse($X, ...)"
+              - pattern: "web.HTTPFound($X, ...)"
+              - pattern: "web.HTTPFound(location=$X, ...)"
+              - pattern: "web.HTTPMovedPermanently($X, ...)"
+              - pattern: "web.HTTPSeeOther($X, ...)"
+              - pattern: "web.HTTPTemporaryRedirect($X, ...)"
+              - pattern: "web.HTTPPermanentRedirect($X, ...)"
+              - pattern: "HTTPFound($X, ...)"
+              - pattern: "HTTPFound(location=$X, ...)"
+              - pattern: "$SELF.redirect($X, ...)"
+          - focus-metavariable: "$X"

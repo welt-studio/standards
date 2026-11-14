@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.chmod($X, ...)"
+    - focus-metavariable: "$X"

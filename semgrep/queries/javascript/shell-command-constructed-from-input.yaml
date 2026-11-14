@@ -1,0 +1,83 @@
+rules:
+  - id: welt-js-shell-command-constructed-from-input
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Comando de shell montado a partir de um parâmetro de função exportada: se o valor tiver caracteres especiais do shell, o comando pode ser injetado. Use execFile/spawn com lista de argumentos ou escape o valor."
+    metadata:
+      category: security
+      cwe: "CWE-078: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      codeql: js/shell-command-constructed-from-input
+    mode: taint
+    pattern-sources:
+      - "$model": javascript/module-exports-parameter-sources
+    pattern-sinks:
+      - patterns:
+          - pattern: 'child_process.exec("...$X...", ...)'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.exec($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.exec(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.exec($A + $X + ..., ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: 'child_process.execSync("...$X...", ...)'
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.execSync($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.execSync(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "child_process.execSync($A + $X + ..., ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "shelljs.exec($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "shelljs.exec(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.shell($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.shell(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.shellSync($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.shellSync(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.command($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execa.command(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "require('mz/child_process').exec($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "require('mz/child_process').exec(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execSh($A + $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "execSh(`...${$X}...`, ...)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - "$model": javascript/shell-escape-sanitizers
+      - "$model": javascript/l-quote-x-sanitizer
+      - "$model": javascript/json-stringify-x-sanitizer
+      - "$model": javascript/parse-int-x-sanitizer
+      - "$model": javascript/number-x-sanitizer
+    options:
+      interfile: true

@@ -1,0 +1,13 @@
+# Config do gitleaks deste repo: as regras padrão dele, com uma exceção de caminho só.
+#
+# Os testes do CodeQL copiados (`semgrep/test/vendor/`, `hooks/sync_codeql_tests.py`) têm segredo
+# falso de propósito: são exemplos de código vulnerável, alvo das regras do Semgrep. O `exclude` de
+# topo do `.pre-commit-config.yaml` não chega ao gitleaks, que lê o commit inteiro sozinho; esta
+# exceção vale para o hook do commit e para o `gitleaks-history`. Nenhuma pasta do nosso código entra
+# aqui.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Testes do CodeQL copiados sem mudança (código de terceiros, segredos falsos)"
+paths = ['''^semgrep/test/vendor/''']

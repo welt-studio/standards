@@ -1,0 +1,32 @@
+rules:
+  - id: welt-js-build-artifact-leak
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "O `DefinePlugin` do webpack grava no artefato de build (público) dados sensíveis, como o `process.env` inteiro ou uma senha. Exponha só as variáveis necessárias, com um prefixo explícito (por exemplo `REACT_APP_`)."
+    metadata:
+      category: security
+      cwe: "CWE-312: Cleartext Storage of Sensitive Information"
+      codeql: js/build-artifact-leak
+    pattern-sources:
+      - "$model": javascript/sensitive-data-sources
+      - patterns:
+          - pattern: "process.env[$K]"
+          - metavariable-regex:
+              metavariable: "$K"
+              regex:
+                "$text": javascript/identifier-name
+    pattern-sanitizers:
+      - "$model": javascript/sensitive-function-name-sanitizers
+      - "$model": common/x-filter-sanitizer
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "new webpack.DefinePlugin($A)"
+              - pattern: "new (require('webpack').DefinePlugin)($A)"
+              - pattern: "new DefinePlugin($A)"
+          - focus-metavariable: "$A"

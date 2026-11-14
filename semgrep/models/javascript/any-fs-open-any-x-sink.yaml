@@ -1,0 +1,7 @@
+- patterns:
+    - pattern: "$FS.open($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$FS"
+        regex:
+          "$text": javascript/fs-module-name-regex

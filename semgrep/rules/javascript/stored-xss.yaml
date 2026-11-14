@@ -1,0 +1,167 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-js-stored-xss
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "XSS armazenado: nomes de arquivo (ou outros dados lidos do sistema) são enviados na resposta HTTP sem escape. Escape para HTML antes de escrever na resposta."
+    metadata:
+      category: security
+      cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: js/stored-xss
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern: "$F"
+          - pattern-inside: "fs.readdir($P, function($E, $F) {...})"
+      - patterns:
+          - pattern: "$F"
+          - pattern-inside: "fs.readdir($P, ($E, $F) => {...})"
+      - patterns:
+          - pattern: "$F"
+          - pattern-inside: "fs.readdir($P, $O, function($E, $F) {...})"
+      - pattern: "fs.readdirSync(...)"
+      - pattern: "fs.promises.readdir(...)"
+      - pattern: "$FS.readdirSync(...)"
+      - patterns:
+          - pattern: "$T.name"
+          - pattern-inside: "$C.on('torrent', function($T) {...})"
+      - patterns:
+          - pattern: "$T.files"
+          - pattern-inside: "$C.on('torrent', function($T) {...})"
+      - patterns:
+          - pattern: "$F.name"
+          - pattern-inside: "$T.files.forEach(function($F) {...})"
+      - patterns:
+          - pattern: "$F.path"
+          - pattern-inside: "$T.files.forEach(function($F) {...})"
+      - pattern: "glob.sync(...)"
+      - pattern: "klaw.sync(...)"
+      - pattern: "readdirp.promise(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$RES.send($X)"
+              - pattern: "$RES.write($X)"
+              - pattern: "$RES.end($X, ...)"
+          - metavariable-regex:
+              metavariable: "$RES"
+              regex: "^(?i:_?(?:res|response|reply|resp))$"
+          - focus-metavariable: "$X"
+          - pattern-not-inside:
+              patterns:
+                - pattern-inside: '$RES.set("$K", "$CT"); ...'
+                - metavariable-regex:
+                    metavariable: "$K"
+                    regex: "(?i)^content-type$"
+                - metavariable-regex:
+                    metavariable: "$CT"
+                    regex: "(?i)^(?!.*html).*$"
+          - pattern-not-inside:
+              patterns:
+                - pattern-inside: '$RES.setHeader("$K", "$CT"); ...'
+                - metavariable-regex:
+                    metavariable: "$K"
+                    regex: "(?i)^content-type$"
+                - metavariable-regex:
+                    metavariable: "$CT"
+                    regex: "(?i)^(?!.*html).*$"
+          - pattern-not-inside:
+              patterns:
+                - pattern-inside: '$RES.header("$K", "$CT"); ...'
+                - metavariable-regex:
+                    metavariable: "$K"
+                    regex: "(?i)^content-type$"
+                - metavariable-regex:
+                    metavariable: "$CT"
+                    regex: "(?i)^(?!.*html).*$"
+          - pattern-not-inside:
+              patterns:
+                - pattern-inside: '$RES.append("$K", "$CT"); ...'
+                - metavariable-regex:
+                    metavariable: "$K"
+                    regex: "(?i)^content-type$"
+                - metavariable-regex:
+                    metavariable: "$CT"
+                    regex: "(?i)^(?!.*html).*$"
+          - pattern-not-inside:
+              patterns:
+                - pattern-inside: '$RES.set({"$K": "$CT"}); ...'
+                - metavariable-regex:
+                    metavariable: "$K"
+                    regex: "(?i)^content-type$"
+                - metavariable-regex:
+                    metavariable: "$CT"
+                    regex: "(?i)^(?!.*html).*$"
+          - pattern-not-inside:
+              patterns:
+                - pattern-inside: '$RES.header({"$K": "$CT"}); ...'
+                - metavariable-regex:
+                    metavariable: "$K"
+                    regex: "(?i)^content-type$"
+                - metavariable-regex:
+                    metavariable: "$CT"
+                    regex: "(?i)^(?!.*html).*$"
+          - pattern-not-inside:
+              patterns:
+                - pattern-inside: '$RES.writeHead($S, {"$K": "$CT"}); ...'
+                - metavariable-regex:
+                    metavariable: "$K"
+                    regex: "(?i)^content-type$"
+                - metavariable-regex:
+                    metavariable: "$CT"
+                    regex: "(?i)^(?!.*html).*$"
+          - pattern-not-inside:
+              patterns:
+                - pattern-inside: '$RES.type("$CT"); ...'
+                - metavariable-regex:
+                    metavariable: "$CT"
+                    regex: "(?i)^(?!.*html).*$"
+          - pattern-not-inside:
+              patterns:
+                - pattern-inside: '$RES.contentType("$CT"); ...'
+                - metavariable-regex:
+                    metavariable: "$CT"
+                    regex: "(?i)^(?!.*html).*$"
+    pattern-sanitizers:
+      - pattern: "escapeHtml($X)"
+      - pattern: "escapeHTML($X)"
+      - pattern: "escape($X)"
+      - pattern: "escapeString($X)"
+      - pattern: "encodeURIComponent($X)"
+      - pattern: "encodeURI($X)"
+      - pattern: "sanitize($X)"
+      - pattern: "sanitizeHtml($X, ...)"
+      - pattern: "sanitizeHtml($X)"
+      - pattern: "xss($X)"
+      - pattern: "$L.escape($X)"
+      - pattern: "$L.sanitize($X, ...)"
+      - pattern: "$L.encode($X, ...)"
+      - pattern: "$L.escapeHtml($X)"
+      - pattern: "$L.escapeHTML($X)"
+      - pattern: "he.escape($X)"
+      - pattern: "DOMPurify.sanitize($X, ...)"
+      - pattern: "validator.escape($X)"
+      - pattern: "_.escape($X)"
+      - pattern: "parseInt($X, ...)"
+      - pattern: "parseFloat($X)"
+      - pattern: "Number($X)"
+      - pattern: "Boolean($X)"
+      - pattern: "isNaN($X)"
+      - pattern: "$L.stripTags($X)"
+      - pattern: "striptags($X)"
+      - pattern: "$L.filterXSS($X)"
+      - pattern: "filterXSS($X)"
+      - pattern: "escapeHtmlEntities($X)"
+      - pattern: "htmlEscape($X)"
+      - pattern: "$X.toFixed(...)"
+      - pattern: "$L.encodeForHTML($X)"
+      - pattern: "encodeHTML($X)"
+      - pattern: "$X.length"
+      - pattern: "JSON.stringify($X)"
+      - pattern: "+$X"
+      - pattern: "typeof $X"
+    options:
+      interfile: true

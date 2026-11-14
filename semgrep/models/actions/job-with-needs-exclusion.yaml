@@ -1,0 +1,10 @@
+- pattern-not-inside:
+    patterns:
+      - pattern: |
+          $JOB:
+            ...
+            needs: ...
+            ...
+      - pattern-inside:
+          pattern-regex:
+            "$text": actions/permission-check-actions

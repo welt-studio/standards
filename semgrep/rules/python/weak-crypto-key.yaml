@@ -1,0 +1,115 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-weak-crypto-key
+    message: "Chave RSA/DSA gerada com tamanho abaixo de 2048 bits, considerada quebrável. Use no mínimo 2048 bits."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-326: Inadequate Encryption Strength"
+      codeql: py/weak-crypto-key
+      notes: "Apelido da função: `gen = rsa.generate_private_key` e depois `gen(...)`."
+    paths:
+      exclude:
+        - "**/test_*.py"
+        - "**/*_test.py"
+        - "**/tests/**"
+        - "**/test/**"
+        - "**/conftest.py"
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern: "$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^\\d+$"
+          - metavariable-comparison:
+              metavariable: "$N"
+              comparison: "$N < 2048"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "RSA.generate($N, ...)"
+              - pattern: "RSA.generate(..., bits=$N, ...)"
+              - pattern: "DSA.generate($N, ...)"
+              - pattern: "DSA.generate(..., bits=$N, ...)"
+              - pattern: "$P.RSA.generate($N, ...)"
+              - pattern: "$P.DSA.generate($N, ...)"
+              - pattern: "$P.RSA.generate(..., bits=$N, ...)"
+              - pattern: "$P.DSA.generate(..., bits=$N, ...)"
+              - pattern: "rsa.generate_private_key($E, $N, ...)"
+              - pattern: "rsa.generate_private_key(..., key_size=$N, ...)"
+              - pattern: "dsa.generate_private_key($N, ...)"
+              - pattern: "dsa.generate_private_key(..., key_size=$N, ...)"
+              - pattern: "$P.rsa.generate_private_key($E, $N, ...)"
+              - pattern: "$P.rsa.generate_private_key(..., key_size=$N, ...)"
+              - pattern: "$P.dsa.generate_private_key($N, ...)"
+              - pattern: "$P.dsa.generate_private_key(..., key_size=$N, ...)"
+              - pattern: "paramiko.RSAKey.generate($N, ...)"
+              - pattern: "paramiko.DSSKey.generate($N, ...)"
+          - focus-metavariable: "$N"
+      - patterns:
+          - pattern-either:
+              - pattern: "$F($E, $N, ...)"
+              - pattern: "$F(..., key_size=$N, ...)"
+          - pattern-inside: |
+              $F = rsa.generate_private_key
+              ...
+          - focus-metavariable: "$N"
+      - patterns:
+          - pattern-either:
+              - pattern: "$F($N, ...)"
+              - pattern: "$F(..., key_size=$N, ...)"
+          - pattern-inside: |
+              $F = dsa.generate_private_key
+              ...
+          - focus-metavariable: "$N"
+  - id: welt-py-weak-crypto-key-ec
+    message: "Chave de curva elíptica gerada com curva de menos de 256 bits, considerada quebrável. Use uma curva de no mínimo 256 bits (por exemplo SECP256R1)."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-326: Inadequate Encryption Strength"
+      codeql: py/weak-crypto-key
+    paths:
+      exclude:
+        - "**/test_*.py"
+        - "**/*_test.py"
+        - "**/tests/**"
+        - "**/test/**"
+        - "**/conftest.py"
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "ec.$C()"
+              - pattern: "$P.ec.$C()"
+          - metavariable-regex:
+              metavariable: "$C"
+              regex: "^(SECT163R2|SECT163K1|SECP224R1|SECP192R1|SECT233R1|SECT233K1)$"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "ec.generate_private_key($C, ...)"
+              - pattern: "ec.generate_private_key(..., curve=$C, ...)"
+              - pattern: "$P.ec.generate_private_key($C, ...)"
+              - pattern: "$P.ec.generate_private_key(..., curve=$C, ...)"
+          - focus-metavariable: "$C"
+      - patterns:
+          - pattern-either:
+              - pattern: "$F($C, ...)"
+              - pattern: "$F(..., curve=$C, ...)"
+          - pattern-inside: |
+              $F = ec.generate_private_key
+              ...
+          - focus-metavariable: "$C"

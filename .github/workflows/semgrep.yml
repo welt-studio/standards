@@ -1,0 +1,56 @@
+# Paridade das regras do Semgrep (`semgrep/`) com o CodeQL, nos testes do próprio CodeQL
+# (`tests/test_semgrep_parity.py`): o que fugir das pendências do `semgrep/test/pending.json`
+# reprova, nos dois sentidos. Roda só quando muda o que entra na conta: as regras, os testes, o
+# gerador, o teste de paridade ou as versões do ambiente (o Semgrep vem pelo `uv.lock`).
+#
+# O motor Pro (fluxo entre arquivos), em que a paridade foi medida, exige o login do Semgrep: o
+# token é o secret `SEMGREP_APP_TOKEN` do repo. Só a instalação do motor usa rede; a varredura roda
+# local, com `--metrics=off`, e nada é enviado ao Semgrep (nunca `semgrep ci`).
+#
+# Todo `uses:` fixado por SHA, com a versão no comentário ao lado; o Renovate atualiza os dois.
+name: Semgrep
+
+on:
+  push:
+    branches: [main]
+    paths: &parity
+      - "semgrep/**"
+      - "hooks/generate_semgrep.py"
+      - "hooks/semgrep_parity.py"
+      - "tests/test_semgrep_parity.py"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/semgrep.yml"
+  pull_request:
+    branches: [main]
+    paths: *parity
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  parity:
+    name: Paridade com o CodeQL
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version-file: pyproject.toml
+          activate-environment: true
+      - run: uv sync --locked
+      # O motor Pro da mesma versão do Semgrep do `uv.lock`, baixado com o token.
+      - name: Motor Pro do Semgrep
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: uv run semgrep install-semgrep-pro
+      - name: Paridade com o CodeQL
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: uv run pytest -m semgrep --no-cov -n 3

@@ -1,0 +1,22 @@
+rules:
+  - id: welt-js-jwt-missing-verification
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: 'O JWT é "verificado" com uma chave vazia ou ausente (`""`, `false`, `undefined`), o que aceita tokens sem assinatura válida. Passe a chave secreta ou pública correta e restrinja os algoritmos aceitos.'
+    metadata:
+      category: security
+      cwe: "CWE-347: Improper Verification of Cryptographic Signature"
+      codeql: js/jwt-missing-verification
+    pattern-either:
+      - pattern: 'jwt.verify($T, "", ...)'
+      - pattern: "jwt.verify($T, '', ...)"
+      - pattern: "jwt.verify($T, undefined, ...)"
+      - pattern: "jwt.verify($T, false, ...)"
+      - pattern: "jwt.verify($T, null, ...)"
+      - pattern: 'jsonwebtoken.verify($T, "", ...)'
+      - pattern: "jsonwebtoken.verify($T, '', ...)"
+      - pattern: "jsonwebtoken.verify($T, undefined, ...)"
+      - pattern: "jsonwebtoken.verify($T, false, ...)"
+      - pattern: "jsonwebtoken.verify($T, null, ...)"

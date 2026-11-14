@@ -1,0 +1,36 @@
+rules:
+  - id: welt-js-server-side-unvalidated-url-redirection
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: "Um valor controlado pelo usuário é usado como destino de um redirecionamento sem validação. Um atacante pode mandar a vítima para um site malicioso (open redirect). Valide o destino contra uma lista de permitidos ou aceite apenas caminhos locais."
+    metadata:
+      category: security
+      cwe: "CWE-601: URL Redirection to Untrusted Site (Open Redirect)"
+      codeql: js/server-side-unvalidated-url-redirection
+    pattern-sources:
+      - "$model": javascript/request-sources-named-req-or-context
+    pattern-sanitizers:
+      - "$model": javascript/url-prefix-concatenation-sanitizers
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$R.redirect($X)"
+              - pattern: "$R.redirect($C, $X)"
+              - pattern: "$R.location($X)"
+              - pattern: '$R.header("Location", $X)'
+              - pattern: '$R.setHeader("Location", $X)'
+              - pattern: '$R.set("Location", $X)'
+              - pattern: "$R.writeHead($C, {..., Location: $X, ...})"
+              - pattern: "$R.writeHead($C, {..., location: $X, ...})"
+              - pattern: "$R.set({..., Location: $X, ...})"
+              - pattern: "Response.redirect($X, ...)"
+              - pattern: "NextResponse.redirect($X, ...)"
+              - pattern: "<WebView url={$X} />"
+              - pattern: "<WebView source={{uri: $X}} />"
+              - pattern: "<WebView source={{..., uri: $X, ...}} />"
+          - focus-metavariable: "$X"

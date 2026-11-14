@@ -1,0 +1,57 @@
+rules:
+  - id: welt-py-reflective-xss
+    message: "Dado vindo da requisição é escrito na resposta HTML sem escape (XSS refletido). Escape o valor (markupsafe.escape, html.escape) ou use um template com autoescape."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      codeql: py/reflective-xss
+      notes: |-
+        Flask/Werkzeug: atributos do `request` (Flask.qll, Werkzeug.qll).
+        Parâmetros de rota (Flask, FastAPI, Starlette, Bottle...): variáveis da URL e do corpo.
+        Django/DRF: parâmetros da view depois do `request` (vêm da URL).
+        Tornado: argumentos e dados do RequestHandler (Tornado.qll).
+        Flask: o retorno da rota é o corpo HTML da resposta.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/flask-request-sources
+    pattern-sanitizers:
+      - pattern: "escape(...)"
+      - "$model": python/flask-escape
+      - "$model": python/html-escape-sanitizers
+      - pattern: "cgi.escape(...)"
+      - pattern: "django.utils.html.escape(...)"
+      - pattern: "django.utils.html.conditional_escape(...)"
+      - pattern: "bleach.clean(...)"
+      - pattern: "jsonify(...)"
+      - pattern: "flask.jsonify(...)"
+      - "$model": python/int-sanitizer
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - "$model": python/make-response-x
+              - "$model": python/flask-make-response-x
+              - "$model": python/flask-response-x
+              - pattern: "django.http.HttpResponse($X, ...)"
+              - pattern: "HttpResponse($X, ...)"
+              - pattern: "HttpResponse(..., content=$X, ...)"
+              - pattern: "django.http.HttpResponseBadRequest($X, ...)"
+              - pattern: "HttpResponseBadRequest($X, ...)"
+              - pattern: "HttpResponseNotFound($X, ...)"
+              - pattern: "HttpResponseForbidden($X, ...)"
+              - pattern: "HttpResponseServerError($X, ...)"
+              - pattern: "HTMLResponse($X, ...)"
+              - pattern: "HTMLResponse(..., content=$X, ...)"
+              - pattern: "web.Response(..., text=$X, ...)"
+              - pattern: "aiohttp.web.Response(..., text=$X, ...)"
+              - pattern: "$S.write($X)"
+              - pattern: "$S.finish($X)"
+          - pattern-not: "$F(..., content_type=$CT, ...)"
+          - pattern-not: "$F(..., mimetype=$CT, ...)"
+          - focus-metavariable: "$X"
+      - "$model": python/flask-route-return-value-sinks

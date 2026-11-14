@@ -1,0 +1,30 @@
+- patterns:
+    - "$model": common/exec-call
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "execSync($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "execFile($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "execFileSync($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "spawn($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "spawnSync($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "fork($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "shelljs.exec($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "shell.exec($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "shx.exec($X, ...)"
+    - focus-metavariable: "$X"

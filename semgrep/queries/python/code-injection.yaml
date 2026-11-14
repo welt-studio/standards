@@ -1,0 +1,36 @@
+rules:
+  - id: welt-py-code-injection
+    message: "Dado vindo da requisição é executado como código Python (code injection). Não use eval/exec com entrada externa."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      codeql: py/code-injection
+      notes: |-
+        Flask/Werkzeug: atributos do `request` (Flask.qll, Werkzeug.qll).
+        Parâmetros de rota (Flask, FastAPI, Starlette, Bottle...): variáveis da URL e do corpo.
+        Django/DRF: parâmetros da view depois do `request` (vêm da URL).
+        Tornado: argumentos e dados do RequestHandler (Tornado.qll).
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - "$model": python/flask-request-sources
+    pattern-sanitizers:
+      - "$model": python/int-sanitizer
+      - pattern: "ast.literal_eval(...)"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "eval($X, ...)"
+              - "$model": common/exec-call
+              - pattern: "compile($X, ...)"
+              - pattern: "execfile($X, ...)"
+              - pattern: "builtins.eval($X, ...)"
+              - pattern: "builtins.exec($X, ...)"
+              - pattern: "code.InteractiveInterpreter().runsource($X)"
+              - pattern: "$I.runsource($X, ...)"
+          - focus-metavariable: "$X"

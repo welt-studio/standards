@@ -1,0 +1,7 @@
+- pattern-either:
+    - pattern: "request.$M(...)"
+    - pattern: "self.request.$M(...)"
+    - pattern: "await request.$M(...)"
+- metavariable-regex:
+    metavariable: "$M"
+    regex: "^(get_json|get_data|json|form|body|post|text|read|get_full_path|get_host)$"

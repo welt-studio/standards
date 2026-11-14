@@ -1,0 +1,66 @@
+rules:
+  - id: welt-js-cross-window-information-leak
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    mode: taint
+    options:
+      interfile: true
+    message: 'Dado sensível é enviado a outra janela com `postMessage` sem restringir a origem (`"*"`). Informe a origem exata do destinatário no segundo argumento.'
+    metadata:
+      category: security
+      cwe: "CWE-201: Insertion of Sensitive Information Into Sent Data"
+      codeql: js/cross-window-information-leak
+    pattern-sources:
+      - patterns:
+          - pattern: "$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex:
+                "$text": javascript/identifier-name
+          - metavariable-regex:
+              metavariable: "$N"
+              regex:
+                "$text": javascript/sensitive-names
+      - patterns:
+          - pattern: "$O.$N"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex:
+                "$text": javascript/sensitive-names
+      - patterns:
+          - pattern: "$N(...)"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex:
+                "$text": javascript/identifier-name
+          - metavariable-regex:
+              metavariable: "$N"
+              regex:
+                "$text": javascript/sensitive-names
+      - patterns:
+          - pattern: "$O.$N(...)"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex:
+                "$text": javascript/sensitive-names
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$F(...)"
+          - metavariable-regex:
+              metavariable: "$F"
+              regex:
+                "$text": javascript/encoding-function-name-regex
+      - patterns:
+          - pattern: "$O.$F(...)"
+          - metavariable-regex:
+              metavariable: "$F"
+              regex:
+                "$text": javascript/encoding-function-name-regex
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: '$W.postMessage($D, "*", ...)'
+              - pattern: "$W.postMessage($D, '*', ...)"
+          - focus-metavariable: "$D"

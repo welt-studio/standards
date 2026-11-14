@@ -1,0 +1,3 @@
+- patterns:
+    - pattern: "fs.lstat($X, ...)"
+    - focus-metavariable: "$X"

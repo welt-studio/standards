@@ -1,0 +1,55 @@
+# GERADO por `hooks/generate_semgrep.py` a partir de `semgrep/models/` e `semgrep/queries/`.
+# NÃO EDITE: edite o modelo ou a consulta e rode `uv run hooks/generate_semgrep.py`.
+rules:
+  - id: welt-py-weak-cryptographic-algorithm
+    message: "Algoritmo de criptografia quebrado ou fraco (RC4, DES, 3DES, Blowfish, RC2, IDEA, CAST5 ou modo ECB). Use AES com um modo autenticado (GCM) ou ChaCha20-Poly1305."
+    severity: ERROR
+    languages:
+      - python
+    metadata:
+      category: security
+      cwe:
+        - "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      codeql: py/weak-cryptographic-algorithm
+      notes: |-
+        PyCryptodome (Crypto / Cryptodome): cifras fracas.
+        AES em modo ECB.
+        cryptography.hazmat: algoritmos e modo fracos.
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: "$M.new(...)"
+              - pattern: "$P.$M.new(...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(ARC4|ARC2|DES|DES3|Blowfish|CAST|XOR)$"
+      - patterns:
+          - pattern-either:
+              - pattern: "$M.new($K, $M2.MODE_ECB, ...)"
+              - pattern: "$M.new(..., mode=$M2.MODE_ECB, ...)"
+              - pattern: "$M.new($K, MODE_ECB, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(AES|DES|DES3|Blowfish|CAST|ARC2)$"
+      - patterns:
+          - pattern-either:
+              - pattern: "$A.$N(...)"
+              - pattern: "$P.$A.$N(...)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "^algorithms$"
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(ARC4|TripleDES|Blowfish|CAST5|IDEA|SEED)$"
+      - pattern: "modes.ECB()"
+      - pattern: "$P.modes.ECB()"
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: "$X.encrypt(...)"
+              - pattern: "$X.decrypt(...)"
+              - pattern: "$X.update(...)"
+          - focus-metavariable: "$X"
