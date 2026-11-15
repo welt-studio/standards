@@ -1,0 +1,56 @@
+- "patterns":
+    - "pattern-either":
+        - "pattern": "$G.graphql({..., source: $V, ..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ...})"
+        - "pattern": "$G.graphql({..., source: $V, ..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ...})"
+        - "pattern": "$G.graphql({..., source: $V, ..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ...})"
+        - "pattern": "$G.graphql({..., source: $V, ..., rootValue: {..., $K($P, ...) {...}, ...}, ...})"
+        - "pattern": "$G.graphql({..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ..., source: $V, ...})"
+        - "pattern": "$G.graphql({..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ..., source: $V, ...})"
+        - "pattern": "$G.graphql({..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ..., source: $V, ...})"
+        - "pattern": "$G.graphql({..., rootValue: {..., $K($P, ...) {...}, ...}, ..., source: $V, ...})"
+    - "$model": "javascript/graphql-alias-bindings"
+  "from": "$V"
+  "to": "$P"
+  "by-side-effect": true
+- "patterns":
+    - "pattern-either":
+        - "pattern": "$G.graphql({..., variableValues: $V, ..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ...})"
+        - "pattern": "$G.graphql({..., variableValues: $V, ..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ...})"
+        - "pattern": "$G.graphql({..., variableValues: $V, ..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ...})"
+        - "pattern": "$G.graphql({..., variableValues: $V, ..., rootValue: {..., $K($P, ...) {...}, ...}, ...})"
+        - "pattern": "$G.graphql({..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ..., variableValues: $V, ...})"
+        - "pattern": "$G.graphql({..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ..., variableValues: $V, ...})"
+        - "pattern": "$G.graphql({..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ..., variableValues: $V, ...})"
+        - "pattern": "$G.graphql({..., rootValue: {..., $K($P, ...) {...}, ...}, ..., variableValues: $V, ...})"
+    - "$model": "javascript/graphql-alias-bindings"
+  "from": "$V"
+  "to": "$P"
+  "by-side-effect": true
+- "patterns":
+    - "pattern-either":
+        - "pattern": "graphql({..., source: $V, ..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ...})"
+        - "pattern": "graphql({..., source: $V, ..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ...})"
+        - "pattern": "graphql({..., source: $V, ..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ...})"
+        - "pattern": "graphql({..., source: $V, ..., rootValue: {..., $K($P, ...) {...}, ...}, ...})"
+        - "pattern": "graphql({..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ..., source: $V, ...})"
+        - "pattern": "graphql({..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ..., source: $V, ...})"
+        - "pattern": "graphql({..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ..., source: $V, ...})"
+        - "pattern": "graphql({..., rootValue: {..., $K($P, ...) {...}, ...}, ..., source: $V, ...})"
+    - "$model": javascript/graphql-named-import-bindings
+  "from": "$V"
+  "to": "$P"
+  "by-side-effect": true
+- "patterns":
+    - "pattern-either":
+        - "pattern": "graphql({..., variableValues: $V, ..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ...})"
+        - "pattern": "graphql({..., variableValues: $V, ..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ...})"
+        - "pattern": "graphql({..., variableValues: $V, ..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ...})"
+        - "pattern": "graphql({..., variableValues: $V, ..., rootValue: {..., $K($P, ...) {...}, ...}, ...})"
+        - "pattern": "graphql({..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ..., variableValues: $V, ...})"
+        - "pattern": "graphql({..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ..., variableValues: $V, ...})"
+        - "pattern": "graphql({..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ..., variableValues: $V, ...})"
+        - "pattern": "graphql({..., rootValue: {..., $K($P, ...) {...}, ...}, ..., variableValues: $V, ...})"
+    - "$model": javascript/graphql-named-import-bindings
+  "from": "$V"
+  "to": "$P"
+  "by-side-effect": true

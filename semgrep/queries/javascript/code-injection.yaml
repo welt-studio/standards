@@ -11,19 +11,15 @@ rules:
       codeql: js/code-injection
     mode: taint
     pattern-sources:
-      - "$model": javascript/express-request-sources-signed-cookies
-      - "$model": javascript/nextjs-server-side-sources
+      - "$model": javascript/http-request-sources
       - "$model": javascript/location-hash
       - "$model": javascript/location-search
-      - "$model": javascript/location-href-and-pathname-sources
       - "$model": javascript/window-location-hash
       - "$model": javascript/window-location-search
       - "$model": javascript/window-location-href
-      - "$model": javascript/window-location-pathname-source
       - "$model": javascript/document-location-hash
       - "$model": javascript/document-location-search
       - "$model": javascript/document-location-href
-      - "$model": javascript/document-location-pathname-source
       - "$model": javascript/document-url-sources
       - "$model": javascript/document-base-uri-source
       - "$model": javascript/document-referrer
@@ -37,15 +33,21 @@ rules:
     pattern-propagators:
       - "$model": javascript/commander-propagators
       - "$model": javascript/promise-then-propagators
+      - "$model": javascript/graphql-root-value-propagators
     pattern-sinks:
       - patterns:
           - pattern: "eval($X)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "new Function(..., $X)"
+          - pattern: "new Function(..., $X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "Function(..., $X)"
+          - pattern: "Function(..., $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "execScript($X, ...)"
+              - pattern: "execCommand($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "setTimeout($X, ...)"
@@ -75,40 +77,38 @@ rules:
           - pattern: "vm.Script($X)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$VM.runInNewContext($X, ...)"
+          - pattern: "new vm.SourceTextModule($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$VM.runInThisContext($X, ...)"
+          - pattern-either:
+              - pattern: "$E.$M($X, ...)"
+              - pattern: "new $E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("node:vm");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "node:vm";
+                  ...
+              - pattern-inside: |
+                  import $E from "node:vm";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:Script|SourceTextModule|compileFunction|runInContext|runInNewContext|runInThisContext)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$VM.runInContext($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$VM.Script($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new $VM.Script($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$.globalEval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "jQuery.globalEval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$eval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$evalAsync($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$apply($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$watch($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$applyAsync($X)"
+          - pattern: "$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "node:vm";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("node:vm");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:Script|SourceTextModule|compileFunction|runInContext|runInNewContext|runInThisContext)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$parse($X)"
@@ -118,9 +118,6 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$interpolate($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$WINDOW.eval($X)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "window.eval($X)"
@@ -133,30 +130,6 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "global.eval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$W.injectJavaScript($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$W.executeJavaScript($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$W.evaluateJavaScript($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$PAGE.evaluate($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$PAGE.evaluateOnNewDocument($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$PAGE.addScriptTag({..., content: $X, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new Function($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "Function($X)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "pug.compile($X, ...)"
@@ -178,9 +151,6 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "ejs.render($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "ejs.compile($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "nunjucks.renderString($X, ...)"
@@ -220,46 +190,70 @@ rules:
           - pattern: "eta.render($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "eta.compile($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
           - pattern: "squirrelly.render($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "webix.ui($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "webix.ui({..., template: $X, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new Vue({..., template: $X, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "Vue.compile($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "require('safer-eval')($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "saferEval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "safeEval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$VM2.run($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new VM().run($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new NodeVM().run($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new vm2.VM().run($X)"
+          - pattern-either:
+              - pattern: "webix.exec($X)"
+              - pattern: "webix.ui({..., template: $X, ...})"
+              - pattern: "webix.ui({..., template: function (...) { ...; return $X; } , ...})"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "executeJavaScript($X)"
+          - focus-metavariable: "$X"
+      # Módulos de template e de serialização que executam o texto recebido.
+      - patterns:
+          - pattern: "$E.unserialize($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("node-serialize");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "node-serialize";
+                  ...
+              - pattern-inside: |
+                  import $E from "node-serialize";
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "unserialize($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., unserialize, ...} from "node-serialize";
+                  ...
+              - pattern-inside: |
+                  const {..., unserialize, ...} = require("node-serialize");
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.render($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("whiskers");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "whiskers";
+                  ...
+              - pattern-inside: |
+                  import $E from "whiskers";
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "render($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., render, ...} from "whiskers";
+                  ...
+              - pattern-inside: |
+                  const {..., render, ...} = require("whiskers");
+                  ...
+          - focus-metavariable: "$X"
+      # O corpo de um `<script>` criado com `document.createElement("script")`.
+      - patterns:
+          - pattern: "$S.textContent = $X"
+          - pattern-inside: |
+              $S = document.createElement("script");
+              ...
           - focus-metavariable: "$X"
       # Operador de código de uma consulta do MongoDB (`$where` roda JavaScript no servidor).
       - patterns:
@@ -267,10 +261,28 @@ rules:
           - focus-metavariable: "$X"
       # Expressões do AngularJS que o serviço interpreta como código.
       - patterns:
+          - pattern: "$filter('orderBy')($ARR, $X, ...)"
+          - focus-metavariable: "$X"
+      # Os métodos do `$scope`/`$rootScope` que interpretam o argumento como expressão (o serviço
+      # que o AngularJS injeta pelo nome do parâmetro), direto ou por uma variável local.
+      - patterns:
           - pattern-either:
-              - pattern: "$SCOPE.$watchCollection($X, ...)"
-              - pattern: "$SCOPE.$watchGroup($X, ...)"
-              - pattern: "$filter('orderBy')($ARR, $X, ...)"
+              - patterns:
+                  - pattern: "$SCOPE.$M($X, ...)"
+                  - metavariable-regex:
+                      metavariable: "$SCOPE"
+                      regex: "^\\$(?:scope|rootScope)$"
+              - patterns:
+                  - pattern: "$ALIAS.$M($X, ...)"
+                  - pattern-inside: |
+                      $ALIAS = $SC;
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$SC"
+                      regex: "^\\$(?:scope|rootScope)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^\\$(?:apply|applyAsync|eval|evalAsync|watch|watchCollection|watchGroup)$"
           - focus-metavariable: "$X"
       # O serviço do AngularJS guardado em uma variável local antes da chamada.
       - patterns:
@@ -306,7 +318,7 @@ rules:
           - metavariable-regex:
               metavariable: "$M"
               regex:
-                "$text": javascript/child-process-argument-list-method-regex
+                "$text": javascript/child-process-command-method-regex
           - focus-metavariable: "$X"
       # O terminal do `node-pty` executa o que se escreve nele.
       - patterns:
@@ -370,6 +382,20 @@ rules:
                   const {..., WebView, ...} = require("react-native");
                   ...
           - focus-metavariable: "$X"
+      # `injectJavaScript` chamado no elemento `<WebView />` guardado em uma variável.
+      - patterns:
+          - pattern: "$W.injectJavaScript($X)"
+          - pattern-inside: |
+              $W = <WebView ... />;
+              ...
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., WebView, ...} from "react-native";
+                  ...
+              - pattern-inside: |
+                  const {..., WebView, ...} = require("react-native");
+                  ...
+          - focus-metavariable: "$X"
       # Corpo de um elemento `<script>` em JSX.
       - patterns:
           - pattern: "<script ...>{$X}</script>"
@@ -396,7 +422,6 @@ rules:
       - pattern: "+$X"
       - "$model": javascript/json-stringify-x-sanitizer
       - "$model": javascript/x-length
-      - "$model": javascript/encode-uri-component-x-sanitizer
       - "$model": javascript/boolean-x-sanitizer
     options:
       interfile: true

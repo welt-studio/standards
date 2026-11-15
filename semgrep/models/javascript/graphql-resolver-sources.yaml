@@ -1,25 +1,26 @@
-- patterns:
-    - pattern-either:
-        - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
-        - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
-        - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
-        - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
-    - focus-metavariable: "$ARGS"
-- patterns:
-    - pattern-either:
-        - pattern: "{..., $K: ($ARGS, ...) => {...}, ...}"
-        - pattern: "{..., $K: async ($ARGS, ...) => {...}, ...}"
-        - pattern: "{..., $K: function ($ARGS, ...) {...}, ...}"
-        - pattern: "{..., $K($ARGS, ...) {...}, ...}"
-        - pattern: "{..., async $K($ARGS, ...) {...}, ...}"
-    - pattern-inside: "$ROOT = {...}"
-    - pattern-either:
-        - pattern-inside: |
-            $ROOT = {...};
+- "patterns":
+    - "pattern-either":
+        - "pattern": "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+        - "pattern": "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+        - "pattern": "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+        - "pattern": "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+        - "pattern": "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+        - "pattern": "new $G.GraphQLObjectType({..., fields: {..., $F: {..., async resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+    - "$model": "javascript/graphql-alias-bindings"
+    - "focus-metavariable": "$ARGS"
+- "patterns":
+    - "pattern-either":
+        - "pattern": "new GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+        - "pattern": "new GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+        - "pattern": "new GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+        - "pattern": "new GraphQLObjectType({..., fields: {..., $F: {..., resolve: async function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+        - "pattern": "new GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+        - "pattern": "new GraphQLObjectType({..., fields: {..., $F: {..., async resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+    - "pattern-either":
+        - "pattern-inside": |
+            import {..., GraphQLObjectType, ...} from "graphql";
             ...
-            <... graphql.graphql({..., rootValue: $ROOT, ...}) ...>;
-        - pattern-inside: |
-            $ROOT = {...};
+        - "pattern-inside": |
+            const {..., GraphQLObjectType, ...} = require("graphql");
             ...
-            <... graphql.graphql($SCHEMA, $SOURCE, $ROOT, ...) ...>;
-    - focus-metavariable: "$ARGS"
+    - "focus-metavariable": "$ARGS"

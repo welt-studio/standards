@@ -1,5 +1,4 @@
-- pattern: "$D.sanitize($X, ...)"
-- pattern: "$E.text($X)"
+# O CodeQL não leva o dado por `createTextNode` (o resultado é um nó, não uma string), e o Semgrep
+# leva, então o nó de texto limpa o valor.
 - pattern: "document.createTextNode($X)"
-- pattern: "$T.sanitizeHtml($X)"
 - pattern: '$X.replace(/[<>&"'']/g, ...)'

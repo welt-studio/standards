@@ -13,7 +13,7 @@ rules:
       cwe: "CWE-611: Improper Restriction of XML External Entity Reference"
       codeql: js/xxe
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-or-context
+      - "$model": javascript/http-request-sources-cookies
       - patterns:
           - "$model": javascript/req-files
           - metavariable-regex:
@@ -23,11 +23,9 @@ rules:
       - "$model": javascript/document-location-hash
       - "$model": javascript/document-location-search
       - "$model": javascript/document-location-href
-      - "$model": javascript/document-location-pathname-source
       - "$model": javascript/window-location-hash
       - "$model": javascript/window-location-search
       - "$model": javascript/window-location-href
-      - "$model": javascript/window-location-pathname-source
       - "$model": javascript/location-hash
       - "$model": javascript/location-search
       - "$model": javascript/location-href-and-pathname-sources

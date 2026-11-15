@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.ensureDir($X, ...)"
-    - focus-metavariable: "$X"

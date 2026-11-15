@@ -190,6 +190,7 @@
   },
   "js/client-side-unvalidated-url-redirection": {
     "missing": [
+      "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst.js:23",
       "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst13.js:50",
       "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst13.js:53",
       "javascript/query-tests/Security/CWE-601/ClientSideUrlRedirect/tst13.js:67",
@@ -224,6 +225,8 @@
       "javascript/query-tests/Security/CWE-094/CodeInjection/fastify.js:71": "field-across-framework-hooks",
       "javascript/query-tests/Security/CWE-094/CodeInjection/fastify.js:84": "field-across-framework-hooks",
       "javascript/query-tests/Security/CWE-094/CodeInjection/fastify.js:99": "field-across-framework-hooks",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/graph-ql.js:20": "graphql-root-value-by-variable",
+      "javascript/query-tests/Security/CWE-094/CodeInjection/graph-ql.js:39": "graphql-root-value-by-variable",
       "javascript/query-tests/Security/CWE-094/CodeInjection/webix/webix.html:3": "html-embedded-javascript",
       "javascript/query-tests/Security/CWE-094/CodeInjection/webix/webix.html:4": "html-embedded-javascript",
       "javascript/query-tests/Security/CWE-094/CodeInjection/webix/webix.html:5": "html-embedded-javascript"
@@ -231,6 +234,7 @@
   },
   "js/command-line-injection": {
     "limited": {
+      "javascript/query-tests/Security/CWE-078/CommandInjection/child_process-test.js:67": "index-write-labels",
       "javascript/query-tests/Security/CWE-078/CommandInjection/command-line-libs.js:21": "callback-registered-before-data",
       "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:83": "higher-order-wrapper-call",
       "javascript/query-tests/Security/CWE-078/CommandInjection/promisification.js:9": "higher-order-wrapper-call"
@@ -289,8 +293,7 @@
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:94",
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/typed.ts:18",
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/typed.ts:8"
-    ],
-    "overfit": ["escapeHTML", "escapeHtml", "striptags"]
+    ]
   },
   "js/identity-replacement": {
     "missing": [
@@ -401,9 +404,18 @@
     "overfit": ["cookieParser", "csrfProtection", "lusca"]
   },
   "js/path-injection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:16",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:17",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/sharedlib-repro.js:22"
+    ],
     "limited": {
+      "javascript/query-tests/Security/CWE-022/TaintedPath/handlebars.js:11": "template-helper-by-name",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/handlebars.js:15": "template-helper-by-name",
       "javascript/query-tests/Security/CWE-022/TaintedPath/normalizedPaths.js:222": "taint-state-after-decode",
-      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-access-paths.js:26": "taint-field-after-conditional-write"
+      "javascript/query-tests/Security/CWE-022/TaintedPath/other-fs-libraries.js:19": "cross-file-function-returns-module",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-access-paths.js:26": "taint-field-after-conditional-write",
+      "javascript/query-tests/Security/CWE-022/TaintedPath/views.js:1": "cross-file-route-handler"
     },
     "accepted": [
       "javascript/query-tests/Security/CWE-022/TaintedPath/tainted-array-steps.js:10",
@@ -711,26 +723,28 @@
       "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXss.js:109",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXss.js:64",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXss.js:74",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/live-server.js:12",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/live-server.js:6",
+      "javascript/query-tests/Security/CWE-079/ReflectedXss/pages/api/myapi.js:2",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:10",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:19",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:28",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:37",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/promises.js:6"
     ],
+    "spurious": ["javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssGood3.js:139"],
     "extra": [
       "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXss.js:69",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssContentTypes.js:53",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssContentTypes.js:76",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssContentTypes.js:78",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssGood.js:40",
-      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssGood.js:85",
-      "javascript/query-tests/Security/CWE-079/ReflectedXss/ReflectedXssGood3.js:137",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/cookies.js:9",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:51",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/partial.js:52",
       "javascript/query-tests/Security/CWE-079/ReflectedXss/tst2.js:23"
     ],
-    "overfit": ["escapeHTML", "escapeHtml", "serializeJavaScript", "striptags"]
+    "overfit": ["serializeJavaScript"]
   },
   "js/regex-injection": {
     "missing": [
@@ -749,14 +763,16 @@
   },
   "js/request-forgery": {
     "missing": [
-      "javascript/query-tests/Security/CWE-918/Request/app/api/proxy/route.serverSide.ts:3",
-      "javascript/query-tests/Security/CWE-918/Request/app/api/proxy/route2.serverSide.ts:5",
-      "javascript/query-tests/Security/CWE-918/Request/middleware.ts:12",
-      "javascript/query-tests/Security/CWE-918/Request/middleware.ts:7",
       "javascript/query-tests/Security/CWE-918/apollo.serverSide.ts:18",
       "javascript/query-tests/Security/CWE-918/apollo.serverSide.ts:8",
       "javascript/query-tests/Security/CWE-918/axiosInterceptors.serverSide.js:11",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:109",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:117",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:141",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:142",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:143",
       "javascript/query-tests/Security/CWE-918/serverSide.js:145",
+      "javascript/query-tests/Security/CWE-918/serverSide.js:147",
       "javascript/query-tests/Security/CWE-918/serverSide.js:151",
       "javascript/query-tests/Security/CWE-918/serverSide2.js:17",
       "javascript/query-tests/Security/CWE-918/serverSide2.js:20",
@@ -895,11 +911,17 @@
     "overfit": ["execSh"]
   },
   "js/sql-injection": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-089/untyped/pg-promise-types.ts:8",
+      "javascript/query-tests/Security/CWE-089/untyped/tst3.js:9"
+    ],
     "limited": {
       "javascript/query-tests/Security/CWE-089/untyped/json-schema-validator.js:55": "guard-else-branch",
       "javascript/query-tests/Security/CWE-089/untyped/marsdb-flow-to.js:13": "cross-file-module-property",
       "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:122": "guard-else-branch",
-      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:97": "labeled-receiver-object-argument"
+      "javascript/query-tests/Security/CWE-089/untyped/mongoose.js:97": "labeled-receiver-object-argument",
+      "javascript/query-tests/Security/CWE-089/untyped/mongooseModelClient.js:11": "cross-file-named-export",
+      "javascript/query-tests/Security/CWE-089/untyped/mongooseModelClient.js:12": "cross-file-named-export"
     },
     "threat_model": {
       "javascript/query-tests/Security/CWE-089/local-threat-source/test.js:7": "local"
@@ -914,8 +936,7 @@
     "missing": ["javascript/query-tests/Security/CWE-209/tst.js:17"]
   },
   "js/stored-xss": {
-    "missing": ["javascript/query-tests/Security/CWE-079/StoredXss/xss-through-torrent.js:7"],
-    "overfit": ["escapeHTML", "escapeHtml", "striptags"]
+    "missing": ["javascript/query-tests/Security/CWE-079/StoredXss/xss-through-torrent.js:7"]
   },
   "js/system-prompt-injection": {
     "missing": [
@@ -961,7 +982,10 @@
     ]
   },
   "js/template-object-injection": {
-    "missing": ["javascript/query-tests/Security/CWE-073/tst.js:29"],
+    "missing": [
+      "javascript/query-tests/Security/CWE-073/routes.js:2",
+      "javascript/query-tests/Security/CWE-073/tst.js:29"
+    ],
     "extra": [
       "javascript/query-tests/Security/CWE-073/tst2.js:13",
       "javascript/query-tests/Security/CWE-073/tst2.js:20"
@@ -1032,10 +1056,20 @@
     "extra": ["javascript/query-tests/Security/CWE-776/libxml.noent.js:5"]
   },
   "js/xss": {
+    "missing": [
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/d3.js:14",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/d3.js:21",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-router.js:33"
+    ],
     "limited": {
       "javascript/query-tests/Security/CWE-079/DomBasedXss/angular-tempate-url.js:9": "cookie-across-handlers",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/pages/[id].jsx:13": "next-props-across-functions",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/pages/[id].jsx:16": "next-props-across-functions",
       "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-state.js:17": "react-setstate-lazy-return",
       "javascript/query-tests/Security/CWE-079/DomBasedXss/react-use-state.js:23": "react-setstate-callback-order",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/stored-xss.js:12": "web-storage-key-flow",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/stored-xss.js:5": "web-storage-key-flow",
+      "javascript/query-tests/Security/CWE-079/DomBasedXss/stored-xss.js:8": "web-storage-key-flow",
       "javascript/query-tests/Security/CWE-079/DomBasedXss/tooltip.jsx:18": "react-jsx-prop-function",
       "javascript/query-tests/Security/CWE-079/DomBasedXss/trusted-types-lib.js:2": "cross-file-callback-location",
       "javascript/query-tests/Security/CWE-079/DomBasedXss/tst.js:135": "angularjs-di-by-name",
@@ -1121,8 +1155,7 @@
       "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:66",
       "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:68",
       "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:84"
-    ],
-    "overfit": ["escapeHTML", "escapeHtml", "striptags"]
+    ]
   },
   "js/xss-through-exception": {
     "missing": [
@@ -1142,8 +1175,7 @@
       "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:29",
       "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:64",
       "javascript/query-tests/Security/CWE-079/ExceptionXss/exception-xss.js:70"
-    ],
-    "overfit": ["escapeHTML", "escapeHtml", "striptags"]
+    ]
   },
   "js/zipslip": {
     "missing": ["javascript/query-tests/Security/CWE-022/ZipSlip/TarSlipBad.js:9"],

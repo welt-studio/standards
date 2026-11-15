@@ -17,7 +17,7 @@ rules:
       - pattern: '"*"'
       - pattern: "true"
       - pattern: "null"
-      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/http-request-sources-cookies
       - "$model": javascript/dom-xss-sources
     pattern-sinks:
       - patterns:

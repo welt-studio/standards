@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.cp($X, ...)"
-    - focus-metavariable: "$X"

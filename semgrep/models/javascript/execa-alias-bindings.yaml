@@ -1,0 +1,10 @@
+- "pattern-either":
+    - "pattern-inside": |
+        $E = require("execa");
+        ...
+    - "pattern-inside": |
+        import * as $E from "execa";
+        ...
+    - "pattern-inside": |
+        import $E from "execa";
+        ...

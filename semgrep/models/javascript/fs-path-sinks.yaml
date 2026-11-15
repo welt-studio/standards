@@ -1,0 +1,277 @@
+# Sumidouros de caminho dos módulos fs, como o `NodeJSFileSystemAccess` do CodeQL: o primeiro
+# argumento (e o segundo, nos métodos de origem e destino) de um método do módulo, ligado pelo
+# `require` ou pelo `import` (fs, fs-extra, graceful-fs, mz/fs, original-fs e fs/promises, com ou
+# sem `node:`), com ou sem `util.promisify`. Nenhuma forma casa pelo nome da variável que guarda o
+# módulo.
+
+# O método do módulo: `fs.readFile(x)`, `fsExtra.readFile(x)`, `promises.readFile(x)`.
+- patterns:
+    - pattern: "$FS.$M($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: &path_methods "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+    - pattern-either:
+        - "$model": javascript/fs-module-receiver
+        - "$model": javascript/fs-promises-receiver
+- patterns:
+    - pattern: "$FS.$M($Y, $X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: &second_path_methods "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+    - pattern-either:
+        - "$model": javascript/fs-module-receiver
+        - "$model": javascript/fs-promises-receiver
+
+# `fs.promises.readFile(x)`.
+- patterns:
+    - pattern: "$FS.promises.$M($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+- patterns:
+    - pattern: "$FS.promises.$M($Y, $X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *second_path_methods
+    - "$model": javascript/fs-module-receiver
+
+# `import {promises} from "fs"` e depois `promises.readFile(x)`.
+- patterns:
+    - pattern: "promises.$M($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - pattern-either:
+        - pattern-inside: |
+            import {..., promises, ...} from "$MOD"; ...
+        - pattern-inside: |
+            const {..., promises, ...} = require("$MOD"); ...
+    - metavariable-regex:
+        metavariable: "$MOD"
+        regex:
+          "$text": javascript/fs-core-module-specifier-regex
+- patterns:
+    - pattern: "promises.$M($Y, $X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *second_path_methods
+    - pattern-either:
+        - pattern-inside: |
+            import {..., promises, ...} from "$MOD"; ...
+        - pattern-inside: |
+            const {..., promises, ...} = require("$MOD"); ...
+    - metavariable-regex:
+        metavariable: "$MOD"
+        regex:
+          "$text": javascript/fs-core-module-specifier-regex
+
+# O método importado pelo nome: `import {readFile} from "fs"`, `const {readFile} = require("fs")`.
+- patterns:
+    - pattern: "$M($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - pattern-either:
+        - pattern-inside: |
+            import {..., $M, ...} from "$MOD"; ...
+        - pattern-inside: |
+            const {..., $M, ...} = require("$MOD"); ...
+    - metavariable-regex:
+        metavariable: "$MOD"
+        regex:
+          "$text": javascript/fs-module-specifier-regex
+- patterns:
+    - pattern: "$M($Y, $X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *second_path_methods
+    - pattern-either:
+        - pattern-inside: |
+            import {..., $M, ...} from "$MOD"; ...
+        - pattern-inside: |
+            const {..., $M, ...} = require("$MOD"); ...
+    - metavariable-regex:
+        metavariable: "$MOD"
+        regex:
+          "$text": javascript/fs-module-specifier-regex
+
+# O método importado com outro nome: `import {readFile as read} from "fs"`.
+- patterns:
+    - pattern: "$A($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - pattern-either:
+        - pattern-inside: |
+            import {..., $M as $A, ...} from "$MOD"; ...
+        - pattern-inside: |
+            const {..., $M: $A, ...} = require("$MOD"); ...
+    - metavariable-regex:
+        metavariable: "$MOD"
+        regex:
+          "$text": javascript/fs-module-specifier-regex
+- patterns:
+    - pattern: "$A($Y, $X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *second_path_methods
+    - pattern-either:
+        - pattern-inside: |
+            import {..., $M as $A, ...} from "$MOD"; ...
+        - pattern-inside: |
+            const {..., $M: $A, ...} = require("$MOD"); ...
+    - metavariable-regex:
+        metavariable: "$MOD"
+        regex:
+          "$text": javascript/fs-module-specifier-regex
+
+# O nome do módulo vem de uma expressão (`require(process.versions.electron ? "original-fs" : "fs")`):
+# o `mayHaveStringValue` do CodeQL, aqui o argumento do `require` que cita um módulo fs.
+- patterns:
+    - pattern: "$V.$M($X, ...)"
+    - pattern-inside: |
+        $V = require($ARG);
+        ...
+    - metavariable-regex:
+        metavariable: "$ARG"
+        regex: "(?s).*[\\\"'](?:node:)?(?:fs|original-fs|graceful-fs|fs-extra|fs/promises)[\\\"']"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - focus-metavariable: "$X"
+
+# O método promisificado e chamado na hora: `util.promisify(fs.readFile)(x)`, `pify(fs.readFile)(x)`,
+# `pify(fs).readFile(x)`, `bluebird.promisifyAll(fs).readFile(x)`, e o `require` no lugar da
+# variável. As bibliotecas são as do `Promisify::PromisifyCall` e `PromisifyAllCall` do CodeQL.
+- patterns:
+    - pattern: "$U.promisify($FS.$M)($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+    - pattern-either:
+        - pattern-inside: |
+            $U = require("$PM"); ...
+        - pattern-inside: |
+            import $U from "$PM"; ...
+        - pattern-inside: |
+            import * as $U from "$PM"; ...
+    - metavariable-regex:
+        metavariable: "$PM"
+        regex: &promisify_member_modules "^(?:node:)?(?:util|bluebird)$"
+- patterns:
+    - pattern: 'require("$PM").promisify($FS.$M)($X, ...)'
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+    - metavariable-regex:
+        metavariable: "$PM"
+        regex: *promisify_member_modules
+- patterns:
+    - pattern: "$P($FS.$M)($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+    - pattern-either:
+        - pattern-inside: |
+            $P = require("$PM"); ...
+        - pattern-inside: |
+            import $P from "$PM"; ...
+    - metavariable-regex:
+        metavariable: "$PM"
+        regex: &promisify_function_modules "^(?:pify|util\\.promisify|util-promisify|thenify|@gar/promisify|es6-promisify)$"
+- patterns:
+    - pattern: 'require("$PM")($FS.$M)($X, ...)'
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+    - metavariable-regex:
+        metavariable: "$PM"
+        regex: *promisify_function_modules
+- patterns:
+    - pattern: "$P($FS).$M($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+    - pattern-either:
+        - pattern-inside: |
+            $P = require("$PM"); ...
+        - pattern-inside: |
+            import $P from "$PM"; ...
+    - metavariable-regex:
+        metavariable: "$PM"
+        regex: &promisify_all_function_modules "^(?:util-promisifyall|pify|thenify-all|@gar/promisify|util\\.promisify-all)$"
+- patterns:
+    - pattern: 'require("$PM")($FS).$M($X, ...)'
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+    - metavariable-regex:
+        metavariable: "$PM"
+        regex: *promisify_all_function_modules
+- patterns:
+    - pattern: "$U.promisifyAll($FS).$M($X, ...)"
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+    - pattern-either:
+        - pattern-inside: |
+            $U = require("$PM"); ...
+        - pattern-inside: |
+            import $U from "$PM"; ...
+    - metavariable-regex:
+        metavariable: "$PM"
+        regex: &promisify_all_member_modules "^(?:bluebird|@google-cloud/promisify|es6-promisify)$"
+- patterns:
+    - pattern: 'require("$PM").promisifyAll($FS).$M($X, ...)'
+    - focus-metavariable: "$X"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+    - metavariable-regex:
+        metavariable: "$PM"
+        regex: *promisify_all_member_modules
+
+# A função promisificada guardada em uma variável: `const read = util.promisify(fs.readFile)`.
+- patterns:
+    - pattern: "$R($X, ...)"
+    - focus-metavariable: "$X"
+    - pattern-inside: |
+        $R = $U.promisify($FS.$M); ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: *path_methods
+    - "$model": javascript/fs-module-receiver
+    - pattern-either:
+        - pattern-inside: |
+            $U = require("$PM"); ...
+        - pattern-inside: |
+            import $U from "$PM"; ...
+    - metavariable-regex:
+        metavariable: "$PM"
+        regex: *promisify_member_modules

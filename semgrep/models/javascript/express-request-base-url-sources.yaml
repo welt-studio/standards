@@ -1,2 +1,0 @@
-- pattern: "$REQ.baseUrl"
-- pattern: "$REQ.subdomains"

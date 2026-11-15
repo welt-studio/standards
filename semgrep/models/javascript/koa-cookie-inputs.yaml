@@ -1,0 +1,2 @@
+# O cookie do Koa que o `Koa.qll` do CodeQL modela: `ctx.cookies.get(nome)`, sobre o contexto `$CTX`.
+- pattern: "$CTX.cookies.get(...)"

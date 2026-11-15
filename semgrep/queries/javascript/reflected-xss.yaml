@@ -11,8 +11,7 @@ rules:
       codeql: js/reflected-xss
     mode: taint
     pattern-sources:
-      - "$model": javascript/express-request-sources
-      - "$model": javascript/nextjs-server-side-sources
+      - "$model": javascript/http-request-sources
     pattern-sinks:
       - patterns:
           - pattern-either:
@@ -30,10 +29,7 @@ rules:
           - pattern-either:
               - pattern: "$CTX.body = $X"
               - pattern: "$CTX.response.body = $X"
-          - metavariable-regex:
-              metavariable: "$CTX"
-              regex:
-                "$text": javascript/koa-context-variable-name-regex
+          - "$model": javascript/koa-context-parameter
           - focus-metavariable: "$X"
       - patterns:
           - pattern: 'new Response($X, {headers: {"$K": "$CT"}})'
@@ -191,10 +187,8 @@ rules:
       - "$model": javascript/escape-function-sanitizers
       - "$model": javascript/encode-uri-component-x-sanitizer
       - "$model": javascript/encode-uri-x-sanitizer
-      - "$model": javascript/sanitize-x-sanitizer
       - "$model": javascript/html-sanitizer-library-sanitizers
       - "$model": javascript/dom-purify-sanitize-x-sanitizer
-      - "$model": javascript/validator-escape-sanitizers
       - "$model": javascript/parse-int-x-sanitizer
       - "$model": javascript/parse-float-x-sanitizer
       - "$model": javascript/number-x-sanitizer

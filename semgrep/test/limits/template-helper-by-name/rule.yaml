@@ -1,0 +1,21 @@
+rules:
+  - id: limit-template-helper-by-name
+    languages:
+      - javascript
+    severity: ERROR
+    message: "Caminho lido com o dado de uma requisição que o modelo entrega ao helper."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern: "$REQ.params.$P"
+          - pattern-inside: "$APP.get(..., function ($REQ, $RES) {...})"
+    pattern-propagators:
+      - pattern: "$T({..., $K: $V, ...})"
+        from: "$V"
+        to: "$T"
+    pattern-sinks:
+      - patterns:
+          - pattern: "fs.readFileSync($X)"
+          - focus-metavariable: "$X"

@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.mkdtemp($X, ...)"
-    - focus-metavariable: "$X"

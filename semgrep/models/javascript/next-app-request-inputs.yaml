@@ -1,0 +1,13 @@
+# As entradas da requisição que o `NextAppRequestSource` do `Next.qll` do CodeQL modela, sobre o `$REQ`
+# de um tratador do App Router: `json()`, `formData()`, `blob()`, `arrayBuffer()`, `text()`, `body`,
+# `url`, `nextUrl`, `nextUrl.searchParams.get(nome)` e `headers`.
+- pattern: "$REQ.json()"
+- pattern: "$REQ.formData()"
+- pattern: "$REQ.blob()"
+- pattern: "$REQ.arrayBuffer()"
+- pattern: "$REQ.text()"
+- "$model": javascript/req-body
+- "$model": javascript/req-url
+- pattern: "$REQ.nextUrl"
+- pattern: "$REQ.nextUrl.searchParams.get(...)"
+- pattern: "$REQ.headers"

@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.rmdir($X, ...)"
-    - focus-metavariable: "$X"

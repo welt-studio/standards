@@ -1,16 +1,35 @@
-- patterns:
-    - pattern: "$E.$M($X, ...)"
-    - pattern-either:
-        - pattern-inside: |
+- "patterns":
+    - "pattern": "$E.$M($X, ...)"
+    - "pattern-either":
+        - "pattern-inside": |
             $E = require("@actions/exec");
             ...
-        - pattern-inside: |
+        - "pattern-inside": |
             import * as $E from "@actions/exec";
             ...
-        - pattern-inside: |
+        - "pattern-inside": |
             import $E from "@actions/exec";
             ...
-    - metavariable-regex:
-        metavariable: "$M"
-        regex: "^(?:exec|getExecOutput)$"
-    - focus-metavariable: "$X"
+    - "metavariable-regex":
+        "metavariable": "$M"
+        "regex": "^(?:exec|getExecOutput)$"
+    - "focus-metavariable": "$X"
+- "patterns":
+    - "pattern": 'require("@actions/exec").$M($X, ...)'
+    - "metavariable-regex":
+        "metavariable": "$M"
+        "regex": "^(?:exec|getExecOutput)$"
+    - "focus-metavariable": "$X"
+- "patterns":
+    - "pattern": "$M($X, ...)"
+    - "pattern-either":
+        - "pattern-inside": |
+            import {..., $M, ...} from "@actions/exec";
+            ...
+        - "pattern-inside": |
+            const {..., $M, ...} = require("@actions/exec");
+            ...
+    - "metavariable-regex":
+        "metavariable": "$M"
+        "regex": "^(?:exec|getExecOutput)$"
+    - "focus-metavariable": "$X"

@@ -1,0 +1,10 @@
+- "pattern-either":
+    - "pattern-inside": |
+        $V = require("child_process").$M;
+        ...
+    - "pattern-inside": |
+        $V = require("node:child_process").$M;
+        ...
+    - "pattern-inside": |
+        $V = require("mz/child_process").$M;
+        ...

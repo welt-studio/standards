@@ -1,1 +1,12 @@
-- pattern: "striptags($X)"
+# O `striptags` do pacote `striptags`: o CodeQL não o modela, e o dado não passa por chamada de
+# biblioteca sem modelo; o Semgrep passa por qualquer chamada, e este item compensa (o teste
+# `UnsafeHtmlConstruction/main.js:29` não alerta). Só a função importada do pacote, nunca o nome.
+- patterns:
+    - pattern: "$S($X)"
+    - pattern-either:
+        - pattern-inside: |
+            $S = require("striptags");
+            ...
+        - pattern-inside: |
+            import $S from "striptags";
+            ...

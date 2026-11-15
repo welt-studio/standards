@@ -1,7 +1,398 @@
-- pattern: "sanitizeHtml($X, ...)"
-- pattern: "sanitizeHtml($X)"
-- pattern: "xss($X)"
-- pattern: "$L.escape($X)"
-- pattern: "$L.sanitize($X, ...)"
-- pattern: "$L.encode($X, ...)"
-- pattern: "he.escape($X)"
+# `HtmlSanitizerCall` do CodeQL (HtmlSanitizers.qll), amarrado ao módulo pelo `require`/`import`
+# (importação padrão, `* as`, desestruturada com ou sem apelido, e a chamada em linha):
+# ent, entities, escape-goat, he, sanitize-html, sanitizer, validator, xss, xss-filters,
+# lodash/underscore (`escape`) e html-entities. O `DOMPurify.sanitize` e a heurística de nome
+# (`html` mais `saniti|escape|strip`) ficam em modelos próprios.
+- patterns:
+    - pattern: "$V.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $V = require("he");
+            ...
+        - pattern-inside: |
+            import $V from "he";
+            ...
+        - pattern-inside: |
+            import * as $V from "he";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode|escape)$"
+- patterns:
+    - pattern: "$F($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M as $F } from "he";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode|escape)$"
+- patterns:
+    - pattern: "$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M } from "he";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode|escape)$"
+- patterns:
+    - pattern-either:
+        - pattern: 'require("he").$M($X, ...)'
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode|escape)$"
+- patterns:
+    - pattern: "$V.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $V = require("escape-goat");
+            ...
+        - pattern-inside: |
+            import $V from "escape-goat";
+            ...
+        - pattern-inside: |
+            import * as $V from "escape-goat";
+            ...
+        - pattern-inside: |
+            $V = require("validator");
+            ...
+        - pattern-inside: |
+            import $V from "validator";
+            ...
+        - pattern-inside: |
+            import * as $V from "validator";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape)$"
+- patterns:
+    - pattern: "$F($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M as $F } from "escape-goat";
+            ...
+        - pattern-inside: |
+            import { $M as $F } from "validator";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape)$"
+- patterns:
+    - pattern: "$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M } from "escape-goat";
+            ...
+        - pattern-inside: |
+            import { $M } from "validator";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape)$"
+- patterns:
+    - pattern-either:
+        - pattern: 'require("escape-goat").$M($X, ...)'
+        - pattern: 'require("validator").$M($X, ...)'
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape)$"
+- patterns:
+    - pattern: "$V.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $V = require("sanitizer");
+            ...
+        - pattern-inside: |
+            import $V from "sanitizer";
+            ...
+        - pattern-inside: |
+            import * as $V from "sanitizer";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape|sanitize)$"
+- patterns:
+    - pattern: "$F($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M as $F } from "sanitizer";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape|sanitize)$"
+- patterns:
+    - pattern: "$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M } from "sanitizer";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape|sanitize)$"
+- patterns:
+    - pattern-either:
+        - pattern: 'require("sanitizer").$M($X, ...)'
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape|sanitize)$"
+- patterns:
+    - pattern: "$V.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $V = require("ent");
+            ...
+        - pattern-inside: |
+            import $V from "ent";
+            ...
+        - pattern-inside: |
+            import * as $V from "ent";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode)$"
+- patterns:
+    - pattern: "$F($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M as $F } from "ent";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode)$"
+- patterns:
+    - pattern: "$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M } from "ent";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode)$"
+- patterns:
+    - pattern-either:
+        - pattern: 'require("ent").$M($X, ...)'
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode)$"
+- patterns:
+    - pattern: "$V.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $V = require("entities");
+            ...
+        - pattern-inside: |
+            import $V from "entities";
+            ...
+        - pattern-inside: |
+            import * as $V from "entities";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encodeHTML|encodeXML)$"
+- patterns:
+    - pattern: "$F($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M as $F } from "entities";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encodeHTML|encodeXML)$"
+- patterns:
+    - pattern: "$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M } from "entities";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encodeHTML|encodeXML)$"
+- patterns:
+    - pattern-either:
+        - pattern: 'require("entities").$M($X, ...)'
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encodeHTML|encodeXML)$"
+- patterns:
+    - pattern: "$V.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $V = require("xss-filters");
+            ...
+        - pattern-inside: |
+            import $V from "xss-filters";
+            ...
+        - pattern-inside: |
+            import * as $V from "xss-filters";
+            ...
+- patterns:
+    - pattern: "$F($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M as $F } from "xss-filters";
+            ...
+- patterns:
+    - pattern: "$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M } from "xss-filters";
+            ...
+- patterns:
+    - pattern-either:
+        - pattern: 'require("xss-filters").$M($X, ...)'
+- patterns:
+    - pattern: "$V.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $V = require("underscore");
+            ...
+        - pattern-inside: |
+            import $V from "underscore";
+            ...
+        - pattern-inside: |
+            import * as $V from "underscore";
+            ...
+        - pattern-inside: |
+            $V = require("lodash");
+            ...
+        - pattern-inside: |
+            import $V from "lodash";
+            ...
+        - pattern-inside: |
+            import * as $V from "lodash";
+            ...
+        - pattern-inside: |
+            $V = require("lodash-es");
+            ...
+        - pattern-inside: |
+            import $V from "lodash-es";
+            ...
+        - pattern-inside: |
+            import * as $V from "lodash-es";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape)$"
+- patterns:
+    - pattern: "$F($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M as $F } from "underscore";
+            ...
+        - pattern-inside: |
+            import { $M as $F } from "lodash";
+            ...
+        - pattern-inside: |
+            import { $M as $F } from "lodash-es";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape)$"
+- patterns:
+    - pattern: "$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $M } from "underscore";
+            ...
+        - pattern-inside: |
+            import { $M } from "lodash";
+            ...
+        - pattern-inside: |
+            import { $M } from "lodash-es";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape)$"
+- patterns:
+    - pattern-either:
+        - pattern: 'require("underscore").$M($X, ...)'
+        - pattern: 'require("lodash").$M($X, ...)'
+        - pattern: 'require("lodash-es").$M($X, ...)'
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:escape)$"
+- patterns:
+    - pattern: "$F($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $F = require("sanitize-html");
+            ...
+        - pattern-inside: |
+            import $F from "sanitize-html";
+            ...
+        - pattern-inside: |
+            import * as $F from "sanitize-html";
+            ...
+        - pattern-inside: |
+            $F = require("xss");
+            ...
+        - pattern-inside: |
+            import $F from "xss";
+            ...
+        - pattern-inside: |
+            import * as $F from "xss";
+            ...
+        - pattern-inside: |
+            $F = require("lodash/escape");
+            ...
+        - pattern-inside: |
+            import $F from "lodash/escape";
+            ...
+        - pattern-inside: |
+            import * as $F from "lodash/escape";
+            ...
+        - pattern-inside: |
+            $F = require("lodash-es/escape");
+            ...
+        - pattern-inside: |
+            import $F from "lodash-es/escape";
+            ...
+        - pattern-inside: |
+            import * as $F from "lodash-es/escape";
+            ...
+        - pattern-inside: |
+            $F = require("lodash.escape");
+            ...
+        - pattern-inside: |
+            import $F from "lodash.escape";
+            ...
+        - pattern-inside: |
+            import * as $F from "lodash.escape";
+            ...
+- patterns:
+    - pattern-either:
+        - pattern: 'require("sanitize-html")($X, ...)'
+        - pattern: 'require("xss")($X, ...)'
+        - pattern: 'require("lodash/escape")($X, ...)'
+        - pattern: 'require("lodash-es/escape")($X, ...)'
+        - pattern: 'require("lodash.escape")($X, ...)'
+- pattern: "_.escape($X)"
+- patterns:
+    - pattern: "$I.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $I = new $C(...);
+            ...
+    - pattern-either:
+        - pattern-inside: |
+            import { $K as $C } from "html-entities";
+            ...
+        - pattern-inside: |
+            import { $C } from "html-entities";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode|encodeNonUTF)$"
+- patterns:
+    - pattern: "$C.$M($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            import { $K as $C } from "html-entities";
+            ...
+        - pattern-inside: |
+            import { $C } from "html-entities";
+            ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:encode|encodeNonUTF)$"

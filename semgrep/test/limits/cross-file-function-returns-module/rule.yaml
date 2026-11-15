@@ -1,0 +1,22 @@
+rules:
+  - id: limit-cross-file-function-returns-module
+    languages:
+      - javascript
+    severity: ERROR
+    message: "Caminho lido com o dado da requisição."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: "$REQ.query.$K"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$W(...).readFileSync($X)"
+          - pattern-inside: |
+              ...
+              function $W(...) {
+                ...
+                return require($N);
+              }
+              ...
+          - focus-metavariable: "$X"

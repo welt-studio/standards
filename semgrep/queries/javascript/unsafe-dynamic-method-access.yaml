@@ -11,19 +11,16 @@ rules:
       codeql: js/unsafe-dynamic-method-access
     mode: taint
     pattern-sources:
-      - "$model": javascript/express-request-sources-cookies
-      - "$model": javascript/nextjs-server-side-sources
+      - "$model": javascript/http-request-sources-cookies
       - "$model": javascript/location-hash
       - "$model": javascript/location-search
       - "$model": javascript/location-href-and-pathname-sources
       - "$model": javascript/window-location-hash
       - "$model": javascript/window-location-search
       - "$model": javascript/window-location-href
-      - "$model": javascript/window-location-pathname-source
       - "$model": javascript/document-location-hash
       - "$model": javascript/document-location-search
       - "$model": javascript/document-location-href
-      - "$model": javascript/document-location-pathname-source
       - "$model": javascript/document-url-sources
       - "$model": javascript/document-base-uri-source
       - "$model": javascript/document-referrer

@@ -10,6 +10,5 @@
     - "$model": javascript/document-location-href
     - "$model": javascript/document-url-sources
     - "$model": javascript/document-referrer
-    - pattern: document.cookie
     - "$model": javascript/window-name
 - "$model": javascript/message-event-data-sources

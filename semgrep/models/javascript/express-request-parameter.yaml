@@ -1,0 +1,64 @@
+# O parâmetro de requisição (`$REQ`) de um tratador registrado em uma aplicação ou roteador do
+# Express (`$APP`), como o `RouteSetup` e o `RouteHandler` do `Express.qll` do CodeQL. O tratador é a
+# função passada ao método de rota, direto ou pelo nome (`app.get("/", handler)` com a função
+# declarada no mesmo arquivo). A assinatura segue o `ConnectExpressShared`: `(req)`, `(req, res)`,
+# `(req, res, next)` ou `(err, req, res, next)`. Nenhuma forma casa pelo nome do parâmetro.
+- pattern-either:
+    - patterns:
+        - pattern-either:
+            - pattern-inside: "$APP.$M(..., function ($REQ) {...}, ...)"
+            - pattern-inside: "$APP.$M(..., function ($REQ, $RES) {...}, ...)"
+            - pattern-inside: "$APP.$M(..., function ($REQ, $RES, $NEXT) {...}, ...)"
+            - pattern-inside: "$APP.$M(..., function ($ERR, $REQ, $RES, $NEXT) {...}, ...)"
+            - pattern-inside: "$APP.route(...).$M(..., function ($REQ) {...}, ...)"
+            - pattern-inside: "$APP.route(...).$M(..., function ($REQ, $RES) {...}, ...)"
+            - pattern-inside: "$APP.route(...).$M(..., function ($REQ, $RES, $NEXT) {...}, ...)"
+            - pattern-inside: |
+                $APP.$M(..., $H, ...);
+                ...
+                function $H($REQ, ...) {...}
+            - pattern-inside: |
+                function $H($REQ, ...) {...}
+                ...
+                $APP.$M(..., $H, ...);
+            - pattern-inside: |
+                $APP.$M(..., $H, ...);
+                ...
+                $H = function ($REQ, ...) {...};
+            - pattern-inside: |
+                $H = function ($REQ, ...) {...};
+                ...
+                $APP.$M(..., $H, ...);
+        - metavariable-regex:
+            metavariable: "$M"
+            regex:
+              "$text": javascript/express-route-setup-method-regex
+        - "$model": javascript/express-application-binding
+    - patterns:
+        - pattern-either:
+            - pattern-inside: "$E().$M(..., function ($REQ, ...) {...}, ...)"
+            - pattern-inside: "$E.createServer(...).$M(..., function ($REQ, ...) {...}, ...)"
+            - pattern-inside: "$E.Router(...).$M(..., function ($REQ, ...) {...}, ...)"
+        - metavariable-regex:
+            metavariable: "$M"
+            regex:
+              "$text": javascript/express-route-setup-method-regex
+        - "$model": javascript/express-module-binding
+    - patterns:
+        - pattern-either:
+            - pattern-inside: "$APP.$C(...).$M(..., function ($REQ, ...) {...}, ...)"
+            - patterns:
+                - pattern-inside: "$APP.$C(...).$D(...).$M(..., function ($REQ, ...) {...}, ...)"
+                - metavariable-regex:
+                    metavariable: "$D"
+                    regex: &express_app_chain_method "^(?:engine|set|param|enable|disable|on)$"
+        - metavariable-regex:
+            metavariable: "$C"
+            regex: *express_app_chain_method
+        - metavariable-regex:
+            metavariable: "$M"
+            regex:
+              "$text": javascript/express-route-setup-method-regex
+        - "$model": javascript/express-application-binding
+    - pattern-inside: 'require("express")().$M(..., function ($REQ, ...) {...}, ...)'
+    - pattern-inside: 'require("express").Router(...).$M(..., function ($REQ, ...) {...}, ...)'

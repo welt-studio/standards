@@ -1,0 +1,9 @@
+# A função `graphql` importada pelo nome do pacote `graphql` (`import {graphql}` ou a desestruturação
+# do `require`): a chamada é `graphql(...)`, sem o objeto do módulo.
+- pattern-either:
+    - pattern-inside: |
+        import {..., graphql, ...} from "graphql";
+        ...
+    - pattern-inside: |
+        const {..., graphql, ...} = require("graphql");
+        ...

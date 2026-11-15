@@ -1,0 +1,19 @@
+# O parâmetro de requisição (`$REQ`) reconhecido pelo tipo, importado do módulo do framework: o
+# `Request` do `express` (`TypedRequestSource` do `Express.qll`), o `VercelRequest` e o `NowRequest`
+# do `@vercel/node` (`VercelNode.qll`) e o `NextApiRequest` do `next` (`NextReqResHandler` do
+# `Next.qll`). Um item só, para entrar em uma lista `patterns`.
+- patterns:
+    - pattern-either:
+        - pattern-inside: "function ($REQ: $T, ...) {...}"
+        - pattern-inside: "function $F($REQ: $T, ...) {...}"
+        - pattern-inside: "async function $F($REQ: $T, ...) {...}"
+    - pattern-either:
+        - patterns:
+            - pattern-inside: |
+                import {..., $T, ...} from "$MOD"; ...
+            - metavariable-regex:
+                metavariable: "$T"
+                regex: "^(?:Request|VercelRequest|NowRequest|NextApiRequest)$"
+            - metavariable-regex:
+                metavariable: "$MOD"
+                regex: "^(?:express|@vercel/node|@now/node|next)$"

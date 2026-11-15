@@ -1,1 +1,2 @@
-- pattern: "$REQ.headers"
+- pattern: "$REQ.headers.$K"
+- pattern: "$REQ.headers[$K]"

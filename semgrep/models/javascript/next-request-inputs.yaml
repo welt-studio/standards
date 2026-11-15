@@ -1,0 +1,11 @@
+# A requisição do Node dentro do contexto `$CTX` de `getServerSideProps` ou `getInitialProps` do Next.js
+# (`ctx.req`, o `NextHttpRequestSource` do `Next.qll` do CodeQL): as entradas do Node, lidas direto
+# (`ctx.req.url`) ou por uma variável (`const req = ctx.req`).
+- pattern: "$CTX.req.url"
+- pattern: "$CTX.req.body"
+- pattern: "$CTX.req.headers.$K"
+- pattern: "$CTX.req.headers[$K]"
+- patterns:
+    - "$model": javascript/node-request-inputs
+    - pattern-inside: |
+        $REQ = $CTX.req; ...

@@ -1,0 +1,24 @@
+rules:
+  - id: limit-graphql-root-value-by-variable
+    languages:
+      - javascript
+    severity: ERROR
+    message: "Variáveis da consulta GraphQL chegam ao eval."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: "$REQ.body.variables"
+    pattern-propagators:
+      - pattern: "graphql({..., variableValues: $V, ..., rootValue: {..., $K: ($P) => {...}, ...}, ...})"
+        from: "$V"
+        to: "$P"
+        by-side-effect: true
+      - pattern: "graphql({..., variableValues: $V, ..., rootValue: $ROOT, ...})"
+        from: "$V"
+        to: "$ROOT"
+        by-side-effect: true
+    pattern-sinks:
+      - patterns:
+          - pattern: "eval($X)"
+          - focus-metavariable: "$X"

@@ -1,0 +1,7 @@
+- "pattern-either":
+    - "pattern-inside": |
+        import {..., $M, ...} from "execa";
+        ...
+    - "pattern-inside": |
+        const {..., $M, ...} = require("execa");
+        ...

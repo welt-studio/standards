@@ -1,0 +1,25 @@
+# Um módulo de servidor HTTP do Node (`$H`): http, https ou http2, com ou sem `node:`, ligado pelo
+# `require` ou pelo `import` (o `isCreateServer` do `NodeJSLib.qll`). Um item só, para entrar em uma
+# lista `patterns`.
+- pattern-either:
+    - patterns:
+        - pattern-inside: |
+            $H = require("$MOD"); ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/node-http-module-specifier-regex
+    - patterns:
+        - pattern-inside: |
+            import $H from "$MOD"; ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/node-http-module-specifier-regex
+    - patterns:
+        - pattern-inside: |
+            import * as $H from "$MOD"; ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/node-http-module-specifier-regex

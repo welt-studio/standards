@@ -1,0 +1,20 @@
+rules:
+  - id: limit-cross-file-route-handler
+    languages:
+      - javascript
+    severity: ERROR
+    message: "Caminho de modelo montado com a requisição."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern: "$REQ.params"
+          - pattern-inside: |
+              $APP = require("express")();
+              ...
+          - pattern-inside: "$APP.$VERB(..., ($REQ, $RES, ...) => $E)"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$RES.render($X)"
+          - focus-metavariable: "$X"

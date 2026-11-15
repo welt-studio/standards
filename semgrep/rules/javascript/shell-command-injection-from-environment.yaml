@@ -31,184 +31,701 @@ rules:
           - pattern: "child_process.execSync($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "exec($X, ...)"
+          - pattern: "$E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("node:child_process");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "node:child_process";
+                  ...
+              - pattern-inside: |
+                  import $E from "node:child_process";
+                  ...
+              - pattern-inside: |
+                  $E = require("mz/child_process");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "mz/child_process";
+                  ...
+              - pattern-inside: |
+                  import $E from "mz/child_process";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|execSync)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execSync($X, ...)"
+          - pattern: "$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "node:child_process";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("node:child_process");
+                  ...
+              - pattern-inside: |
+                  import {..., $M, ...} from "mz/child_process";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("mz/child_process");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|execSync)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execFile($X, ...)"
+          - pattern: "$V($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = require("child_process").$M;
+                  ...
+              - pattern-inside: |
+                  $V = require("node:child_process").$M;
+                  ...
+              - pattern-inside: |
+                  $V = require("mz/child_process").$M;
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|execSync)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execFileSync($X, ...)"
+          - pattern: "child_process.execFile($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "spawn($X, ...)"
+          - pattern: "child_process.execFileSync($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "spawnSync($X, ...)"
+          - pattern: "child_process.spawn($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "fork($X, ...)"
+          - pattern: "child_process.spawnSync($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "shelljs.exec($X, ...)"
+          - pattern: "child_process.fork($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "shell.exec($X, ...)"
+          - pattern: "$E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("node:child_process");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "node:child_process";
+                  ...
+              - pattern-inside: |
+                  import $E from "node:child_process";
+                  ...
+              - pattern-inside: |
+                  $E = require("mz/child_process");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "mz/child_process";
+                  ...
+              - pattern-inside: |
+                  import $E from "mz/child_process";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:execFile|execFileSync|spawn|spawnSync|fork)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "shx.exec($X, ...)"
+          - pattern: "$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "node:child_process";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("node:child_process");
+                  ...
+              - pattern-inside: |
+                  import {..., $M, ...} from "mz/child_process";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("mz/child_process");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:execFile|execFileSync|spawn|spawnSync|fork)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execa($X, ...)"
+          - pattern: "$V($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = require("child_process").$M;
+                  ...
+              - pattern-inside: |
+                  $V = require("node:child_process").$M;
+                  ...
+              - pattern-inside: |
+                  $V = require("mz/child_process").$M;
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:execFile|execFileSync|spawn|spawnSync|fork)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execa.sync($X, ...)"
+          - pattern: "$E($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("execa");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "execa";
+                  ...
+              - pattern-inside: |
+                  import $E from "execa";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execa.shell($X, ...)"
+          - pattern: 'require("execa")($X, ...)'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execa.shellSync($X, ...)"
+          - pattern: "$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "execa";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("execa");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^execa$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execa.command($X, ...)"
+          - pattern: "$E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("execa");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "execa";
+                  ...
+              - pattern-inside: |
+                  import $E from "execa";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:execa|execaSync|execaCommand|execaCommandSync|node|stdout|stderr|sync|shell|shellSync)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execa.commandSync($X, ...)"
+          - pattern: "$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "execa";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("execa");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:execa|execaSync|execaCommand|execaCommandSync|node|stdout|stderr|sync|shell|shellSync)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execa.stdout($X, ...)"
+          - pattern: 'require("execa").$M($X, ...)'
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:execa|execaSync|execaCommand|execaCommandSync|node|stdout|stderr|sync|shell|shellSync)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execa.stderr($X, ...)"
+          - pattern: "$T`${$X}...`"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $T, ...} from "execa";
+                  ...
+              - pattern-inside: |
+                  const {..., $T, ...} = require("execa");
+                  ...
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^\\$$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execa.node($X, ...)"
+          - pattern: "$E.$T`${$X}...`"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("execa");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "execa";
+                  ...
+              - pattern-inside: |
+                  import $E from "execa";
+                  ...
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^\\$$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "cross_spawn($X, ...)"
+          - pattern: "$T.sync`${$X}...`"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $T, ...} from "execa";
+                  ...
+              - pattern-inside: |
+                  const {..., $T, ...} = require("execa");
+                  ...
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^\\$$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "crossSpawn($X, ...)"
+          - pattern: "$E.$T.sync`${$X}...`"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("execa");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "execa";
+                  ...
+              - pattern-inside: |
+                  import $E from "execa";
+                  ...
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^\\$$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "crossSpawn.sync($X, ...)"
+          - pattern: "$T({...})`${$X}...`"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $T, ...} from "execa";
+                  ...
+              - pattern-inside: |
+                  const {..., $T, ...} = require("execa");
+                  ...
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^\\$$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "cspawn($X, ...)"
+          - pattern: "$E.$T({...})`${$X}...`"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("execa");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "execa";
+                  ...
+              - pattern-inside: |
+                  import $E from "execa";
+                  ...
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^\\$$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "cspawn.sync($X, ...)"
+          - pattern: "$T({...}).sync`${$X}...`"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $T, ...} from "execa";
+                  ...
+              - pattern-inside: |
+                  const {..., $T, ...} = require("execa");
+                  ...
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^\\$$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "exec_sh($X, ...)"
+          - pattern: "$E.$T({...}).sync`${$X}...`"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("execa");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "execa";
+                  ...
+              - pattern-inside: |
+                  import $E from "execa";
+                  ...
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^\\$$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "cmd.run($X, ...)"
+          - pattern: "$E($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("cross-spawn");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "cross-spawn";
+                  ...
+              - pattern-inside: |
+                  import $E from "cross-spawn";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$SSH.exec($X, ...)"
+          - pattern: 'require("cross-spawn")($X, ...)'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$SSH.execCommand($X, ...)"
+          - pattern: "$E($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("cross-spawn-async");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "cross-spawn-async";
+                  ...
+              - pattern-inside: |
+                  import $E from "cross-spawn-async";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "mz.exec($X, ...)"
+          - pattern: 'require("cross-spawn-async")($X, ...)'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "foregroundChild($X, ...)"
+          - pattern: "$E($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("exec-async");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "exec-async";
+                  ...
+              - pattern-inside: |
+                  import $E from "exec-async";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "exec_async($X, ...)"
+          - pattern: 'require("exec-async")($X, ...)'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('cross-spawn')($X, ...)"
+          - pattern: "$E($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("exec");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "exec";
+                  ...
+              - pattern-inside: |
+                  import $E from "exec";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('cross-spawn').sync($X, ...)"
+          - pattern: 'require("exec")($X, ...)'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('cross-spawn-async')($X, ...)"
+          - pattern: "$E($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("async-execute");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "async-execute";
+                  ...
+              - pattern-inside: |
+                  import $E from "async-execute";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('exec')($X, ...)"
+          - pattern: 'require("async-execute")($X, ...)'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('exec-async')($X, ...)"
+          - pattern: "$E($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("foreground-child");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "foreground-child";
+                  ...
+              - pattern-inside: |
+                  import $E from "foreground-child";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('execa')($X, ...)"
+          - pattern: 'require("foreground-child")($X, ...)'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('execa').shell($X, ...)"
+          - pattern: "$E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("cross-spawn");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "cross-spawn";
+                  ...
+              - pattern-inside: |
+                  import $E from "cross-spawn";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:sync)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('execa').shellSync($X, ...)"
+          - pattern: 'require("cross-spawn").$M($X, ...)'
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:sync)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('execa').stdout($X, ...)"
+          - pattern: "$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "cross-spawn";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("cross-spawn");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:sync)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('execa').stderr($X, ...)"
+          - pattern: "$E($T, $X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("remote-exec");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "remote-exec";
+                  ...
+              - pattern-inside: |
+                  import $E from "remote-exec";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('execa').sync($X, ...)"
+          - pattern: 'require("remote-exec")($T, $X, ...)'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('execa').node($X, ...)"
+          - pattern: "$E($U, {..., command: $X, ...})"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("opener");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "opener";
+                  ...
+              - pattern-inside: |
+                  import $E from "opener";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('foreground-child')($X, ...)"
+          - pattern: 'require("opener")($U, {..., command: $X, ...})'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('remote-exec')($T, $X, ...)"
+          - pattern: "new $E().exec($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("ssh2");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "ssh2";
+                  ...
+              - pattern-inside: |
+                  import $E from "ssh2";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "new ssh2().exec($X, ...)"
+          - pattern: "$C.exec($X, ...)"
+          - pattern-inside: |
+              $C = new $E(...);
+              ...
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("ssh2");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "ssh2";
+                  ...
+              - pattern-inside: |
+                  import $E from "ssh2";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "new ssh2.Client().exec($X, ...)"
+          - pattern: "new $E.Client().exec($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("ssh2");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "ssh2";
+                  ...
+              - pattern-inside: |
+                  import $E from "ssh2";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "new SSH2Stream().exec($F, $X, ...)"
+          - pattern: "$C.exec($X, ...)"
+          - pattern-inside: |
+              $C = new $E.Client(...);
+              ...
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("ssh2");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "ssh2";
+                  ...
+              - pattern-inside: |
+                  import $E from "ssh2";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('mz/child_process').exec($X, ...)"
+          - pattern: "new $E.SSH2Stream().exec($F, $X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("ssh2-streams");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "ssh2-streams";
+                  ...
+              - pattern-inside: |
+                  import $E from "ssh2-streams";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('mz/child_process').execFile($X, ...)"
+          - pattern: "new $S().exec($F, $X, ...)"
+          - pattern-inside: |
+              $S = require("ssh2-streams").SSH2Stream;
+              ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('exec-sh')($X, ...)"
+          - pattern: "$E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("shelljs");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "shelljs";
+                  ...
+              - pattern-inside: |
+                  import $E from "shelljs";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|asyncExec)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('exec-sh').promise($X, ...)"
+          - pattern: 'require("shelljs").$M($X, ...)'
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|asyncExec)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "require('shelljs').exec($X, ...)"
+          - pattern: "$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "shelljs";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("shelljs");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|asyncExec)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execaSync($X, ...)"
+          - pattern: "$E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("async-shelljs");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "async-shelljs";
+                  ...
+              - pattern-inside: |
+                  import $E from "async-shelljs";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|asyncExec)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execaCommand($X, ...)"
+          - pattern: 'require("async-shelljs").$M($X, ...)'
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|asyncExec)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "execaCommandSync($X, ...)"
+          - pattern: "$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "async-shelljs";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("async-shelljs");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|asyncExec)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$TAG`${$X} ...`"
+          - pattern: 'require("shelljs.exec")($X, ...)'
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$TAG`...${$X}...`"
+          - pattern: "$E.cmd($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("shelljs");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "shelljs";
+                  ...
+              - pattern-inside: |
+                  import $E from "shelljs";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "opener($U, {command: $X})"
+          - pattern-either:
+              - pattern: "$E.cmd($X, ..., $LAST)"
+              - pattern: "$E.cmd(..., $X, ..., $LAST)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("shelljs");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "shelljs";
+                  ...
+              - pattern-inside: |
+                  import $E from "shelljs";
+                  ...
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "mz_exec($X, ...)"
+          - pattern: "$E.cmd($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("async-shelljs");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "async-shelljs";
+                  ...
+              - pattern-inside: |
+                  import $E from "async-shelljs";
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.cmd($X, ..., $LAST)"
+              - pattern: "$E.cmd(..., $X, ..., $LAST)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("async-shelljs");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "async-shelljs";
+                  ...
+              - pattern-inside: |
+                  import $E from "async-shelljs";
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$M($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "shelljs";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("shelljs");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^cmd$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$E.$M($X, ...)"
@@ -227,180 +744,23 @@ rules:
               regex: "^(?:exec|getExecOutput)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern-either:
-              - pattern: "child_process.spawn($SH, [..., $X, ...], ...)"
-              - pattern: "child_process.spawn($SH, [..., $X].concat(...), ...)"
-              - pattern: "child_process.spawn($SH, [...].concat([..., $X]), ...)"
-              - pattern: "child_process.spawn($SH, [...].concat($X), ...)"
-              - pattern: "child_process.spawn($SH, $X, ...)"
-          - metavariable-pattern:
-              metavariable: "$SH"
-              pattern-either:
-                - pattern: '"sh"'
-                - pattern: '"bash"'
-                - pattern: '"zsh"'
-                - pattern: '"dash"'
-                - pattern: '"ksh"'
-                - pattern: '"csh"'
-                - pattern: '"/bin/sh"'
-                - pattern: '"/bin/bash"'
-                - pattern: '"/bin/zsh"'
-                - pattern: '"/bin/dash"'
-                - pattern: '"/bin/ksh"'
-                - pattern: '"/bin/csh"'
-                - pattern: '"/usr/bin/sh"'
-                - pattern: '"/usr/bin/bash"'
-                - pattern: '"/usr/bin/zsh"'
-                - pattern: '"/usr/bin/dash"'
-                - pattern: '"/usr/bin/ksh"'
-                - pattern: '"/usr/bin/csh"'
-                - pattern: '"cmd"'
-                - pattern: '"cmd.exe"'
-                - pattern: '"CMD"'
-                - pattern: '"CMD.EXE"'
-                - pattern: '"powershell"'
-                - pattern: '"powershell.exe"'
-                - pattern: '"pwsh"'
+          - pattern: 'require("@actions/exec").$M($X, ...)'
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|getExecOutput)$"
           - focus-metavariable: "$X"
       - patterns:
+          - pattern: "$M($X, ...)"
           - pattern-either:
-              - pattern: "child_process.spawnSync($SH, [..., $X, ...], ...)"
-              - pattern: "child_process.spawnSync($SH, [..., $X].concat(...), ...)"
-              - pattern: "child_process.spawnSync($SH, [...].concat([..., $X]), ...)"
-              - pattern: "child_process.spawnSync($SH, [...].concat($X), ...)"
-              - pattern: "child_process.spawnSync($SH, $X, ...)"
-          - metavariable-pattern:
-              metavariable: "$SH"
-              pattern-either:
-                - pattern: '"sh"'
-                - pattern: '"bash"'
-                - pattern: '"zsh"'
-                - pattern: '"dash"'
-                - pattern: '"ksh"'
-                - pattern: '"csh"'
-                - pattern: '"/bin/sh"'
-                - pattern: '"/bin/bash"'
-                - pattern: '"/bin/zsh"'
-                - pattern: '"/bin/dash"'
-                - pattern: '"/bin/ksh"'
-                - pattern: '"/bin/csh"'
-                - pattern: '"/usr/bin/sh"'
-                - pattern: '"/usr/bin/bash"'
-                - pattern: '"/usr/bin/zsh"'
-                - pattern: '"/usr/bin/dash"'
-                - pattern: '"/usr/bin/ksh"'
-                - pattern: '"/usr/bin/csh"'
-                - pattern: '"cmd"'
-                - pattern: '"cmd.exe"'
-                - pattern: '"CMD"'
-                - pattern: '"CMD.EXE"'
-                - pattern: '"powershell"'
-                - pattern: '"powershell.exe"'
-                - pattern: '"pwsh"'
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "child_process.execFile($SH, [..., $X, ...], ...)"
-              - pattern: "child_process.execFile($SH, [..., $X].concat(...), ...)"
-              - pattern: "child_process.execFile($SH, [...].concat([..., $X]), ...)"
-              - pattern: "child_process.execFile($SH, [...].concat($X), ...)"
-              - pattern: "child_process.execFile($SH, $X, ...)"
-          - metavariable-pattern:
-              metavariable: "$SH"
-              pattern-either:
-                - pattern: '"sh"'
-                - pattern: '"bash"'
-                - pattern: '"zsh"'
-                - pattern: '"dash"'
-                - pattern: '"ksh"'
-                - pattern: '"csh"'
-                - pattern: '"/bin/sh"'
-                - pattern: '"/bin/bash"'
-                - pattern: '"/bin/zsh"'
-                - pattern: '"/bin/dash"'
-                - pattern: '"/bin/ksh"'
-                - pattern: '"/bin/csh"'
-                - pattern: '"/usr/bin/sh"'
-                - pattern: '"/usr/bin/bash"'
-                - pattern: '"/usr/bin/zsh"'
-                - pattern: '"/usr/bin/dash"'
-                - pattern: '"/usr/bin/ksh"'
-                - pattern: '"/usr/bin/csh"'
-                - pattern: '"cmd"'
-                - pattern: '"cmd.exe"'
-                - pattern: '"CMD"'
-                - pattern: '"CMD.EXE"'
-                - pattern: '"powershell"'
-                - pattern: '"powershell.exe"'
-                - pattern: '"pwsh"'
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "child_process.execFileSync($SH, [..., $X, ...], ...)"
-              - pattern: "child_process.execFileSync($SH, [..., $X].concat(...), ...)"
-              - pattern: "child_process.execFileSync($SH, [...].concat([..., $X]), ...)"
-              - pattern: "child_process.execFileSync($SH, [...].concat($X), ...)"
-              - pattern: "child_process.execFileSync($SH, $X, ...)"
-          - metavariable-pattern:
-              metavariable: "$SH"
-              pattern-either:
-                - pattern: '"sh"'
-                - pattern: '"bash"'
-                - pattern: '"zsh"'
-                - pattern: '"dash"'
-                - pattern: '"ksh"'
-                - pattern: '"csh"'
-                - pattern: '"/bin/sh"'
-                - pattern: '"/bin/bash"'
-                - pattern: '"/bin/zsh"'
-                - pattern: '"/bin/dash"'
-                - pattern: '"/bin/ksh"'
-                - pattern: '"/bin/csh"'
-                - pattern: '"/usr/bin/sh"'
-                - pattern: '"/usr/bin/bash"'
-                - pattern: '"/usr/bin/zsh"'
-                - pattern: '"/usr/bin/dash"'
-                - pattern: '"/usr/bin/ksh"'
-                - pattern: '"/usr/bin/csh"'
-                - pattern: '"cmd"'
-                - pattern: '"cmd.exe"'
-                - pattern: '"CMD"'
-                - pattern: '"CMD.EXE"'
-                - pattern: '"powershell"'
-                - pattern: '"powershell.exe"'
-                - pattern: '"pwsh"'
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$F($SH, $ARGS)"
-          - pattern-inside: "$ARGS[$I] = $X; ..."
-          - metavariable-pattern:
-              metavariable: "$SH"
-              pattern-either:
-                - pattern: '"sh"'
-                - pattern: '"bash"'
-                - pattern: '"zsh"'
-                - pattern: '"dash"'
-                - pattern: '"ksh"'
-                - pattern: '"csh"'
-                - pattern: '"/bin/sh"'
-                - pattern: '"/bin/bash"'
-                - pattern: '"/bin/zsh"'
-                - pattern: '"/bin/dash"'
-                - pattern: '"/bin/ksh"'
-                - pattern: '"/bin/csh"'
-                - pattern: '"/usr/bin/sh"'
-                - pattern: '"/usr/bin/bash"'
-                - pattern: '"/usr/bin/zsh"'
-                - pattern: '"/usr/bin/dash"'
-                - pattern: '"/usr/bin/ksh"'
-                - pattern: '"/usr/bin/csh"'
-                - pattern: '"cmd"'
-                - pattern: '"cmd.exe"'
-                - pattern: '"CMD"'
-                - pattern: '"CMD.EXE"'
-                - pattern: '"powershell"'
-                - pattern: '"powershell.exe"'
-                - pattern: '"pwsh"'
+              - pattern-inside: |
+                  import {..., $M, ...} from "@actions/exec";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("@actions/exec");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:exec|getExecOutput)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$W(child_process.$M, ...)($X, ...)"

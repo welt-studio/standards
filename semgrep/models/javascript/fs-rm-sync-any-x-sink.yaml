@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.rmSync($X, ...)"
-    - focus-metavariable: "$X"

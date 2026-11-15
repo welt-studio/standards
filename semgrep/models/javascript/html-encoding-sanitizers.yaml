@@ -1,7 +1,2 @@
-- pattern: "$L.filterXSS($X)"
-- pattern: "filterXSS($X)"
-- pattern: "escapeHtmlEntities($X)"
-- pattern: "htmlEscape($X)"
+# O CodeQL não propaga o dado por `toFixed` (o resultado é um número), e o Semgrep propaga.
 - pattern: "$X.toFixed(...)"
-- pattern: "$L.encodeForHTML($X)"
-- pattern: "encodeHTML($X)"

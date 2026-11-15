@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.opendirSync($X, ...)"
-    - focus-metavariable: "$X"

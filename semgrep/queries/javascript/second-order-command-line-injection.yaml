@@ -11,8 +11,7 @@ rules:
       codeql: js/second-order-command-line-injection
     mode: taint
     pattern-sources:
-      - "$model": javascript/express-request-sources-signed-cookies
-      - "$model": javascript/nextjs-server-side-sources
+      - "$model": javascript/http-request-sources
       - "$model": javascript/process-argv-source
     pattern-sinks:
       - patterns:

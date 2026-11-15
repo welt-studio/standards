@@ -1,0 +1,1 @@
+"^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"

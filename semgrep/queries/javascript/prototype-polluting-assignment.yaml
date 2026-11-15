@@ -13,7 +13,7 @@ rules:
       cwe: "CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes"
       codeql: js/prototype-polluting-assignment
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/http-request-sources-cookies
       - "$model": javascript/process-argv-source
     pattern-propagators:
       - pattern: "$V = $O[$K]"

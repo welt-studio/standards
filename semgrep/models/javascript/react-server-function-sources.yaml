@@ -1,10 +1,21 @@
-- patterns:
-    - pattern-inside: |
+- "patterns":
+    - "pattern-inside": |
         "use server";
         ...
-    - pattern-either:
-        - pattern: "export async function $F($X, ...) {...}"
-        - pattern: "export function $F($X, ...) {...}"
-        - pattern: "export const $F = async ($X, ...) => {...}"
-        - pattern: "export const $F = ($X, ...) => {...}"
-    - focus-metavariable: "$X"
+    - "pattern-either":
+        - "pattern": "export async function $F(..., $X, ...) {...}"
+        - "pattern": "export function $F(..., $X, ...) {...}"
+        - "pattern": "export default async function $F(..., $X, ...) {...}"
+        - "pattern": "export default function $F(..., $X, ...) {...}"
+        - "pattern": "export const $F = async (..., $X, ...) => {...}"
+        - "pattern": "export const $F = (..., $X, ...) => {...}"
+        - "pattern": "export const $F = async function (..., $X, ...) {...}"
+        - "pattern": "export const $F = function (..., $X, ...) {...}"
+    - "focus-metavariable": "$X"
+- "patterns":
+    - "pattern-either":
+        - "pattern": 'async function $F(..., $X, ...) { "use server"; ... }'
+        - "pattern": 'function $F(..., $X, ...) { "use server"; ... }'
+        - "pattern": 'async (..., $X, ...) => { "use server"; ... }'
+        - "pattern": 'async function (..., $X, ...) { "use server"; ... }'
+    - "focus-metavariable": "$X"

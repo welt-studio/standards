@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.writeFile($X, ...)"
-    - focus-metavariable: "$X"

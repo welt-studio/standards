@@ -1,0 +1,75 @@
+# O parâmetro de contexto (`$CTX`) de um tratador do Koa, como o `RouteSetup`, o `RoutedRouteHandler` e
+# o `KoaRouteHandler` do `Koa.qll` do CodeQL: a função passada ao `app.use` de uma aplicação do
+# `koa`, ao método de rota de um roteador do `koa-router` ou do `@koa/router`, ou ao método do
+# `koa-route`, com o módulo ligado pelo `require` ou pelo `import`. Nenhuma forma casa pelo nome do
+# parâmetro. Um item só, para entrar em uma lista `patterns`.
+- pattern-either:
+    - patterns:
+        - pattern-inside: "$APP.use(..., function ($CTX, ...) {...}, ...)"
+        - pattern-either:
+            - pattern-inside: |
+                $APP = new $K(...); ...
+            - pattern-inside: |
+                $APP = $K(...); ...
+        - pattern-either:
+            - pattern-inside: |
+                $K = require("koa"); ...
+            - pattern-inside: |
+                import $K from "koa"; ...
+            - pattern-inside: |
+                import * as $K from "koa"; ...
+    - patterns:
+        - pattern-either:
+            - patterns:
+                - pattern-inside: "$ROUTER.$M(..., function ($CTX, ...) {...}, ...)"
+                - pattern-either:
+                    - pattern-inside: |
+                        $ROUTER = new $RT(...); ...
+                    - pattern-inside: |
+                        $ROUTER = $RT(...); ...
+            - pattern-inside: "new $RT(...).$M(..., function ($CTX, ...) {...}, ...)"
+            - pattern-inside: "$RT(...).$M(..., function ($CTX, ...) {...}, ...)"
+        - metavariable-regex:
+            metavariable: "$M"
+            regex: "^(?:use|get|post|put|link|unlink|delete|del|head|options|patch|all)$"
+        - pattern-either:
+            - patterns:
+                - pattern-inside: |
+                    $RT = require("$MOD"); ...
+                - metavariable-regex:
+                    metavariable: "$MOD"
+                    regex: &koa_router_module "^(?:koa-router|@koa/router)$"
+            - patterns:
+                - pattern-inside: |
+                    import $RT from "$MOD"; ...
+                - metavariable-regex:
+                    metavariable: "$MOD"
+                    regex: *koa_router_module
+    - patterns:
+        - pattern-inside: "$RT.$M($P, function ($CTX, ...) {...})"
+        - metavariable-regex:
+            metavariable: "$M"
+            regex: "^(?:all|acl|bind|checkout|connect|copy|delete|del|get|head|link|lock|msearch|merge|mkactivity|mkcalendar|mkcol|move|notify|options|patch|post|propfind|proppatch|purge|put|rebind|report|search|subscribe|trace|unbind|unlink|unlock|unsubscribe)$"
+        - pattern-either:
+            - pattern-inside: |
+                $RT = require("koa-route"); ...
+            - pattern-inside: |
+                import $RT from "koa-route"; ...
+            - pattern-inside: |
+                import * as $RT from "koa-route"; ...
+    - patterns:
+        - pattern-either:
+            - pattern-inside: "$ROUTER.$M(..., function ($CTX, ...) {...}, ...)"
+            - patterns:
+                - pattern-inside: "$ROUTER.$N(...).$M(..., function ($CTX, ...) {...}, ...)"
+                - metavariable-regex:
+                    metavariable: "$N"
+                    regex: &koa_router_method "^(?:use|get|post|put|link|unlink|delete|del|head|options|patch|all)$"
+        - metavariable-regex:
+            metavariable: "$M"
+            regex: *koa_router_method
+        - pattern-either:
+            - pattern-inside: |
+                $ROUTER = require("koa-router")(...); ...
+            - pattern-inside: |
+                $ROUTER = require("@koa/router")(...); ...

@@ -1,0 +1,58 @@
+# O parâmetro de requisição (`$REQ`) do tratador de um servidor HTTP do Node, como o `RouteSetup` do
+# `NodeJSLib.qll` do CodeQL: a função passada ao `createServer` do `http`, `https` ou `http2`, ou ao
+# `server.on("request", ...)` de um servidor criado por ele. O tratador é a função direta ou, pelo
+# nome, uma declarada no mesmo arquivo. Nenhuma forma casa pelo nome do parâmetro.
+- pattern-either:
+    - patterns:
+        - pattern-either:
+            - pattern-inside: "$H.$CS(..., function ($REQ, $RES) {...}, ...)"
+            - pattern-inside: |
+                $H.$CS(..., $F, ...);
+                ...
+                function $F($REQ, $RES) {...}
+            - pattern-inside: |
+                function $F($REQ, $RES) {...}
+                ...
+                $H.$CS(..., $F, ...);
+        - metavariable-regex:
+            metavariable: "$CS"
+            regex: "^(?:createServer|createSecureServer)$"
+        - "$model": javascript/node-http-module-binding
+    - patterns:
+        - pattern-either:
+            - pattern-inside: |
+                $S = $H.$CS(...);
+                ...
+                $S.$ON("request", function ($REQ, $RES) {...});
+            - pattern-inside: |
+                $S = $H.$CS(...);
+                ...
+                $S.$ON("request", $F);
+                ...
+                function $F($REQ, $RES) {...}
+        - metavariable-regex:
+            metavariable: "$CS"
+            regex: "^(?:createServer|createSecureServer)$"
+        - metavariable-regex:
+            metavariable: "$ON"
+            regex: "^(?:on|once)$"
+        - "$model": javascript/node-http-module-binding
+    - patterns:
+        - pattern-either:
+            - pattern-inside: "createServer(..., function ($REQ, $RES) {...}, ...)"
+            - pattern-inside: "createSecureServer(..., function ($REQ, $RES) {...}, ...)"
+        - pattern-either:
+            - pattern-inside: |
+                import {..., createServer, ...} from "$MOD"; ...
+            - pattern-inside: |
+                import {..., createSecureServer, ...} from "$MOD"; ...
+            - pattern-inside: |
+                const {..., createServer, ...} = require("$MOD"); ...
+            - pattern-inside: |
+                const {..., createSecureServer, ...} = require("$MOD"); ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/node-http-module-specifier-regex
+    - pattern-inside: 'require("http").createServer(..., function ($REQ, $RES) {...}, ...)'
+    - pattern-inside: 'require("https").createServer(..., function ($REQ, $RES) {...}, ...)'

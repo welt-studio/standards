@@ -1,0 +1,25 @@
+# O objeto `promises` do `fs` (`$FS`), ligado por `require("fs").promises` ou por
+# `import {promises as $FS}` (o `DataFlow::moduleMember("fs", "promises")` do CodeQL). Um item só,
+# para entrar em uma lista `patterns`.
+- pattern-either:
+    - patterns:
+        - pattern-inside: |
+            $FS = require("$MOD").promises; ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/fs-core-module-specifier-regex
+    - patterns:
+        - pattern-inside: |
+            import {..., promises as $FS, ...} from "$MOD"; ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/fs-core-module-specifier-regex
+    - patterns:
+        - pattern-inside: |
+            const {..., promises: $FS, ...} = require("$MOD"); ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/fs-core-module-specifier-regex

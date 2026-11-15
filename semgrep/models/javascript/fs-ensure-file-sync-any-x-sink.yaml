@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.ensureFileSync($X, ...)"
-    - focus-metavariable: "$X"

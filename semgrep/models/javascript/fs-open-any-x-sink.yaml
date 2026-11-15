@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.open($X, ...)"
-    - focus-metavariable: "$X"

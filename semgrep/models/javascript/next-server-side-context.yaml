@@ -1,0 +1,7 @@
+# O parâmetro de contexto (`$CTX`) de `getServerSideProps` do Next.js, a função que roda no servidor a
+# cada requisição (o `getServerSidePropsFunction` do `Next.qll` do CodeQL). Um item só, para entrar
+# em uma lista `patterns`.
+- pattern-either:
+    - pattern-inside: "function getServerSideProps($CTX, ...) {...}"
+    - pattern-inside: "export const getServerSideProps = function ($CTX, ...) {...}"
+    - pattern-inside: "const getServerSideProps = function ($CTX, ...) {...}"

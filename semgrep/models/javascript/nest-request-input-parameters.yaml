@@ -1,0 +1,35 @@
+# Os parâmetros de entrada de um tratador do NestJS, como o `NestJSRequestInput` do `Nest.qll` do CodeQL:
+# o parâmetro com `@Query`, `@Param`, `@Headers`, `@Body`, `@HostParam`, `@UploadedFile` ou
+# `@UploadedFiles` de um método com `@Get`, `@Post`, `@Put`, `@Delete`, `@Patch`, `@Options`, `@Head` ou
+# `@All`, todos importados de `@nestjs/common`. A fonte é cada uso do parâmetro no método (o
+# Semgrep não casa o parâmetro decorado como um nó). O parâmetro com um pipe que converte o valor
+# (`ParseIntPipe`, `ParseBoolPipe`, `ParseUUIDPipe`) não é fonte (`isSanitizedByPipe`). `@Req` e
+# `@Request` não entram aqui: eles dão o objeto da requisição, tratado em `nest-request-parameter`.
+- patterns:
+    - pattern: "$X"
+    - pattern-inside: |
+        @$G(...)
+        $M(..., @$D(...) $X, ...) {...}
+    - metavariable-regex:
+        metavariable: "$G"
+        regex:
+          "$text": javascript/nest-route-method-decorator-regex
+    - metavariable-regex:
+        metavariable: "$D"
+        regex: "^(?:Query|Param|Headers|Body|HostParam|UploadedFile|UploadedFiles)$"
+    - pattern-inside: |
+        import {..., $G, ...} from "@nestjs/common"; ...
+    - pattern-inside: |
+        import {..., $D, ...} from "@nestjs/common"; ...
+    - pattern-not-inside: |
+        $M(..., @$D(..., ParseIntPipe, ...) $X, ...) {...}
+    - pattern-not-inside: |
+        $M(..., @$D(..., ParseBoolPipe, ...) $X, ...) {...}
+    - pattern-not-inside: |
+        $M(..., @$D(..., ParseUUIDPipe, ...) $X, ...) {...}
+    - pattern-not-inside: |
+        $M(..., @$D(..., new ParseIntPipe(...), ...) $X, ...) {...}
+    - pattern-not-inside: |
+        $M(..., @$D(..., new ParseBoolPipe(...), ...) $X, ...) {...}
+    - pattern-not-inside: |
+        $M(..., @$D(..., new ParseUUIDPipe(...), ...) $X, ...) {...}

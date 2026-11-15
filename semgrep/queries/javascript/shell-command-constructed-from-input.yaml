@@ -74,8 +74,9 @@ rules:
           - pattern: "execSh(`...${$X}...`, ...)"
           - focus-metavariable: "$X"
     pattern-sanitizers:
-      - "$model": javascript/shell-escape-sanitizers
-      - "$model": javascript/l-quote-x-sanitizer
+      - pattern: "shellEscape($X)"
+      - pattern: "shellescape($X)"
+      - pattern: "$L.quote($X)"
       - "$model": javascript/json-stringify-x-sanitizer
       - "$model": javascript/parse-int-x-sanitizer
       - "$model": javascript/number-x-sanitizer

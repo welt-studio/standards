@@ -1,0 +1,31 @@
+# O parâmetro de requisição (`$REQ`) de um tratador do NestJS, que dá o objeto do Express: o parâmetro
+# com `@Req()` ou `@Request()` de um método com `@Get`, `@Post`, ... (o `ExpressRequestSource` do
+# `Nest.qll` do CodeQL), e o primeiro parâmetro do `use` de uma classe que implementa
+# `NestMiddleware`, tudo importado de `@nestjs/common`. As entradas são as leituras do objeto
+# (`req.query`, `req.body`...), não o parâmetro inteiro. Um item só, para entrar em uma lista
+# `patterns`.
+- pattern-either:
+    - patterns:
+        - pattern-inside: |
+            @$G(...)
+            $M(..., @$R(...) $REQ, ...) {...}
+        - metavariable-regex:
+            metavariable: "$G"
+            regex:
+              "$text": javascript/nest-route-method-decorator-regex
+        - metavariable-regex:
+            metavariable: "$R"
+            regex: "^(?:Req|Request)$"
+        - pattern-inside: |
+            import {..., $G, ...} from "@nestjs/common"; ...
+        - pattern-inside: |
+            import {..., $R, ...} from "@nestjs/common"; ...
+    - patterns:
+        - pattern-inside: |
+            class $C implements NestMiddleware {
+              ...
+              use($REQ, ...) {...}
+              ...
+            }
+        - pattern-inside: |
+            import {..., NestMiddleware, ...} from "@nestjs/common"; ...

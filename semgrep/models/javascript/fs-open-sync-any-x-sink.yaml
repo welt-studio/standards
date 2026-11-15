@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.openSync($X, ...)"
-    - focus-metavariable: "$X"

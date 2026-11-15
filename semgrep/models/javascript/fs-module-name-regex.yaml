@@ -1,1 +1,0 @@
-"^(?:fs|fse|fsx|fsExtra|fs_extra|fsp|gfs|gracefulFs|graceful_fs|originalFs|promises|fs\\.promises|fsPromises|jetpack|vfs|fileSystem)$"

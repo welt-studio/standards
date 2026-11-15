@@ -1,9 +1,15 @@
-# Troca da localização da página: o endereço vira o da navegação (e `javascript:` roda).
+# Troca da localização da página: o endereço vira o da navegação (e `javascript:` roda). O receptor
+# é o objeto global ou o `document` (`user.location = ...` é um campo de um objeto qualquer).
 - pattern: "location = $X"
-- pattern: "$W.location = $X"
 - pattern: "location.href = $X"
-- pattern: "$W.location.href = $X"
 - pattern: "location.assign($X)"
-- pattern: "$W.location.assign($X)"
 - pattern: "location.replace($X)"
-- pattern: "$W.location.replace($X)"
+- patterns:
+    - pattern-either:
+        - pattern: "$W.location = $X"
+        - pattern: "$W.location.href = $X"
+        - pattern: "$W.location.assign($X)"
+        - pattern: "$W.location.replace($X)"
+    - metavariable-regex:
+        metavariable: "$W"
+        regex: "^(?:window|self|top|document|globalThis)$"

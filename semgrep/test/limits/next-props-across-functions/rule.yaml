@@ -1,0 +1,25 @@
+rules:
+  - id: next-props-across-functions
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O que `getServerSideProps` devolve em `props` chega ao parâmetro do componente padrão."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: ctx.query.name
+    pattern-propagators:
+      - pattern: |
+          export async function getServerSideProps(...) {
+            ...
+            return {..., props: $V, ...};
+          }
+          ...
+          export default function $F($P) {...}
+        from: "$V"
+        to: "$P"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.innerHTML = $X"
+          - focus-metavariable: "$X"

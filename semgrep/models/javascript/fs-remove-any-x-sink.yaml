@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.remove($X, ...)"
-    - focus-metavariable: "$X"

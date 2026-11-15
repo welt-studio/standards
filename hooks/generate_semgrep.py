@@ -27,10 +27,15 @@ Só vira modelo o item que nomeia uma API (`names_api`: um padrão com ao menos 
 metavariável nem palavra da linguagem) e a regex; item só de metavariável e sintaxe fica inline.
 
 Erros (saída 1, todos listados): referência desconhecida ou do tipo errado, ciclo entre modelos,
-modelo que ninguém usa, modelo usado por uma consulta só (não há o que compartilhar), item que
-nomeia API (ou regex) repetido em dois arquivos sem estar em um modelo, e regra sem
-`metadata.codeql` coerente com o caminho. A saída já sai no formato que o Prettier deixa (aspas
-duplas, listas em bloco), para o hook dele não reescrever o arquivo.
+modelo vazio, modelo que ninguém usa, modelo usado por uma consulta só (não há o que
+compartilhar), item que nomeia API (ou regex) repetido em dois arquivos sem estar em um modelo,
+regra sem
+`metadata.codeql` coerente com o caminho, e fonte definida a partir de outra fonte: um
+`metavariable-pattern` dentro de `pattern-sources` que referencia um modelo de fonte imita, por
+forma de código, um fluxo que o motor não segue (o valor de uma fonte chegando a outro ponto); o
+caminho é um propagador ou um limite provado (`semgrep/test/limits.json`). A saída já sai no
+formato que o Prettier deixa (aspas duplas, listas em bloco), para o hook dele não reescrever o
+arquivo.
 
 Uso: `generate_semgrep.py` escreve as regras; `generate_semgrep.py --check` só confere, e sai com 1,
 listando os arquivos, quando `semgrep/rules/` está desatualizada. Erro de uso sai com 2.
@@ -215,7 +220,9 @@ def sharing_errors(models: dict[str, Node], queries: dict[str, Node]) -> list[st
 
     errors: list[str] = []
     for name in sorted(models):
-        if not users[name]:
+        if models[name] in ([], None, ""):
+            errors.append(f"{MODELS}/{name}.yaml: modelo vazio (apague e tire as referências)")
+        elif not users[name]:
             errors.append(f"{MODELS}/{name}.yaml: modelo sem uso (apague ou use)")
         elif len(reached(name, frozenset())) < MIN_USERS:
             errors.append(
@@ -289,6 +296,64 @@ def duplicate_errors(models: dict[str, Node], queries: dict[str, Node]) -> list[
             where = ", ".join(sorted(files))
             errors.append(f"repetido em {where} e fora de um modelo: {item[:100]}")
     return errors
+
+
+def model_closure(names: set[str], models: dict[str, Node]) -> set[str]:
+    """Os modelos `names` e os que eles referenciam, direta ou indiretamente."""
+    found: set[str] = set()
+    pending = list(names)
+    while pending:
+        name = pending.pop()
+        if name in found or name not in models:
+            continue
+        found.add(name)
+        pending.extend(ref for _, ref in references(models[name], f"{MODELS}/{name}.yaml"))
+    return found
+
+
+def source_items(queries: dict[str, Node]) -> list[tuple[str, Node]]:
+    """Cada item de `pattern-sources` das consultas, com o arquivo dele."""
+    items: list[tuple[str, Node]] = []
+    for name, tree in queries.items():
+        rules = tree.get("rules") if isinstance(tree, dict) else None
+        for rule in rules if isinstance(rules, list) else []:
+            sources = rule.get("pattern-sources") if isinstance(rule, dict) else None
+            items.extend(
+                (f"{QUERIES}/{name}.yaml", item)
+                for item in (sources if isinstance(sources, list) else [])
+            )
+    return items
+
+
+def metavariable_pattern_refs(node: Node, where: str) -> set[str]:
+    """Os modelos referenciados dentro dos `metavariable-pattern` de `node`."""
+    found: set[str] = set()
+    if isinstance(node, list):
+        for item in node:
+            found |= metavariable_pattern_refs(item, where)
+    elif isinstance(node, dict):
+        for key, value in node.items():
+            if key == "metavariable-pattern":
+                found |= {ref for kind, ref in references(value, where) if kind == MODEL_KEY}
+            else:
+                found |= metavariable_pattern_refs(value, where)
+    return found
+
+
+def derived_source_errors(models: dict[str, Node], queries: dict[str, Node]) -> list[str]:
+    """Fonte definida a partir de outra fonte (ver o docstring do módulo)."""
+    items = source_items(queries)
+    direct = {reference(item, MODEL_KEY) for _, item in items}
+    sources = model_closure({name for name in direct if name is not None}, models)
+    errors: list[str] = []
+    for where, item in items:
+        used = model_closure(metavariable_pattern_refs(item, where), models) & sources
+        if used:
+            errors.append(
+                f"{where}: fonte definida a partir de outra fonte ({', '.join(sorted(used))}):"
+                " imita fluxo; use um propagador ou registre o limite"
+            )
+    return sorted(set(errors))
 
 
 def codeql_id(name: str) -> str | None:
@@ -422,6 +487,7 @@ def generate(root: Path) -> tuple[dict[str, str], list[str]]:
     except GeneratorError as error:
         errors.append(str(error))
     errors.extend(duplicate_errors(models, queries))
+    errors.extend(derived_source_errors(models, queries))
     return outputs, errors
 
 

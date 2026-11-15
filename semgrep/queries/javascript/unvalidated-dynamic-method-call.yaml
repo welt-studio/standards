@@ -13,7 +13,7 @@ rules:
       cwe: "CWE-754: Improper Check for Unusual or Exceptional Conditions"
       codeql: js/unvalidated-dynamic-method-call
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/http-request-sources-cookies
       - "$model": javascript/dom-xss-sources
     pattern-propagators:
       - pattern: "$V = $O[$K]"

@@ -1,0 +1,25 @@
+# O objeto de um módulo do fs (`$FS`), ligado pelo `require` ou pelo `import`, como o
+# `FS::moduleMember` do CodeQL: fs, fs-extra, graceful-fs, mz/fs, original-fs e fs/promises, com ou
+# sem `node:`. Um item só, para entrar em uma lista `patterns`.
+- pattern-either:
+    - patterns:
+        - pattern-inside: |
+            $FS = require("$MOD"); ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/fs-module-specifier-regex
+    - patterns:
+        - pattern-inside: |
+            import $FS from "$MOD"; ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/fs-module-specifier-regex
+    - patterns:
+        - pattern-inside: |
+            import * as $FS from "$MOD"; ...
+        - metavariable-regex:
+            metavariable: "$MOD"
+            regex:
+              "$text": javascript/fs-module-specifier-regex

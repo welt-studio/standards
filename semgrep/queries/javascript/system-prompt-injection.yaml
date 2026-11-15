@@ -13,7 +13,7 @@ rules:
       cwe: "CWE-1427: Improper Neutralization of Input Used for LLM Prompting"
       codeql: js/system-prompt-injection
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/http-request-sources-cookies
       - "$model": javascript/dom-xss-sources
     pattern-sinks:
       - patterns:

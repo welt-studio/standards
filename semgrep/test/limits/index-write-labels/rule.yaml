@@ -1,0 +1,19 @@
+rules:
+  - id: limit-index-write-labels
+    languages:
+      - javascript
+    severity: ERROR
+    message: "A lista recebeu os dois rótulos."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - label: FLAG
+        pattern: "sourceFlag()"
+      - label: USER
+        pattern: "sourceUser()"
+    pattern-sinks:
+      - requires: FLAG and USER
+        patterns:
+          - pattern: "sink($X)"
+          - focus-metavariable: "$X"

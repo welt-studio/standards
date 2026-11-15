@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.chmodSync($X, ...)"
-    - focus-metavariable: "$X"

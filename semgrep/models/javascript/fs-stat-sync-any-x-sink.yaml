@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.statSync($X, ...)"
-    - focus-metavariable: "$X"

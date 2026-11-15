@@ -13,7 +13,7 @@ rules:
       cwe: "CWE-1321: Improperly Controlled Modification of Object Prototype Attributes"
       codeql: js/prototype-pollution
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/http-request-sources-cookies
       - "$model": javascript/dom-xss-sources
     pattern-sinks:
       - patterns:

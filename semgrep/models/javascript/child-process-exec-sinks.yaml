@@ -1,6 +1,30 @@
-- patterns:
-    - pattern: "child_process.exec($X, ...)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "child_process.execSync($X, ...)"
-    - focus-metavariable: "$X"
+- "patterns":
+    - "pattern": "child_process.exec($X, ...)"
+    - "focus-metavariable": "$X"
+- "patterns":
+    - "pattern": "child_process.execSync($X, ...)"
+    - "focus-metavariable": "$X"
+- "patterns":
+    - "pattern": "$E.$M($X, ...)"
+    - "$model": "javascript/child-process-module-alias-bindings"
+    - "metavariable-regex":
+        "metavariable": "$M"
+        "regex":
+          "$text": "javascript/child-process-shell-method-regex"
+    - "focus-metavariable": "$X"
+- "patterns":
+    - "pattern": "$M($X, ...)"
+    - "$model": "javascript/child-process-module-named-bindings"
+    - "metavariable-regex":
+        "metavariable": "$M"
+        "regex":
+          "$text": "javascript/child-process-shell-method-regex"
+    - "focus-metavariable": "$X"
+- "patterns":
+    - "pattern": "$V($X, ...)"
+    - "$model": "javascript/child-process-member-bindings"
+    - "metavariable-regex":
+        "metavariable": "$M"
+        "regex":
+          "$text": "javascript/child-process-shell-method-regex"
+    - "focus-metavariable": "$X"

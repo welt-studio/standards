@@ -1,0 +1,36 @@
+# O tratador registrado numa rota do Express com a requisição e a RESPOSTA ligadas (`$REQ`,
+# `$RES`): para os sumidouros que exigem a resposta do Express (`res.render`, `res.sendFile`), como o
+# `Express::isResponse` do CodeQL. A aplicação vem do `express-application-binding`; para a fonte
+# de requisição sozinha, `express-request-parameter`, que cobre também `(req)` e `(err, req, ...)`.
+- "$model": javascript/express-application-binding
+- metavariable-regex:
+    metavariable: "$VERB"
+    regex:
+      "$text": javascript/express-route-setup-method-regex
+- pattern-either:
+    - pattern-inside: "$APP.$VERB(..., function ($REQ, $RES, ...) {...})"
+    - pattern-inside: "$APP.$VERB(..., function $H($REQ, $RES, ...) {...})"
+    - pattern-inside: "$APP.$VERB(..., async function ($REQ, $RES, ...) {...})"
+    - pattern-inside: "$APP.$VERB(..., ($REQ, $RES, ...) => {...})"
+    - pattern-inside: "$APP.$VERB(..., ($REQ, $RES, ...) => $E)"
+    - pattern-inside: "$APP.$VERB(..., async ($REQ, $RES, ...) => {...})"
+    - pattern-inside: "$APP.$VERB(..., async ($REQ, $RES, ...) => $E)"
+    - pattern-inside: |
+        function $H($REQ, $RES, ...) {...}
+        ...
+        $APP.$VERB(..., $H);
+    - pattern-inside: |
+        $H = ($REQ, $RES, ...) => {...};
+        ...
+        $APP.$VERB(..., $H);
+    - pattern-inside: |
+        $H = ($REQ, $RES, ...) => $E;
+        ...
+        $APP.$VERB(..., $H);
+    - pattern-inside: |
+        $H = function ($REQ, $RES, ...) {...};
+        ...
+        $APP.$VERB(..., $H);
+- metavariable-regex:
+    metavariable: "$VERB"
+    regex: "^(?:get|post|put|delete|patch|all|use|head|options)$"

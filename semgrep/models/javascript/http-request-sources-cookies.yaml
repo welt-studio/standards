@@ -1,0 +1,21 @@
+# As entradas remotas das requisições HTTP (`http-request-sources`) mais os cookies que o CodeQL
+# modela: `req.cookies` do Express (e do NestJS), `ctx.cookies.get(nome)` do Koa e
+# `request.state.nome` do Hapi.
+- "$model": javascript/http-request-sources
+- patterns:
+    - "$model": javascript/express-request-parameter
+    - "$model": javascript/req-cookies
+- patterns:
+    - "$model": javascript/nest-request-parameter
+    - "$model": javascript/req-cookies
+- patterns:
+    - "$model": javascript/koa-context-parameter
+    - pattern-either:
+        - "$model": javascript/koa-cookie-inputs
+- patterns:
+    - "$model": javascript/hapi-request-parameter
+    - pattern-either:
+        - "$model": javascript/hapi-cookie-inputs
+- patterns:
+    - "$model": javascript/typed-request-parameter
+    - "$model": javascript/req-cookies

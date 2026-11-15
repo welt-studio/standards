@@ -1,3 +1,14 @@
-- patterns:
-    - pattern: "execa($X, ...)"
-    - focus-metavariable: "$X"
+- "patterns":
+    - "pattern": "$E($X, ...)"
+    - "$model": "javascript/execa-alias-bindings"
+    - "focus-metavariable": "$X"
+- "patterns":
+    - "pattern": 'require("execa")($X, ...)'
+    - "focus-metavariable": "$X"
+- "patterns":
+    - "pattern": "$M($X, ...)"
+    - "$model": "javascript/execa-named-bindings"
+    - "metavariable-regex":
+        "metavariable": "$M"
+        "regex": "^execa$"
+    - "focus-metavariable": "$X"

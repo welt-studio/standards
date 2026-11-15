@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.createFile($X, ...)"
-    - focus-metavariable: "$X"

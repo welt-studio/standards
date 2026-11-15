@@ -1,35 +1,79 @@
-# Dado de mensagem recebida (`message` do postMessage) por qualquer `addEventListener`, ou
-# `onmessage`. O evento pode vir desestruturado (`{data}`) ou ligado por `bind`: os argumentos
-# ligados deslocam o parâmetro do evento.
+# Dado de mensagem recebida (`message` do postMessage) pelo `addEventListener` ou `onmessage` do
+# objeto global (`window`, `self`, `globalThis`, `global`, ou a chamada solta no escopo global): o
+# `message` de um `Worker`, de um `MessagePort` ou de um `EventSource` não vem de outra origem (o
+# CodeQL só olha o `message` da janela). O evento pode vir desestruturado (`{data}`) ou ligado por
+# `bind`: os argumentos ligados deslocam o parâmetro do evento.
 - patterns:
     - pattern: "$EV.data"
     - pattern-either:
-        - pattern-inside: |
-            $W.addEventListener("message", function ($EV, ...) {...})
-        - pattern-inside: |
-            $W.addEventListener("message", ($EV, ...) => {...})
+        - patterns:
+            - pattern-either:
+                - pattern-inside: |
+                    $W.addEventListener("message", function ($EV, ...) {...})
+                - pattern-inside: |
+                    $W.addEventListener("message", ($EV, ...) => {...})
+                - pattern-inside: |
+                    $W.onmessage = ($EV) => {...}
+                - pattern-inside: |
+                    function $F($EV, ...) {...}
+                    ...
+                    $W.addEventListener("message", $F.bind($THIS))
+                - pattern-inside: |
+                    function $F($A, $EV, ...) {...}
+                    ...
+                    $W.addEventListener("message", $F.bind($THIS, $B))
+                - pattern-inside: |
+                    function $F($A, $B, $EV, ...) {...}
+                    ...
+                    $W.addEventListener("message", $F.bind($THIS, $C, $D))
+            - metavariable-regex:
+                metavariable: "$W"
+                regex: "^(?:window|self|globalThis|global)$"
         - pattern-inside: |
             addEventListener("message", function ($EV, ...) {...})
         - pattern-inside: |
             addEventListener("message", ($EV, ...) => {...})
+- patterns:
+    - pattern: data
+    - pattern-either:
+        - patterns:
+            - pattern-either:
+                - pattern-inside: |
+                    $W.addEventListener("message", function ({data}) {...})
+                - pattern-inside: |
+                    $W.addEventListener("message", ({data}) => {...})
+            - metavariable-regex:
+                metavariable: "$W"
+                regex: "^(?:window|self|globalThis|global)$"
         - pattern-inside: |
-            $W.onmessage = ($EV) => {...}
+            addEventListener("message", function ({data}) {...})
         - pattern-inside: |
-            function $F($EV, ...) {...}
-            ...
-            $W.addEventListener("message", $F.bind($THIS))
+            addEventListener("message", ({data}) => {...})
+# O `this` do escopo global é o objeto global: `this.addEventListener("message", ...)` fora de
+# qualquer função (dentro de uma função o `this` é outra coisa).
+- patterns:
+    - pattern: "$EV.data"
+    - pattern-either:
         - pattern-inside: |
-            function $F($A, $EV, ...) {...}
-            ...
-            $W.addEventListener("message", $F.bind($THIS, $B))
+            this.addEventListener("message", function ($EV, ...) {...})
         - pattern-inside: |
-            function $F($A, $B, $EV, ...) {...}
-            ...
-            $W.addEventListener("message", $F.bind($THIS, $C, $D))
+            this.addEventListener("message", ($EV, ...) => {...})
+    - pattern-not-inside: |
+        (function (...) { ... this.addEventListener("message", ...); ... })
+    - pattern-not-inside: |
+        function $F(...) { ... this.addEventListener("message", ...); ... }
+    - pattern-not-inside: |
+        (...) => { ... this.addEventListener("message", ...); ... }
 - patterns:
     - pattern: data
     - pattern-either:
         - pattern-inside: |
-            $W.addEventListener("message", function ({data}) {...})
+            this.addEventListener("message", function ({data}) {...})
         - pattern-inside: |
-            $W.addEventListener("message", ({data}) => {...})
+            this.addEventListener("message", ({data}) => {...})
+    - pattern-not-inside: |
+        (function (...) { ... this.addEventListener("message", ...); ... })
+    - pattern-not-inside: |
+        function $F(...) { ... this.addEventListener("message", ...); ... }
+    - pattern-not-inside: |
+        (...) => { ... this.addEventListener("message", ...); ... }

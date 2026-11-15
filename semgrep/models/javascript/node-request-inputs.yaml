@@ -1,0 +1,7 @@
+# As entradas da requisição que o `NodeJSLib.qll` do CodeQL modela, sobre o `$REQ` de um tratador do
+# Node: `req.url`, `req.body` e a leitura de um cabeçalho (`req.headers.x`). Um item só, para entrar
+# em uma lista `patterns`.
+- pattern-either:
+    - "$model": javascript/req-url
+    - "$model": javascript/req-body
+    - "$model": javascript/req-headers

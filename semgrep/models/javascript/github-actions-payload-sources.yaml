@@ -1,12 +1,85 @@
-- patterns:
-    - pattern: "$G.context.payload"
-    - pattern-either:
-        - pattern-inside: |
+- "patterns":
+    - "pattern-either":
+        - "pattern": "$G.context.payload.pull_request.head.ref"
+        - "pattern": "$G.context.payload.pull_request.head.label"
+        - "pattern": "$G.context.payload.pull_request.title"
+        - "pattern": "$G.context.payload.pull_request.body"
+        - "pattern": "$G.context.payload.workflow_run.head_commit.pull_requests[$I].head.ref"
+        - "pattern": "$G.context.payload.workflow_run.head_commit.pull_requests[$I].head.label"
+        - "pattern": "$G.context.payload.workflow_run.head_commit.pull_requests[$I].title"
+        - "pattern": "$G.context.payload.workflow_run.head_commit.pull_requests[$I].body"
+        - "pattern": "$G.context.payload.commits[$I].pull_requests[$J].head.ref"
+        - "pattern": "$G.context.payload.commits[$I].pull_requests[$J].head.label"
+        - "pattern": "$G.context.payload.commits[$I].pull_requests[$J].title"
+        - "pattern": "$G.context.payload.commits[$I].pull_requests[$J].body"
+        - "pattern": "$G.context.payload.discussion.title"
+        - "pattern": "$G.context.payload.discussion.body"
+        - "pattern": "$G.context.payload.issue.title"
+        - "pattern": "$G.context.payload.issue.body"
+        - "pattern": "$G.context.payload.review.body"
+        - "pattern": "$G.context.payload.review_comment.body"
+        - "pattern": "$G.context.payload.comment.body"
+        - "pattern": "$G.context.payload.workflow_run.head_branch"
+        - "pattern": "$G.context.payload.workflow_run.display_title"
+        - "pattern": "$G.context.payload.workflow_run.head_repository.description"
+        - "pattern": "$G.context.payload.workflow_run.head_commit.message"
+        - "pattern": "$G.context.payload.workflow_run.head_commit.author.name"
+        - "pattern": "$G.context.payload.workflow_run.head_commit.author.email"
+        - "pattern": "$G.context.payload.workflow_run.head_commit.committer.name"
+        - "pattern": "$G.context.payload.workflow_run.head_commit.committer.email"
+        - "pattern": "$G.context.payload.commits[$I].message"
+        - "pattern": "$G.context.payload.commits[$I].author.name"
+        - "pattern": "$G.context.payload.commits[$I].author.email"
+        - "pattern": "$G.context.payload.commits[$I].committer.name"
+        - "pattern": "$G.context.payload.commits[$I].committer.email"
+    - "pattern-either":
+        - "pattern-inside": |
             $G = require("@actions/github");
             ...
-        - pattern-inside: |
+        - "pattern-inside": |
             import * as $G from "@actions/github";
             ...
-        - pattern-inside: |
+        - "pattern-inside": |
             import $G from "@actions/github";
+            ...
+- "patterns":
+    - "pattern-either":
+        - "pattern": "context.payload.pull_request.head.ref"
+        - "pattern": "context.payload.pull_request.head.label"
+        - "pattern": "context.payload.pull_request.title"
+        - "pattern": "context.payload.pull_request.body"
+        - "pattern": "context.payload.workflow_run.head_commit.pull_requests[$I].head.ref"
+        - "pattern": "context.payload.workflow_run.head_commit.pull_requests[$I].head.label"
+        - "pattern": "context.payload.workflow_run.head_commit.pull_requests[$I].title"
+        - "pattern": "context.payload.workflow_run.head_commit.pull_requests[$I].body"
+        - "pattern": "context.payload.commits[$I].pull_requests[$J].head.ref"
+        - "pattern": "context.payload.commits[$I].pull_requests[$J].head.label"
+        - "pattern": "context.payload.commits[$I].pull_requests[$J].title"
+        - "pattern": "context.payload.commits[$I].pull_requests[$J].body"
+        - "pattern": "context.payload.discussion.title"
+        - "pattern": "context.payload.discussion.body"
+        - "pattern": "context.payload.issue.title"
+        - "pattern": "context.payload.issue.body"
+        - "pattern": "context.payload.review.body"
+        - "pattern": "context.payload.review_comment.body"
+        - "pattern": "context.payload.comment.body"
+        - "pattern": "context.payload.workflow_run.head_branch"
+        - "pattern": "context.payload.workflow_run.display_title"
+        - "pattern": "context.payload.workflow_run.head_repository.description"
+        - "pattern": "context.payload.workflow_run.head_commit.message"
+        - "pattern": "context.payload.workflow_run.head_commit.author.name"
+        - "pattern": "context.payload.workflow_run.head_commit.author.email"
+        - "pattern": "context.payload.workflow_run.head_commit.committer.name"
+        - "pattern": "context.payload.workflow_run.head_commit.committer.email"
+        - "pattern": "context.payload.commits[$I].message"
+        - "pattern": "context.payload.commits[$I].author.name"
+        - "pattern": "context.payload.commits[$I].author.email"
+        - "pattern": "context.payload.commits[$I].committer.name"
+        - "pattern": "context.payload.commits[$I].committer.email"
+    - "pattern-either":
+        - "pattern-inside": |
+            import {..., context, ...} from "@actions/github";
+            ...
+        - "pattern-inside": |
+            const {..., context, ...} = require("@actions/github");
             ...

@@ -11,8 +11,7 @@ rules:
       codeql: js/template-object-injection
     mode: taint
     pattern-sources:
-      - "$model": javascript/express-request-sources-cookies
-      - "$model": javascript/nextjs-server-side-sources
+      - "$model": javascript/http-request-sources-cookies
     pattern-sinks:
       - patterns:
           - pattern: "$RES.render($T, $X)"

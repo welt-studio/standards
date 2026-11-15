@@ -1,2 +1,14 @@
-- pattern: "escapeHtml($X)"
-- pattern: "escapeHTML($X)"
+# Heurística de nome do CodeQL (`DefaultHtmlSanitizerCall`): a chamada solta cujo nome contém `html`
+# e `saniti[sz]`, `escape` ou `strip` (menos `unescape`...) é um sanitizador de HTML, qualquer que
+# seja a função. O nome é o de um identificador: o `this.sanitizer.bypassSecurityTrustHtml` tem
+# `html` e `saniti` no texto, mas o nome do método é outro.
+- patterns:
+    - pattern: "$F(...)"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex:
+          "$text": javascript/identifier-name-regex
+    - metavariable-regex:
+        metavariable: "$F"
+        regex:
+          "$text": javascript/html-sanitizer-name-regex

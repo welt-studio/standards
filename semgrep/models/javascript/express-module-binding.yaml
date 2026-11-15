@@ -1,0 +1,9 @@
+# O módulo `express` (`$E`), ligado pelo `require` ou pelo `import`. Um item só, para entrar em uma
+# lista `patterns`.
+- pattern-either:
+    - pattern-inside: |
+        $E = require("express"); ...
+    - pattern-inside: |
+        import $E from "express"; ...
+    - pattern-inside: |
+        import * as $E from "express"; ...

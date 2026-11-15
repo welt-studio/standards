@@ -1,7 +1,0 @@
-- patterns:
-    - pattern: "$FS.remove($X, ...)"
-    - focus-metavariable: "$X"
-    - metavariable-regex:
-        metavariable: "$FS"
-        regex:
-          "$text": javascript/fs-module-name-regex

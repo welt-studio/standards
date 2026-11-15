@@ -1,0 +1,1 @@
+"^(?:all|use|param|error|del|get|post|put|delete|patch|head|options|checkout|copy|lock|merge|mkactivity|mkcol|move|notify|purge|report|search|subscribe|trace|unlock|unsubscribe)$"

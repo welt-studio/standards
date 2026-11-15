@@ -135,6 +135,11 @@ def test_model_key_with_siblings_is_an_error(tmp_path: Path) -> None:
     assert "só vale como elemento de lista" in errors_of(tmp_path, files)
 
 
+def test_empty_model_is_an_error(tmp_path: Path) -> None:
+    files = two_queries({"a/empty.yaml": "[]\n"})
+    assert "models/a/empty.yaml: modelo vazio" in errors_of(tmp_path, files)
+
+
 def test_unused_model_is_an_error(tmp_path: Path) -> None:
     files = two_queries({"a/used.yaml": "- pattern: a\n"})
     files["models/a/orphan.yaml"] = "- pattern: b\n"
@@ -183,6 +188,52 @@ def test_regex_repeated_in_two_files_must_be_a_model(tmp_path: Path) -> None:
 def test_item_repeated_inside_one_file_is_fine(tmp_path: Path) -> None:
     body = "    pattern-sinks:\n      - pattern: a\n      - pattern: a\n"
     assert errors_of(tmp_path, {"queries/javascript/xss.yaml": rule(body)}) == ""
+
+
+def derived_source_files(source: str) -> dict[str, str]:
+    """Duas consultas com a fonte `a/req-query` (que o modelo `a/express` também cita) e, na
+    `xss`, a fonte `source`."""
+    models = {
+        "models/a/req-query.yaml": "- pattern: req.query\n",
+        "models/a/express.yaml": "- $model: a/req-query\n- pattern: req.body\n",
+    }
+    base = "    pattern-sources:\n      - $model: a/express\n"
+    return {
+        **models,
+        "queries/javascript/xss.yaml": rule(base + source),
+        "queries/javascript/xss-through-dom.yaml": rule(base, "js/xss-through-dom"),
+    }
+
+
+def test_source_defined_from_another_source_is_an_error(tmp_path: Path) -> None:
+    # O formato dos blocos do fastify: o campo lido vira fonte quando um gancho grava nele uma
+    # fonte, que chega pelo modelo de dentro (`a/req-query`, citado por `a/express`).
+    source = (
+        "      - patterns:\n"
+        "          - pattern: $R.$F\n"
+        "          - pattern-inside: |\n"
+        "              $APP.addHook($E, ($W) => { $W.$F = $SRC; })\n"
+        "              ...\n"
+        "          - metavariable-pattern:\n"
+        "              metavariable: $SRC\n"
+        "              pattern-either:\n"
+        "                - $model: a/req-query\n"
+    )
+    message = errors_of(tmp_path, derived_source_files(source))
+    assert "queries/javascript/xss.yaml: fonte definida a partir de outra fonte (a/req-query)" in (
+        message
+    )
+
+
+def test_metavariable_pattern_without_a_source_model_is_fine(tmp_path: Path) -> None:
+    source = (
+        "      - patterns:\n"
+        "          - pattern: $F($X)\n"
+        "          - metavariable-pattern:\n"
+        "              metavariable: $F\n"
+        "              pattern: getInput\n"
+    )
+    assert errors_of(tmp_path, derived_source_files(source)) == ""
 
 
 @pytest.mark.parametrize(

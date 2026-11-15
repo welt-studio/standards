@@ -1,0 +1,36 @@
+# Uma aplicação ou roteador do Express (`$APP`), como o `appCreation` e o `routerCreation` do
+# `Express.qll` do CodeQL: `express()`, `express.createServer()` e `express.Router()`, com o módulo
+# ligado pelo `require` ou pelo `import`. Um item só, para entrar em uma lista `patterns`.
+- pattern-either:
+    - patterns:
+        - pattern-either:
+            - pattern-inside: |
+                $APP = $E(); ...
+            - pattern-inside: |
+                $APP = $E.createServer(...); ...
+            - pattern-inside: |
+                $APP = $E.Router(...); ...
+        - "$model": javascript/express-module-binding
+    - pattern-inside: |
+        $APP = require("express")(); ...
+    - pattern-inside: |
+        $APP = require("express").Router(...); ...
+    - patterns:
+        - pattern-inside: |
+            $APP = Router(...); ...
+        - pattern-either:
+            - pattern-inside: |
+                import {..., Router, ...} from "express"; ...
+            - pattern-inside: |
+                const {..., Router, ...} = require("express"); ...
+    - patterns:
+        - pattern-inside: |
+            new $W(..., {..., $K: function ($APP) {...}, ...})
+        - metavariable-regex:
+            metavariable: "$K"
+            regex: "^(?:after|before|setup)$"
+        - pattern-either:
+            - pattern-inside: |
+                $W = require("webpack-dev-server"); ...
+            - pattern-inside: |
+                import $W from "webpack-dev-server"; ...

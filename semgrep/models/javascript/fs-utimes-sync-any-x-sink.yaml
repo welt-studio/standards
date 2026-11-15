@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.utimesSync($X, ...)"
-    - focus-metavariable: "$X"

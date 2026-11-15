@@ -1,0 +1,13 @@
+- "pattern-either":
+    - "pattern-inside": |
+        import {..., $M, ...} from "node:child_process";
+        ...
+    - "pattern-inside": |
+        const {..., $M, ...} = require("node:child_process");
+        ...
+    - "pattern-inside": |
+        import {..., $M, ...} from "mz/child_process";
+        ...
+    - "pattern-inside": |
+        const {..., $M, ...} = require("mz/child_process");
+        ...

@@ -1,2 +1,8 @@
-- pattern: "$L.escapeHtml($X)"
-- pattern: "$L.escapeHTML($X)"
+# A mesma heurística de nome do CodeQL, para o método (`util.escapeHtml(x)`): o nome do método é que
+# conta, não o do receptor.
+- patterns:
+    - pattern: "$O.$F(...)"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex:
+          "$text": javascript/html-sanitizer-name-regex

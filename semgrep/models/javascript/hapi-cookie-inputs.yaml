@@ -1,0 +1,4 @@
+# O cookie do Hapi que o `Hapi.qll` do CodeQL modela: a leitura de `request.state.nome`, sobre o `$REQ`
+# de um tratador.
+- pattern: "$REQ.state.$K"
+- pattern: "$REQ.state[$K]"

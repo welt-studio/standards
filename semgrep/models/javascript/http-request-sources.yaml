@@ -1,0 +1,48 @@
+# As entradas remotas das requisições HTTP que o CodeQL modela (`Http::RequestInputAccess` dos
+# `frameworks/*.qll`), sem os cookies: cada uma sai do tratador registrado no framework (Express,
+# servidor HTTP do Node, Koa, Hapi, Fastify, Next.js, NestJS), nunca do nome do parâmetro. Os
+# cookies ficam em `http-request-sources-cookies`.
+- patterns:
+    - "$model": javascript/express-request-parameter
+    - pattern-either:
+        - "$model": javascript/express-request-inputs
+- patterns:
+    - "$model": javascript/node-http-request-parameter
+    - "$model": javascript/node-request-inputs
+- patterns:
+    - "$model": javascript/fastify-request-parameter
+    - pattern-either:
+        - "$model": javascript/req-params
+        - "$model": javascript/req-query
+        - "$model": javascript/req-body
+- patterns:
+    - "$model": javascript/koa-context-parameter
+    - pattern-either:
+        - "$model": javascript/koa-request-inputs
+- patterns:
+    - "$model": javascript/hapi-request-parameter
+    - pattern-either:
+        - "$model": javascript/hapi-request-inputs
+- patterns:
+    - "$model": javascript/next-server-side-context
+    - pattern-either:
+        - pattern: "$CTX.params"
+        - pattern: "$CTX.query"
+        - "$model": javascript/next-request-inputs
+- patterns:
+    - "$model": javascript/next-initial-props-context
+    - pattern-either:
+        - "$model": javascript/next-request-inputs
+- patterns:
+    - "$model": javascript/next-app-request-parameter
+    - pattern-either:
+        - "$model": javascript/next-app-request-inputs
+- patterns:
+    - "$model": javascript/nest-request-parameter
+    - pattern-either:
+        - "$model": javascript/express-request-inputs
+- patterns:
+    - "$model": javascript/typed-request-parameter
+    - pattern-either:
+        - "$model": javascript/express-request-inputs
+- "$model": javascript/nest-request-input-parameters

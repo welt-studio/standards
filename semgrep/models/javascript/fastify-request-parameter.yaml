@@ -1,0 +1,32 @@
+# O parâmetro de requisição (`$REQ`) de um tratador do Fastify, como o `RouteSetup` do `Fastify.qll` do
+# CodeQL: a função passada ao método de rota, ao `addHook` ou ao `route({handler, ...})` de um servidor
+# criado por `fastify()`, com o módulo ligado pelo `require` ou pelo `import`. Nenhuma forma casa
+# pelo nome do parâmetro. Um item só, para entrar em uma lista `patterns`.
+- patterns:
+    - pattern-either:
+        - patterns:
+            - pattern-inside: "$SERVER.$M(..., function ($REQ, ...) {...}, ...)"
+            - metavariable-regex:
+                metavariable: "$M"
+                regex: "^(?:get|head|post|put|delete|options|patch|addHook|all)$"
+        - patterns:
+            - pattern-inside: "$SERVER.route({..., $H: function ($REQ, ...) {...}, ...})"
+            - metavariable-regex:
+                metavariable: "$H"
+                regex: "^(?:onRequest|preParsing|preValidation|preHandler|handler|preSerialization|onSend|onResponse)$"
+    - pattern-either:
+        - patterns:
+            - pattern-either:
+                - pattern-inside: |
+                    $SERVER = $F(...); ...
+                - pattern-inside: |
+                    $SERVER = await $F(...); ...
+            - pattern-either:
+                - pattern-inside: |
+                    $F = require("fastify"); ...
+                - pattern-inside: |
+                    import $F from "fastify"; ...
+                - pattern-inside: |
+                    import * as $F from "fastify"; ...
+        - pattern-inside: |
+            $SERVER = require("fastify")(...); ...

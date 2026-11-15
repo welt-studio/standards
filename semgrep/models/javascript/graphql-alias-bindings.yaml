@@ -1,0 +1,10 @@
+- "pattern-either":
+    - "pattern-inside": |
+        $G = require("graphql");
+        ...
+    - "pattern-inside": |
+        import * as $G from "graphql";
+        ...
+    - "pattern-inside": |
+        import $G from "graphql";
+        ...

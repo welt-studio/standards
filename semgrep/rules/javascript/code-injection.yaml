@@ -15,204 +15,603 @@ rules:
     pattern-sources:
       - patterns:
           - pattern-either:
-              - pattern-inside: "function ($REQ, $RES, ...) {...}"
-              - pattern-inside: "function $F($REQ, $RES, ...) {...}"
-              - pattern-inside: "async function ($REQ, $RES, ...) {...}"
-              - pattern-inside: "async function $F($REQ, $RES, ...) {...}"
-              - pattern-inside: "($REQ, $RES, ...) => {...}"
-              - pattern-inside: "($REQ, $RES, ...) => $E"
-              - pattern-inside: "async ($REQ, $RES, ...) => {...}"
-              - pattern-inside: "async ($REQ, $RES, ...) => $E"
-              - pattern-inside: "$M($REQ, $RES, ...) {...}"
-              - pattern-inside: "async $M($REQ, $RES, ...) {...}"
-              - pattern-inside: "function ($REQ) {...}"
-              - pattern-inside: "function $F($REQ) {...}"
-              - pattern-inside: "($REQ) => {...}"
-              - pattern-inside: "($REQ) => $E"
-              - pattern-inside: "async ($REQ) => {...}"
-              - pattern-inside: "async function $F($REQ) {...}"
-              - pattern-inside: "$M($REQ) {...}"
-          - metavariable-regex:
-              metavariable: "$REQ"
-              regex: "^(?i:_?(?:req|request|r))$"
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: "$APP.$M(..., function ($REQ) {...}, ...)"
+                      - pattern-inside: "$APP.$M(..., function ($REQ, $RES) {...}, ...)"
+                      - pattern-inside: "$APP.$M(..., function ($REQ, $RES, $NEXT) {...}, ...)"
+                      - pattern-inside: "$APP.$M(..., function ($ERR, $REQ, $RES, $NEXT) {...}, ...)"
+                      - pattern-inside: "$APP.route(...).$M(..., function ($REQ) {...}, ...)"
+                      - pattern-inside: "$APP.route(...).$M(..., function ($REQ, $RES) {...}, ...)"
+                      - pattern-inside: "$APP.route(...).$M(..., function ($REQ, $RES, $NEXT) {...}, ...)"
+                      - pattern-inside: |
+                          $APP.$M(..., $H, ...);
+                          ...
+                          function $H($REQ, ...) {...}
+                      - pattern-inside: |
+                          function $H($REQ, ...) {...}
+                          ...
+                          $APP.$M(..., $H, ...);
+                      - pattern-inside: |
+                          $APP.$M(..., $H, ...);
+                          ...
+                          $H = function ($REQ, ...) {...};
+                      - pattern-inside: |
+                          $H = function ($REQ, ...) {...};
+                          ...
+                          $APP.$M(..., $H, ...);
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:all|use|param|error|del|get|post|put|delete|patch|head|options|checkout|copy|lock|merge|mkactivity|mkcol|move|notify|purge|report|search|subscribe|trace|unlock|unsubscribe)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-either:
+                              - pattern-inside: |
+                                  $APP = $E(); ...
+                              - pattern-inside: |
+                                  $APP = $E.createServer(...); ...
+                              - pattern-inside: |
+                                  $APP = $E.Router(...); ...
+                          - pattern-either:
+                              - pattern-inside: |
+                                  $E = require("express"); ...
+                              - pattern-inside: |
+                                  import $E from "express"; ...
+                              - pattern-inside: |
+                                  import * as $E from "express"; ...
+                      - pattern-inside: |
+                          $APP = require("express")(); ...
+                      - pattern-inside: |
+                          $APP = require("express").Router(...); ...
+                      - patterns:
+                          - pattern-inside: |
+                              $APP = Router(...); ...
+                          - pattern-either:
+                              - pattern-inside: |
+                                  import {..., Router, ...} from "express"; ...
+                              - pattern-inside: |
+                                  const {..., Router, ...} = require("express"); ...
+                      - patterns:
+                          - pattern-inside: |
+                              new $W(..., {..., $K: function ($APP) {...}, ...})
+                          - metavariable-regex:
+                              metavariable: "$K"
+                              regex: "^(?:after|before|setup)$"
+                          - pattern-either:
+                              - pattern-inside: |
+                                  $W = require("webpack-dev-server"); ...
+                              - pattern-inside: |
+                                  import $W from "webpack-dev-server"; ...
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: "$E().$M(..., function ($REQ, ...) {...}, ...)"
+                      - pattern-inside: "$E.createServer(...).$M(..., function ($REQ, ...) {...}, ...)"
+                      - pattern-inside: "$E.Router(...).$M(..., function ($REQ, ...) {...}, ...)"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:all|use|param|error|del|get|post|put|delete|patch|head|options|checkout|copy|lock|merge|mkactivity|mkcol|move|notify|purge|report|search|subscribe|trace|unlock|unsubscribe)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $E = require("express"); ...
+                      - pattern-inside: |
+                          import $E from "express"; ...
+                      - pattern-inside: |
+                          import * as $E from "express"; ...
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: "$APP.$C(...).$M(..., function ($REQ, ...) {...}, ...)"
+                      - patterns:
+                          - pattern-inside: "$APP.$C(...).$D(...).$M(..., function ($REQ, ...) {...}, ...)"
+                          - metavariable-regex:
+                              metavariable: "$D"
+                              regex: "^(?:engine|set|param|enable|disable|on)$"
+                  - metavariable-regex:
+                      metavariable: "$C"
+                      regex: "^(?:engine|set|param|enable|disable|on)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:all|use|param|error|del|get|post|put|delete|patch|head|options|checkout|copy|lock|merge|mkactivity|mkcol|move|notify|purge|report|search|subscribe|trace|unlock|unsubscribe)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-either:
+                              - pattern-inside: |
+                                  $APP = $E(); ...
+                              - pattern-inside: |
+                                  $APP = $E.createServer(...); ...
+                              - pattern-inside: |
+                                  $APP = $E.Router(...); ...
+                          - pattern-either:
+                              - pattern-inside: |
+                                  $E = require("express"); ...
+                              - pattern-inside: |
+                                  import $E from "express"; ...
+                              - pattern-inside: |
+                                  import * as $E from "express"; ...
+                      - pattern-inside: |
+                          $APP = require("express")(); ...
+                      - pattern-inside: |
+                          $APP = require("express").Router(...); ...
+                      - patterns:
+                          - pattern-inside: |
+                              $APP = Router(...); ...
+                          - pattern-either:
+                              - pattern-inside: |
+                                  import {..., Router, ...} from "express"; ...
+                              - pattern-inside: |
+                                  const {..., Router, ...} = require("express"); ...
+                      - patterns:
+                          - pattern-inside: |
+                              new $W(..., {..., $K: function ($APP) {...}, ...})
+                          - metavariable-regex:
+                              metavariable: "$K"
+                              regex: "^(?:after|before|setup)$"
+                          - pattern-either:
+                              - pattern-inside: |
+                                  $W = require("webpack-dev-server"); ...
+                              - pattern-inside: |
+                                  import $W from "webpack-dev-server"; ...
+              - pattern-inside: 'require("express")().$M(..., function ($REQ, ...) {...}, ...)'
+              - pattern-inside: 'require("express").Router(...).$M(..., function ($REQ, ...) {...}, ...)'
           - pattern-either:
+              - pattern-either:
+                  - pattern: "$REQ.url"
+                  - pattern: "$REQ.body"
+                  - pattern: "$REQ.headers.$K"
+                  - pattern: "$REQ.headers[$K]"
               - pattern: "$REQ.query"
-              - pattern: "$REQ.body"
               - pattern: "$REQ.params"
-              - pattern: "$REQ.headers"
-              - pattern: "$REQ.signedCookies"
-              - pattern: "$REQ.url"
+              - pattern: "$REQ.param(...)"
               - pattern: "$REQ.originalUrl"
               - pattern: "$REQ.path"
-              - pattern: "$REQ.hostname"
-              - pattern: "$REQ.host"
-              - pattern: "$REQ.baseUrl"
-              - pattern: "$REQ.subdomains"
               - pattern: "$REQ.files"
               - pattern: "$REQ.file"
-              - pattern: "$REQ.rawBody"
-              - pattern: "$REQ.payload"
-              - pattern: "$REQ.state"
+              - pattern: "$REQ._parsedUrl"
               - pattern: "$REQ.get(...)"
               - pattern: "$REQ.header(...)"
-              - pattern: "$REQ.param(...)"
-              - pattern: "$REQ.getHeader(...)"
-              - pattern: "$REQ.json()"
-              - pattern: "$REQ.text()"
-              - pattern: "$REQ.formData()"
-              - pattern: "$REQ.blob()"
-              - pattern: "$REQ.arrayBuffer()"
-              - pattern: "$REQ.nextUrl.$K"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.hostname"
       - patterns:
           - pattern-either:
-              - pattern-inside: "$APP.$M(..., function ($REQ, ...) {...})"
-              - pattern-inside: "$APP.$M(..., async function ($REQ, ...) {...})"
-              - pattern-inside: "$APP.$M(..., ($REQ, ...) => {...})"
-              - pattern-inside: "$APP.$M(..., ($REQ, ...) => $E)"
-              - pattern-inside: "$APP.$M(..., async ($REQ, ...) => {...})"
-              - pattern-inside: "$APP.$M(..., async ($REQ, ...) => $E)"
-              - pattern-inside: "$APP.$M(..., function $F($REQ, ...) {...})"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:get|post|put|delete|patch|all|use|route|head|options|on|createServer|handle|addHook|register)$"
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: "$H.$CS(..., function ($REQ, $RES) {...}, ...)"
+                      - pattern-inside: |
+                          $H.$CS(..., $F, ...);
+                          ...
+                          function $F($REQ, $RES) {...}
+                      - pattern-inside: |
+                          function $F($REQ, $RES) {...}
+                          ...
+                          $H.$CS(..., $F, ...);
+                  - metavariable-regex:
+                      metavariable: "$CS"
+                      regex: "^(?:createServer|createSecureServer)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $H = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:https?|http2)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $H from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:https?|http2)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $H from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:https?|http2)$"
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: |
+                          $S = $H.$CS(...);
+                          ...
+                          $S.$ON("request", function ($REQ, $RES) {...});
+                      - pattern-inside: |
+                          $S = $H.$CS(...);
+                          ...
+                          $S.$ON("request", $F);
+                          ...
+                          function $F($REQ, $RES) {...}
+                  - metavariable-regex:
+                      metavariable: "$CS"
+                      regex: "^(?:createServer|createSecureServer)$"
+                  - metavariable-regex:
+                      metavariable: "$ON"
+                      regex: "^(?:on|once)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $H = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:https?|http2)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $H from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:https?|http2)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $H from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:https?|http2)$"
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: "createServer(..., function ($REQ, $RES) {...}, ...)"
+                      - pattern-inside: "createSecureServer(..., function ($REQ, $RES) {...}, ...)"
+                  - pattern-either:
+                      - pattern-inside: |
+                          import {..., createServer, ...} from "$MOD"; ...
+                      - pattern-inside: |
+                          import {..., createSecureServer, ...} from "$MOD"; ...
+                      - pattern-inside: |
+                          const {..., createServer, ...} = require("$MOD"); ...
+                      - pattern-inside: |
+                          const {..., createSecureServer, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?(?:https?|http2)$"
+              - pattern-inside: 'require("http").createServer(..., function ($REQ, $RES) {...}, ...)'
+              - pattern-inside: 'require("https").createServer(..., function ($REQ, $RES) {...}, ...)'
           - pattern-either:
-              - pattern: "$REQ.query"
+              - pattern: "$REQ.url"
               - pattern: "$REQ.body"
+              - pattern: "$REQ.headers.$K"
+              - pattern: "$REQ.headers[$K]"
+      - patterns:
+          - patterns:
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: "$SERVER.$M(..., function ($REQ, ...) {...}, ...)"
+                      - metavariable-regex:
+                          metavariable: "$M"
+                          regex: "^(?:get|head|post|put|delete|options|patch|addHook|all)$"
+                  - patterns:
+                      - pattern-inside: "$SERVER.route({..., $H: function ($REQ, ...) {...}, ...})"
+                      - metavariable-regex:
+                          metavariable: "$H"
+                          regex: "^(?:onRequest|preParsing|preValidation|preHandler|handler|preSerialization|onSend|onResponse)$"
+              - pattern-either:
+                  - patterns:
+                      - pattern-either:
+                          - pattern-inside: |
+                              $SERVER = $F(...); ...
+                          - pattern-inside: |
+                              $SERVER = await $F(...); ...
+                      - pattern-either:
+                          - pattern-inside: |
+                              $F = require("fastify"); ...
+                          - pattern-inside: |
+                              import $F from "fastify"; ...
+                          - pattern-inside: |
+                              import * as $F from "fastify"; ...
+                  - pattern-inside: |
+                      $SERVER = require("fastify")(...); ...
+          - pattern-either:
               - pattern: "$REQ.params"
-              - pattern: "$REQ.headers"
-              - pattern: "$REQ.signedCookies"
-              - pattern: "$REQ.url"
-              - pattern: "$REQ.originalUrl"
-              - pattern: "$REQ.path"
-              - pattern: "$REQ.hostname"
-              - pattern: "$REQ.host"
-              - pattern: "$REQ.baseUrl"
-              - pattern: "$REQ.subdomains"
-              - pattern: "$REQ.files"
-              - pattern: "$REQ.file"
-              - pattern: "$REQ.rawBody"
-              - pattern: "$REQ.payload"
-              - pattern: "$REQ.state"
-              - pattern: "$REQ.get(...)"
-              - pattern: "$REQ.header(...)"
-              - pattern: "$REQ.param(...)"
-              - pattern: "$REQ.getHeader(...)"
-              - pattern: "$REQ.json()"
-              - pattern: "$REQ.text()"
-              - pattern: "$REQ.formData()"
-              - pattern: "$REQ.blob()"
-              - pattern: "$REQ.arrayBuffer()"
-              - pattern: "$REQ.nextUrl.$K"
-      - patterns:
-          - pattern-either:
-              - pattern-inside: "function getServerSideProps($CTX) {...}"
-              - pattern-inside: "async function getServerSideProps($CTX) {...}"
-              - pattern-inside: "function getInitialProps($CTX) {...}"
-              - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
-              - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
-          - pattern-either:
-              - pattern: "$CTX.query"
-              - pattern: "$CTX.params"
-              - pattern: "$CTX.req.url"
-              - pattern: "$CTX.req.headers"
-              - pattern: "$CTX.req.body"
-      - patterns:
-          - pattern-either:
-              - pattern-inside: "function getServerSideProps($CTX) {...}"
-              - pattern-inside: "async function getServerSideProps($CTX) {...}"
-              - pattern-inside: "function getInitialProps($CTX) {...}"
-              - pattern-inside: "$P.getInitialProps = async ($CTX) => {...}"
-              - pattern-inside: "$P.getInitialProps = ($CTX) => {...}"
-          - pattern-inside: "$REQ = $CTX.req; ..."
-          - pattern-either:
-              - pattern: "$REQ.url"
-              - pattern: "$REQ.headers"
-              - pattern: "$REQ.body"
               - pattern: "$REQ.query"
-              - pattern: "$REQ.cookies"
+              - pattern: "$REQ.body"
       - patterns:
           - pattern-either:
-              - pattern-inside: "function ($CTX, ...) {...}"
-              - pattern-inside: "async function ($CTX, ...) {...}"
-              - pattern-inside: "async ($CTX, ...) => {...}"
-              - pattern-inside: "($CTX, ...) => {...}"
-              - pattern-inside: "async function $F($CTX, ...) {...}"
-              - pattern-inside: "function $F($CTX, ...) {...}"
-              - pattern-inside: "async ($CTX, $NEXT) => {...}"
-          - metavariable-regex:
-              metavariable: "$CTX"
-              regex: "^(?i:_?(?:ctx|context|koaContext))$"
+              - patterns:
+                  - pattern-inside: "$APP.use(..., function ($CTX, ...) {...}, ...)"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $APP = new $K(...); ...
+                      - pattern-inside: |
+                          $APP = $K(...); ...
+                  - pattern-either:
+                      - pattern-inside: |
+                          $K = require("koa"); ...
+                      - pattern-inside: |
+                          import $K from "koa"; ...
+                      - pattern-inside: |
+                          import * as $K from "koa"; ...
+              - patterns:
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: "$ROUTER.$M(..., function ($CTX, ...) {...}, ...)"
+                          - pattern-either:
+                              - pattern-inside: |
+                                  $ROUTER = new $RT(...); ...
+                              - pattern-inside: |
+                                  $ROUTER = $RT(...); ...
+                      - pattern-inside: "new $RT(...).$M(..., function ($CTX, ...) {...}, ...)"
+                      - pattern-inside: "$RT(...).$M(..., function ($CTX, ...) {...}, ...)"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:use|get|post|put|link|unlink|delete|del|head|options|patch|all)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $RT = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:koa-router|@koa/router)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $RT from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:koa-router|@koa/router)$"
+              - patterns:
+                  - pattern-inside: "$RT.$M($P, function ($CTX, ...) {...})"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:all|acl|bind|checkout|connect|copy|delete|del|get|head|link|lock|msearch|merge|mkactivity|mkcalendar|mkcol|move|notify|options|patch|post|propfind|proppatch|purge|put|rebind|report|search|subscribe|trace|unbind|unlink|unlock|unsubscribe)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $RT = require("koa-route"); ...
+                      - pattern-inside: |
+                          import $RT from "koa-route"; ...
+                      - pattern-inside: |
+                          import * as $RT from "koa-route"; ...
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: "$ROUTER.$M(..., function ($CTX, ...) {...}, ...)"
+                      - patterns:
+                          - pattern-inside: "$ROUTER.$N(...).$M(..., function ($CTX, ...) {...}, ...)"
+                          - metavariable-regex:
+                              metavariable: "$N"
+                              regex: "^(?:use|get|post|put|link|unlink|delete|del|head|options|patch|all)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:use|get|post|put|link|unlink|delete|del|head|options|patch|all)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $ROUTER = require("koa-router")(...); ...
+                      - pattern-inside: |
+                          $ROUTER = require("@koa/router")(...); ...
           - pattern-either:
               - pattern: "$CTX.query"
-              - pattern: "$CTX.params"
-              - pattern: "$CTX.headers"
+              - pattern: "$CTX.query.$K"
+              - pattern: "$CTX.query[$K]"
+              - pattern: "$CTX.request.query"
+              - pattern: "$CTX.request.query.$K"
+              - pattern: "$CTX.request.query[$K]"
               - pattern: "$CTX.url"
               - pattern: "$CTX.originalUrl"
-              - pattern: "$CTX.path"
               - pattern: "$CTX.href"
-              - pattern: "$CTX.querystring"
-              - pattern: "$CTX.search"
-              - pattern: "$CTX.hostname"
-              - pattern: "$CTX.host"
-              - pattern: "$CTX.origin"
-              - pattern: "$CTX.request.query"
-              - pattern: "$CTX.request.body"
-              - pattern: "$CTX.request.headers"
               - pattern: "$CTX.request.url"
-              - pattern: "$CTX.request.path"
-              - pattern: "$CTX.request.href"
-              - pattern: "$CTX.request.querystring"
-              - pattern: "$CTX.request.search"
               - pattern: "$CTX.request.originalUrl"
-              - pattern: "$CTX.request.host"
-              - pattern: "$CTX.request.hostname"
-              - pattern: "$CTX.req.url"
-              - pattern: "$CTX.req.headers"
+              - pattern: "$CTX.request.href"
+              - pattern: "$CTX.params"
               - pattern: "$CTX.request.params"
-              - pattern: "$CTX.cookies"
+              - pattern: "$CTX.request.body"
+              - pattern: "$CTX.header.$K"
+              - pattern: "$CTX.header[$K]"
+              - pattern: "$CTX.headers.$K"
+              - pattern: "$CTX.headers[$K]"
+              - pattern: "$CTX.request.header.$K"
+              - pattern: "$CTX.request.header[$K]"
+              - pattern: "$CTX.request.headers.$K"
+              - pattern: "$CTX.request.headers[$K]"
               - pattern: "$CTX.get(...)"
-              - pattern: "$CTX.cookies.get(...)"
               - pattern: "$CTX.request.get(...)"
-              - pattern: "$CTX.header(...)"
       - patterns:
-          - pattern: "@Body(...) $X"
-          - focus-metavariable: "$X"
+          - pattern-either:
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: "$SERVER.route({..., handler: function ($REQ, ...) {...}, ...})"
+                      - pattern-inside: "$SERVER.route([..., {..., handler: function ($REQ, ...) {...}, ...}, ...])"
+                      - pattern-inside: "$SERVER.ext($EVENT, function ($REQ, ...) {...}, ...)"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $SERVER = new $HP.Server(...); ...
+                      - pattern-inside: |
+                          $SERVER = $HP.server(...); ...
+                      - pattern-inside: |
+                          $SERVER = $HP.Server(...); ...
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $HP = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:hapi|@hapi/hapi)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $HP from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:hapi|@hapi/hapi)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $HP from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:hapi|@hapi/hapi)$"
+          - pattern-either:
+              - pattern: "$REQ.rawPayload"
+              - pattern: "$REQ.payload"
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.url.path"
+              - pattern: "$REQ.url.origin"
+              - pattern: "$REQ.headers.$K"
+              - pattern: "$REQ.headers[$K]"
       - patterns:
-          - pattern: "@Query(...) $X"
-          - focus-metavariable: "$X"
+          - pattern-either:
+              - pattern-inside: "function getServerSideProps($CTX, ...) {...}"
+              - pattern-inside: "export const getServerSideProps = function ($CTX, ...) {...}"
+              - pattern-inside: "const getServerSideProps = function ($CTX, ...) {...}"
+          - pattern-either:
+              - pattern: "$CTX.params"
+              - pattern: "$CTX.query"
+              - pattern: "$CTX.req.url"
+              - pattern: "$CTX.req.body"
+              - pattern: "$CTX.req.headers.$K"
+              - pattern: "$CTX.req.headers[$K]"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$REQ.url"
+                      - pattern: "$REQ.body"
+                      - pattern: "$REQ.headers.$K"
+                      - pattern: "$REQ.headers[$K]"
+                  - pattern-inside: |
+                      $REQ = $CTX.req; ...
       - patterns:
-          - pattern: "@Param(...) $X"
-          - focus-metavariable: "$X"
+          - pattern-either:
+              - pattern-inside: "function getInitialProps($CTX, ...) {...}"
+              - pattern-inside: "$P.getInitialProps = function ($CTX, ...) {...}"
+              - pattern-inside: |
+                  class $C {
+                    ...
+                    static getInitialProps($CTX, ...) {...}
+                    ...
+                  }
+          - pattern-either:
+              - pattern: "$CTX.req.url"
+              - pattern: "$CTX.req.body"
+              - pattern: "$CTX.req.headers.$K"
+              - pattern: "$CTX.req.headers[$K]"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$REQ.url"
+                      - pattern: "$REQ.body"
+                      - pattern: "$REQ.headers.$K"
+                      - pattern: "$REQ.headers[$K]"
+                  - pattern-inside: |
+                      $REQ = $CTX.req; ...
       - patterns:
-          - pattern: "@Headers(...) $X"
-          - focus-metavariable: "$X"
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: "export function $M($REQ, ...) {...}"
+                  - pattern-inside: "export async function $M($REQ, ...) {...}"
+                  - pattern-inside: "export const $M = function ($REQ, ...) {...}"
+              - metavariable-regex:
+                  metavariable: "$M"
+                  regex: "^(?:CHECKOUT|COPY|DELETE|GET|HEAD|LOCK|MERGE|MKACTIVITY|MKCOL|MOVE|NOTIFY|OPTIONS|PATCH|POST|PURGE|PUT|REPORT|SEARCH|SUBSCRIBE|TRACE|UNLOCK|UNSUBSCRIBE|middleware|proxy)$"
+          - pattern-either:
+              - pattern: "$REQ.json()"
+              - pattern: "$REQ.formData()"
+              - pattern: "$REQ.blob()"
+              - pattern: "$REQ.arrayBuffer()"
+              - pattern: "$REQ.text()"
+              - pattern: "$REQ.body"
+              - pattern: "$REQ.url"
+              - pattern: "$REQ.nextUrl"
+              - pattern: "$REQ.nextUrl.searchParams.get(...)"
+              - pattern: "$REQ.headers"
       - patterns:
-          - pattern: "@Req(...) $X"
-          - focus-metavariable: "$X"
+          - pattern-either:
+              - patterns:
+                  - pattern-inside: |
+                      @$G(...)
+                      $M(..., @$R(...) $REQ, ...) {...}
+                  - metavariable-regex:
+                      metavariable: "$G"
+                      regex: "^(?:Get|Post|Put|Delete|Patch|Options|Head|All)$"
+                  - metavariable-regex:
+                      metavariable: "$R"
+                      regex: "^(?:Req|Request)$"
+                  - pattern-inside: |
+                      import {..., $G, ...} from "@nestjs/common"; ...
+                  - pattern-inside: |
+                      import {..., $R, ...} from "@nestjs/common"; ...
+              - patterns:
+                  - pattern-inside: |
+                      class $C implements NestMiddleware {
+                        ...
+                        use($REQ, ...) {...}
+                        ...
+                      }
+                  - pattern-inside: |
+                      import {..., NestMiddleware, ...} from "@nestjs/common"; ...
+          - pattern-either:
+              - pattern-either:
+                  - pattern: "$REQ.url"
+                  - pattern: "$REQ.body"
+                  - pattern: "$REQ.headers.$K"
+                  - pattern: "$REQ.headers[$K]"
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.files"
+              - pattern: "$REQ.file"
+              - pattern: "$REQ._parsedUrl"
+              - pattern: "$REQ.get(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.hostname"
       - patterns:
-          - pattern: "@Request(...) $X"
-          - focus-metavariable: "$X"
+          - patterns:
+              - pattern-either:
+                  - pattern-inside: "function ($REQ: $T, ...) {...}"
+                  - pattern-inside: "function $F($REQ: $T, ...) {...}"
+                  - pattern-inside: "async function $F($REQ: $T, ...) {...}"
+              - pattern-either:
+                  - patterns:
+                      - pattern-inside: |
+                          import {..., $T, ...} from "$MOD"; ...
+                      - metavariable-regex:
+                          metavariable: "$T"
+                          regex: "^(?:Request|VercelRequest|NowRequest|NextApiRequest)$"
+                      - metavariable-regex:
+                          metavariable: "$MOD"
+                          regex: "^(?:express|@vercel/node|@now/node|next)$"
+          - pattern-either:
+              - pattern-either:
+                  - pattern: "$REQ.url"
+                  - pattern: "$REQ.body"
+                  - pattern: "$REQ.headers.$K"
+                  - pattern: "$REQ.headers[$K]"
+              - pattern: "$REQ.query"
+              - pattern: "$REQ.params"
+              - pattern: "$REQ.param(...)"
+              - pattern: "$REQ.originalUrl"
+              - pattern: "$REQ.path"
+              - pattern: "$REQ.files"
+              - pattern: "$REQ.file"
+              - pattern: "$REQ._parsedUrl"
+              - pattern: "$REQ.get(...)"
+              - pattern: "$REQ.header(...)"
+              - pattern: "$REQ.host"
+              - pattern: "$REQ.hostname"
       - patterns:
-          - pattern: "@Cookies(...) $X"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "@UploadedFile(...) $X"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "@UploadedFiles(...) $X"
-          - focus-metavariable: "$X"
+          - pattern: "$X"
+          - pattern-inside: |
+              @$G(...)
+              $M(..., @$D(...) $X, ...) {...}
+          - metavariable-regex:
+              metavariable: "$G"
+              regex: "^(?:Get|Post|Put|Delete|Patch|Options|Head|All)$"
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:Query|Param|Headers|Body|HostParam|UploadedFile|UploadedFiles)$"
+          - pattern-inside: |
+              import {..., $G, ...} from "@nestjs/common"; ...
+          - pattern-inside: |
+              import {..., $D, ...} from "@nestjs/common"; ...
+          - pattern-not-inside: |
+              $M(..., @$D(..., ParseIntPipe, ...) $X, ...) {...}
+          - pattern-not-inside: |
+              $M(..., @$D(..., ParseBoolPipe, ...) $X, ...) {...}
+          - pattern-not-inside: |
+              $M(..., @$D(..., ParseUUIDPipe, ...) $X, ...) {...}
+          - pattern-not-inside: |
+              $M(..., @$D(..., new ParseIntPipe(...), ...) $X, ...) {...}
+          - pattern-not-inside: |
+              $M(..., @$D(..., new ParseBoolPipe(...), ...) $X, ...) {...}
+          - pattern-not-inside: |
+              $M(..., @$D(..., new ParseUUIDPipe(...), ...) $X, ...) {...}
       - pattern: location.hash
       - pattern: location.search
-      - pattern: location.href
-      - pattern: location.pathname
       - pattern: window.location.hash
       - pattern: window.location.search
       - pattern: window.location.href
-      - pattern: window.location.pathname
       - pattern: document.location.hash
       - pattern: document.location.search
       - pattern: document.location.href
-      - pattern: document.location.pathname
       - pattern: document.URL
       - pattern: document.documentURI
       - pattern: document.baseURI
@@ -221,8 +620,6 @@ rules:
       - pattern: self.location.hash
       - pattern: self.location.search
       - pattern: self.location.href
-      - pattern: top.location.hash
-      - pattern: top.location.search
       - patterns:
           - pattern-either:
               - pattern: "$E.data"
@@ -237,7 +634,39 @@ rules:
           - pattern: "$E.data"
           - pattern-inside: "window.onmessage = ($E) => {...}"
       - patterns:
-          - pattern: "$G.context.payload"
+          - pattern-either:
+              - pattern: "$G.context.payload.pull_request.head.ref"
+              - pattern: "$G.context.payload.pull_request.head.label"
+              - pattern: "$G.context.payload.pull_request.title"
+              - pattern: "$G.context.payload.pull_request.body"
+              - pattern: "$G.context.payload.workflow_run.head_commit.pull_requests[$I].head.ref"
+              - pattern: "$G.context.payload.workflow_run.head_commit.pull_requests[$I].head.label"
+              - pattern: "$G.context.payload.workflow_run.head_commit.pull_requests[$I].title"
+              - pattern: "$G.context.payload.workflow_run.head_commit.pull_requests[$I].body"
+              - pattern: "$G.context.payload.commits[$I].pull_requests[$J].head.ref"
+              - pattern: "$G.context.payload.commits[$I].pull_requests[$J].head.label"
+              - pattern: "$G.context.payload.commits[$I].pull_requests[$J].title"
+              - pattern: "$G.context.payload.commits[$I].pull_requests[$J].body"
+              - pattern: "$G.context.payload.discussion.title"
+              - pattern: "$G.context.payload.discussion.body"
+              - pattern: "$G.context.payload.issue.title"
+              - pattern: "$G.context.payload.issue.body"
+              - pattern: "$G.context.payload.review.body"
+              - pattern: "$G.context.payload.review_comment.body"
+              - pattern: "$G.context.payload.comment.body"
+              - pattern: "$G.context.payload.workflow_run.head_branch"
+              - pattern: "$G.context.payload.workflow_run.display_title"
+              - pattern: "$G.context.payload.workflow_run.head_repository.description"
+              - pattern: "$G.context.payload.workflow_run.head_commit.message"
+              - pattern: "$G.context.payload.workflow_run.head_commit.author.name"
+              - pattern: "$G.context.payload.workflow_run.head_commit.author.email"
+              - pattern: "$G.context.payload.workflow_run.head_commit.committer.name"
+              - pattern: "$G.context.payload.workflow_run.head_commit.committer.email"
+              - pattern: "$G.context.payload.commits[$I].message"
+              - pattern: "$G.context.payload.commits[$I].author.name"
+              - pattern: "$G.context.payload.commits[$I].author.email"
+              - pattern: "$G.context.payload.commits[$I].committer.name"
+              - pattern: "$G.context.payload.commits[$I].committer.email"
           - pattern-either:
               - pattern-inside: |
                   $G = require("@actions/github");
@@ -247,6 +676,47 @@ rules:
                   ...
               - pattern-inside: |
                   import $G from "@actions/github";
+                  ...
+      - patterns:
+          - pattern-either:
+              - pattern: context.payload.pull_request.head.ref
+              - pattern: context.payload.pull_request.head.label
+              - pattern: context.payload.pull_request.title
+              - pattern: context.payload.pull_request.body
+              - pattern: "context.payload.workflow_run.head_commit.pull_requests[$I].head.ref"
+              - pattern: "context.payload.workflow_run.head_commit.pull_requests[$I].head.label"
+              - pattern: "context.payload.workflow_run.head_commit.pull_requests[$I].title"
+              - pattern: "context.payload.workflow_run.head_commit.pull_requests[$I].body"
+              - pattern: "context.payload.commits[$I].pull_requests[$J].head.ref"
+              - pattern: "context.payload.commits[$I].pull_requests[$J].head.label"
+              - pattern: "context.payload.commits[$I].pull_requests[$J].title"
+              - pattern: "context.payload.commits[$I].pull_requests[$J].body"
+              - pattern: context.payload.discussion.title
+              - pattern: context.payload.discussion.body
+              - pattern: context.payload.issue.title
+              - pattern: context.payload.issue.body
+              - pattern: context.payload.review.body
+              - pattern: context.payload.review_comment.body
+              - pattern: context.payload.comment.body
+              - pattern: context.payload.workflow_run.head_branch
+              - pattern: context.payload.workflow_run.display_title
+              - pattern: context.payload.workflow_run.head_repository.description
+              - pattern: context.payload.workflow_run.head_commit.message
+              - pattern: context.payload.workflow_run.head_commit.author.name
+              - pattern: context.payload.workflow_run.head_commit.author.email
+              - pattern: context.payload.workflow_run.head_commit.committer.name
+              - pattern: context.payload.workflow_run.head_commit.committer.email
+              - pattern: "context.payload.commits[$I].message"
+              - pattern: "context.payload.commits[$I].author.name"
+              - pattern: "context.payload.commits[$I].author.email"
+              - pattern: "context.payload.commits[$I].committer.name"
+              - pattern: "context.payload.commits[$I].committer.email"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., context, ...} from "@actions/github";
+                  ...
+              - pattern-inside: |
+                  const {..., context, ...} = require("@actions/github");
                   ...
       - patterns:
           - pattern: "$P"
@@ -320,38 +790,59 @@ rules:
               - pattern-inside: '$WS.on("message", async function ($MSG, ...) {...})'
       - patterns:
           - pattern-either:
-              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
-              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
-              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
-              - pattern: "new graphql.GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - pattern: "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+              - pattern: "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+              - pattern: "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - pattern: "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve: async function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - pattern: "new $G.GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - pattern: "new $G.GraphQLObjectType({..., fields: {..., $F: {..., async resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+          - pattern-either:
+              - pattern-inside: |
+                  $G = require("graphql");
+                  ...
+              - pattern-inside: |
+                  import * as $G from "graphql";
+                  ...
+              - pattern-inside: |
+                  import $G from "graphql";
+                  ...
           - focus-metavariable: "$ARGS"
       - patterns:
           - pattern-either:
-              - pattern: "{..., $K: ($ARGS, ...) => {...}, ...}"
-              - pattern: "{..., $K: async ($ARGS, ...) => {...}, ...}"
-              - pattern: "{..., $K: function ($ARGS, ...) {...}, ...}"
-              - pattern: "{..., $K($ARGS, ...) {...}, ...}"
-              - pattern: "{..., async $K($ARGS, ...) {...}, ...}"
-          - pattern-inside: "$ROOT = {...}"
+              - pattern: "new GraphQLObjectType({..., fields: {..., $F: {..., resolve: ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+              - pattern: "new GraphQLObjectType({..., fields: {..., $F: {..., resolve: async ($PARENT, $ARGS, ...) => {...}, ...}, ...}, ...})"
+              - pattern: "new GraphQLObjectType({..., fields: {..., $F: {..., resolve: function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - pattern: "new GraphQLObjectType({..., fields: {..., $F: {..., resolve: async function ($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - pattern: "new GraphQLObjectType({..., fields: {..., $F: {..., resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
+              - pattern: "new GraphQLObjectType({..., fields: {..., $F: {..., async resolve($PARENT, $ARGS, ...) {...}, ...}, ...}, ...})"
           - pattern-either:
               - pattern-inside: |
-                  $ROOT = {...};
+                  import {..., GraphQLObjectType, ...} from "graphql";
                   ...
-                  <... graphql.graphql({..., rootValue: $ROOT, ...}) ...>;
               - pattern-inside: |
-                  $ROOT = {...};
+                  const {..., GraphQLObjectType, ...} = require("graphql");
                   ...
-                  <... graphql.graphql($SCHEMA, $SOURCE, $ROOT, ...) ...>;
           - focus-metavariable: "$ARGS"
       - patterns:
           - pattern-inside: |
               "use server";
               ...
           - pattern-either:
-              - pattern: "export async function $F($X, ...) {...}"
-              - pattern: "export function $F($X, ...) {...}"
-              - pattern: "export const $F = async ($X, ...) => {...}"
-              - pattern: "export const $F = ($X, ...) => {...}"
+              - pattern: "export async function $F(..., $X, ...) {...}"
+              - pattern: "export function $F(..., $X, ...) {...}"
+              - pattern: "export default async function $F(..., $X, ...) {...}"
+              - pattern: "export default function $F(..., $X, ...) {...}"
+              - pattern: "export const $F = async (..., $X, ...) => {...}"
+              - pattern: "export const $F = (..., $X, ...) => {...}"
+              - pattern: "export const $F = async function (..., $X, ...) {...}"
+              - pattern: "export const $F = function (..., $X, ...) {...}"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: 'async function $F(..., $X, ...) { "use server"; ... }'
+              - pattern: 'function $F(..., $X, ...) { "use server"; ... }'
+              - pattern: 'async (..., $X, ...) => { "use server"; ... }'
+              - pattern: 'async function (..., $X, ...) { "use server"; ... }'
           - focus-metavariable: "$X"
     pattern-propagators:
       - patterns:
@@ -388,15 +879,106 @@ rules:
       - pattern: "$P.then(($S, ...) => $E, ...)"
         from: "$P"
         to: "$S"
+      - patterns:
+          - pattern-either:
+              - pattern: "$G.graphql({..., source: $V, ..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ...})"
+              - pattern: "$G.graphql({..., source: $V, ..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ...})"
+              - pattern: "$G.graphql({..., source: $V, ..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ...})"
+              - pattern: "$G.graphql({..., source: $V, ..., rootValue: {..., $K($P, ...) {...}, ...}, ...})"
+              - pattern: "$G.graphql({..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ..., source: $V, ...})"
+              - pattern: "$G.graphql({..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ..., source: $V, ...})"
+              - pattern: "$G.graphql({..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ..., source: $V, ...})"
+              - pattern: "$G.graphql({..., rootValue: {..., $K($P, ...) {...}, ...}, ..., source: $V, ...})"
+          - pattern-either:
+              - pattern-inside: |
+                  $G = require("graphql");
+                  ...
+              - pattern-inside: |
+                  import * as $G from "graphql";
+                  ...
+              - pattern-inside: |
+                  import $G from "graphql";
+                  ...
+        from: "$V"
+        to: "$P"
+        by-side-effect: true
+      - patterns:
+          - pattern-either:
+              - pattern: "$G.graphql({..., variableValues: $V, ..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ...})"
+              - pattern: "$G.graphql({..., variableValues: $V, ..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ...})"
+              - pattern: "$G.graphql({..., variableValues: $V, ..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ...})"
+              - pattern: "$G.graphql({..., variableValues: $V, ..., rootValue: {..., $K($P, ...) {...}, ...}, ...})"
+              - pattern: "$G.graphql({..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ..., variableValues: $V, ...})"
+              - pattern: "$G.graphql({..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ..., variableValues: $V, ...})"
+              - pattern: "$G.graphql({..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ..., variableValues: $V, ...})"
+              - pattern: "$G.graphql({..., rootValue: {..., $K($P, ...) {...}, ...}, ..., variableValues: $V, ...})"
+          - pattern-either:
+              - pattern-inside: |
+                  $G = require("graphql");
+                  ...
+              - pattern-inside: |
+                  import * as $G from "graphql";
+                  ...
+              - pattern-inside: |
+                  import $G from "graphql";
+                  ...
+        from: "$V"
+        to: "$P"
+        by-side-effect: true
+      - patterns:
+          - pattern-either:
+              - pattern: "graphql({..., source: $V, ..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ...})"
+              - pattern: "graphql({..., source: $V, ..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ...})"
+              - pattern: "graphql({..., source: $V, ..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ...})"
+              - pattern: "graphql({..., source: $V, ..., rootValue: {..., $K($P, ...) {...}, ...}, ...})"
+              - pattern: "graphql({..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ..., source: $V, ...})"
+              - pattern: "graphql({..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ..., source: $V, ...})"
+              - pattern: "graphql({..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ..., source: $V, ...})"
+              - pattern: "graphql({..., rootValue: {..., $K($P, ...) {...}, ...}, ..., source: $V, ...})"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., graphql, ...} from "graphql";
+                  ...
+              - pattern-inside: |
+                  const {..., graphql, ...} = require("graphql");
+                  ...
+        from: "$V"
+        to: "$P"
+        by-side-effect: true
+      - patterns:
+          - pattern-either:
+              - pattern: "graphql({..., variableValues: $V, ..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ...})"
+              - pattern: "graphql({..., variableValues: $V, ..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ...})"
+              - pattern: "graphql({..., variableValues: $V, ..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ...})"
+              - pattern: "graphql({..., variableValues: $V, ..., rootValue: {..., $K($P, ...) {...}, ...}, ...})"
+              - pattern: "graphql({..., rootValue: {..., $K: ($P, ...) => {...}, ...}, ..., variableValues: $V, ...})"
+              - pattern: "graphql({..., rootValue: {..., $K: async ($P, ...) => {...}, ...}, ..., variableValues: $V, ...})"
+              - pattern: "graphql({..., rootValue: {..., $K: function ($P, ...) {...}, ...}, ..., variableValues: $V, ...})"
+              - pattern: "graphql({..., rootValue: {..., $K($P, ...) {...}, ...}, ..., variableValues: $V, ...})"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., graphql, ...} from "graphql";
+                  ...
+              - pattern-inside: |
+                  const {..., graphql, ...} = require("graphql");
+                  ...
+        from: "$V"
+        to: "$P"
+        by-side-effect: true
     pattern-sinks:
       - patterns:
           - pattern: "eval($X)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "new Function(..., $X)"
+          - pattern: "new Function(..., $X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "Function(..., $X)"
+          - pattern: "Function(..., $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "execScript($X, ...)"
+              - pattern: "execCommand($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "setTimeout($X, ...)"
@@ -426,40 +1008,38 @@ rules:
           - pattern: "vm.Script($X)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$VM.runInNewContext($X, ...)"
+          - pattern: "new vm.SourceTextModule($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$VM.runInThisContext($X, ...)"
+          - pattern-either:
+              - pattern: "$E.$M($X, ...)"
+              - pattern: "new $E.$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("node:vm");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "node:vm";
+                  ...
+              - pattern-inside: |
+                  import $E from "node:vm";
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:Script|SourceTextModule|compileFunction|runInContext|runInNewContext|runInThisContext)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$VM.runInContext($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$VM.Script($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new $VM.Script($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$.globalEval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "jQuery.globalEval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$eval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$evalAsync($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$apply($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$watch($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCOPE.$applyAsync($X)"
+          - pattern: "$M($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $M, ...} from "node:vm";
+                  ...
+              - pattern-inside: |
+                  const {..., $M, ...} = require("node:vm");
+                  ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:Script|SourceTextModule|compileFunction|runInContext|runInNewContext|runInThisContext)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$parse($X)"
@@ -469,9 +1049,6 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$interpolate($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$WINDOW.eval($X)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "window.eval($X)"
@@ -484,30 +1061,6 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "global.eval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$W.injectJavaScript($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$W.executeJavaScript($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$W.evaluateJavaScript($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$PAGE.evaluate($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$PAGE.evaluateOnNewDocument($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$PAGE.addScriptTag({..., content: $X, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new Function($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "Function($X)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "pug.compile($X, ...)"
@@ -529,9 +1082,6 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "ejs.render($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "ejs.compile($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "nunjucks.renderString($X, ...)"
@@ -571,55 +1121,93 @@ rules:
           - pattern: "eta.render($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "eta.compile($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
           - pattern: "squirrelly.render($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "webix.ui($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "webix.ui({..., template: $X, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new Vue({..., template: $X, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "Vue.compile($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "require('safer-eval')($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "saferEval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "safeEval($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$VM2.run($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new VM().run($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new NodeVM().run($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new vm2.VM().run($X)"
+          - pattern-either:
+              - pattern: "webix.exec($X)"
+              - pattern: "webix.ui({..., template: $X, ...})"
+              - pattern: "webix.ui({..., template: function (...) { ...; return $X; } , ...})"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "executeJavaScript($X)"
           - focus-metavariable: "$X"
       - patterns:
+          - pattern: "$E.unserialize($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("node-serialize");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "node-serialize";
+                  ...
+              - pattern-inside: |
+                  import $E from "node-serialize";
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "unserialize($X)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., unserialize, ...} from "node-serialize";
+                  ...
+              - pattern-inside: |
+                  const {..., unserialize, ...} = require("node-serialize");
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.render($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("whiskers");
+                  ...
+              - pattern-inside: |
+                  import * as $E from "whiskers";
+                  ...
+              - pattern-inside: |
+                  import $E from "whiskers";
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "render($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., render, ...} from "whiskers";
+                  ...
+              - pattern-inside: |
+                  const {..., render, ...} = require("whiskers");
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$S.textContent = $X"
+          - pattern-inside: |
+              $S = document.createElement("script");
+              ...
+          - focus-metavariable: "$X"
+      - patterns:
           - pattern: "{..., $where: $X, ...}"
           - focus-metavariable: "$X"
       - patterns:
+          - pattern: "$filter('orderBy')($ARR, $X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
           - pattern-either:
-              - pattern: "$SCOPE.$watchCollection($X, ...)"
-              - pattern: "$SCOPE.$watchGroup($X, ...)"
-              - pattern: "$filter('orderBy')($ARR, $X, ...)"
+              - patterns:
+                  - pattern: "$SCOPE.$M($X, ...)"
+                  - metavariable-regex:
+                      metavariable: "$SCOPE"
+                      regex: "^\\$(?:scope|rootScope)$"
+              - patterns:
+                  - pattern: "$ALIAS.$M($X, ...)"
+                  - pattern-inside: |
+                      $ALIAS = $SC;
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$SC"
+                      regex: "^\\$(?:scope|rootScope)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^\\$(?:apply|applyAsync|eval|evalAsync|watch|watchCollection|watchGroup)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$ALIAS($X, ...)"
@@ -651,7 +1239,7 @@ rules:
               - pattern: 'child_process.$M(process.argv[0], [..., $X, ..., "-e", ...], ...)'
           - metavariable-regex:
               metavariable: "$M"
-              regex: "^(?:spawn|spawnSync|execFile|execFileSync)$"
+              regex: "^(?:execFile|execFileSync|spawn|spawnSync|fork)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$SH.write($X, ...)"
@@ -713,6 +1301,19 @@ rules:
                   ...
           - focus-metavariable: "$X"
       - patterns:
+          - pattern: "$W.injectJavaScript($X)"
+          - pattern-inside: |
+              $W = <WebView ... />;
+              ...
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., WebView, ...} from "react-native";
+                  ...
+              - pattern-inside: |
+                  const {..., WebView, ...} = require("react-native");
+                  ...
+          - focus-metavariable: "$X"
+      - patterns:
           - pattern: "<script ...>{$X}</script>"
           - focus-metavariable: "$X"
       - patterns:
@@ -736,7 +1337,6 @@ rules:
       - pattern: "+$X"
       - pattern: "JSON.stringify($X)"
       - pattern: "$X.length"
-      - pattern: "encodeURIComponent($X)"
       - pattern: "Boolean($X)"
     options:
       interfile: true

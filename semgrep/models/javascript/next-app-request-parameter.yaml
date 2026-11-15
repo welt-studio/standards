@@ -1,0 +1,12 @@
+# O parâmetro de requisição (`$REQ`) de um tratador de rota do App Router do Next.js, como o
+# `NextAppRouteHandler` do `Next.qll` do CodeQL: a função exportada com o nome de um método HTTP
+# (`GET`, `POST`...) ou como `middleware` ou `proxy`. O CodeQL só vale isso em `app/` e `pages/api/`;
+# o Semgrep não vê o caminho do arquivo no padrão. Um item só, para entrar em uma lista `patterns`.
+- patterns:
+    - pattern-either:
+        - pattern-inside: "export function $M($REQ, ...) {...}"
+        - pattern-inside: "export async function $M($REQ, ...) {...}"
+        - pattern-inside: "export const $M = function ($REQ, ...) {...}"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:CHECKOUT|COPY|DELETE|GET|HEAD|LOCK|MERGE|MKACTIVITY|MKCOL|MOVE|NOTIFY|OPTIONS|PATCH|POST|PURGE|PUT|REPORT|SEARCH|SUBSCRIBE|TRACE|UNLOCK|UNSUBSCRIBE|middleware|proxy)$"

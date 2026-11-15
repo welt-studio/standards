@@ -1,0 +1,13 @@
+# O parâmetro de contexto (`$CTX`) de `getInitialProps` de uma página do Next.js, a função que roda no
+# servidor a cada requisição (o `getInitialProps` do `Next.qll` do CodeQL): uma função solta, uma
+# propriedade do componente ou um método estático da classe. Um item só, para entrar em uma lista
+# `patterns`.
+- pattern-either:
+    - pattern-inside: "function getInitialProps($CTX, ...) {...}"
+    - pattern-inside: "$P.getInitialProps = function ($CTX, ...) {...}"
+    - pattern-inside: |
+        class $C {
+          ...
+          static getInitialProps($CTX, ...) {...}
+          ...
+        }

@@ -1,0 +1,23 @@
+rules:
+  - id: web-storage-key-flow
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O dado guardado por `setItem(chave, dado)` volta em `getItem(chave)` da mesma chave."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: location.search
+    pattern-propagators:
+      - patterns:
+          - pattern: |
+              $ST.setItem($K, $V);
+              ...
+              $GET = $ST.getItem($K);
+        from: "$V"
+        to: "$GET"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$E.innerHTML = $X"
+          - focus-metavariable: "$X"

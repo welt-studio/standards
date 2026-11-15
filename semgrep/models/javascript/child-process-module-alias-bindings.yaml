@@ -1,0 +1,19 @@
+- "pattern-either":
+    - "pattern-inside": |
+        $E = require("node:child_process");
+        ...
+    - "pattern-inside": |
+        import * as $E from "node:child_process";
+        ...
+    - "pattern-inside": |
+        import $E from "node:child_process";
+        ...
+    - "pattern-inside": |
+        $E = require("mz/child_process");
+        ...
+    - "pattern-inside": |
+        import * as $E from "mz/child_process";
+        ...
+    - "pattern-inside": |
+        import $E from "mz/child_process";
+        ...

@@ -26,7 +26,7 @@ rules:
       - patterns:
           - pattern-either:
               - pattern: "eval($X, ...)"
-              - "$model": common/exec-call
+              - pattern: "exec($X, ...)"
               - pattern: "compile($X, ...)"
               - pattern: "execfile($X, ...)"
               - pattern: "builtins.eval($X, ...)"

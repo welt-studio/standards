@@ -1,0 +1,18 @@
+rules:
+  - id: limit-cross-file-named-export
+    languages:
+      - javascript
+    severity: ERROR
+    message: "Consulta do mongoose montada com o corpo da requisição."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: "$REQ.body"
+    pattern-sinks:
+      - patterns:
+          - pattern: "$M.find($X)"
+          - pattern-inside: |
+              $M = $MG.model(...);
+              ...
+          - focus-metavariable: "$X"

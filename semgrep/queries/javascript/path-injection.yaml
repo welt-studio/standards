@@ -23,8 +23,7 @@ rules:
     mode: taint
     # Fontes das quatro regras: toda fonte entra nos quatro estados.
     pattern-sources: &sources
-      - "$model": "javascript/express-request-sources-cookies"
-      - "$model": "javascript/nextjs-server-side-sources"
+      - "$model": javascript/http-request-sources-cookies
       - patterns:
           - pattern: "$PT(...).$F"
           - &f_parse_torrent_import
@@ -43,19 +42,6 @@ rules:
           - pattern-inside: "$PT.remote($U, ..., function ($ERR, $T) {...})"
           - *f_f_not_private_info_hash_length
       - patterns:
-          - pattern-either:
-              - pattern: "$HB.registerHelper($N, function $F(..., $P, ...) {...})"
-              - pattern: "$HB.registerHelper($N, function (..., $P, ...) {...})"
-              - pattern: "$HB.registerHelper($N, (..., $P, ...) => {...})"
-          - pattern-either:
-              - pattern-inside: |
-                  $HB = require("handlebars"); ...
-              - pattern-inside: |
-                  import $HB from "handlebars"; ...
-              - pattern-inside: |
-                  import * as $HB from "handlebars"; ...
-          - focus-metavariable: "$P"
-      - patterns:
           - pattern: "$I.$NAME"
           - pattern-inside: |
               module.exports = {..., inputs: {..., $NAME: $_, ...}, ..., fn($I, ...) {...}, ...}
@@ -63,752 +49,14 @@ rules:
     # regras cruas o sanitizam); com `root`, só o `root` é destino; a entrada do realpath não é
     # destino (por isso fica de fora).
     pattern-sinks: &sinks
-      - "$model": "javascript/any-fs-read-file-any-x-sink"
-      - "$model": "javascript/fs-read-file-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.readFile($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-read-file-sync-any-x-sink"
-      - "$model": "javascript/fs-read-file-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.readFileSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-write-file-any-x-sink"
-      - "$model": "javascript/fs-write-file-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.writeFile($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-write-file-sync-any-x-sink"
-      - "$model": "javascript/fs-write-file-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.writeFileSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-append-file-any-x-sink"
-      - "$model": "javascript/fs-append-file-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.appendFile($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-append-file-sync-any-x-sink"
-      - "$model": "javascript/fs-append-file-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.appendFileSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-create-read-stream-any-x-sink"
-      - "$model": "javascript/fs-create-read-stream-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.createReadStream($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-create-write-stream-any-x-sink"
-      - "$model": "javascript/fs-create-write-stream-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.createWriteStream($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-open-any-x-sink"
-      - "$model": "javascript/fs-open-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.open($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-open-sync-any-x-sink"
-      - "$model": "javascript/fs-open-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.openSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-readdir-any-x-sink"
-      - "$model": "javascript/fs-readdir-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.readdir($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-readdir-sync-any-x-sink"
-      - "$model": "javascript/fs-readdir-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.readdirSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-stat-any-x-sink"
-      - "$model": "javascript/fs-stat-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.stat($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-stat-sync-any-x-sink"
-      - "$model": "javascript/fs-stat-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.statSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-lstat-any-x-sink"
-      - "$model": "javascript/fs-lstat-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.lstat($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-lstat-sync-any-x-sink"
-      - "$model": "javascript/fs-lstat-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.lstatSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-access-any-x-sink"
-      - "$model": "javascript/fs-access-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.access($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-access-sync-any-x-sink"
-      - "$model": "javascript/fs-access-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.accessSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-unlink-any-x-sink"
-      - "$model": "javascript/fs-unlink-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.unlink($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-unlink-sync-any-x-sink"
-      - "$model": "javascript/fs-unlink-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.unlinkSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-rmdir-any-x-sink"
-      - "$model": "javascript/fs-rmdir-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.rmdir($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-rmdir-sync-any-x-sink"
-      - "$model": "javascript/fs-rmdir-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.rmdirSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-rm-any-x-sink"
-      - "$model": "javascript/fs-rm-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.rm($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-rm-sync-any-x-sink"
-      - "$model": "javascript/fs-rm-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.rmSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-mkdir-any-x-sink"
-      - "$model": "javascript/fs-mkdir-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.mkdir($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-mkdir-sync-any-x-sink"
-      - "$model": "javascript/fs-mkdir-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.mkdirSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-truncate-any-x-sink"
-      - "$model": "javascript/fs-truncate-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.truncate($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-truncate-sync-any-x-sink"
-      - "$model": "javascript/fs-truncate-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.truncateSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-chmod-any-x-sink"
-      - "$model": "javascript/fs-chmod-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.chmod($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-chmod-sync-any-x-sink"
-      - "$model": "javascript/fs-chmod-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.chmodSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-chown-any-x-sink"
-      - "$model": "javascript/fs-chown-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.chown($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-chown-sync-any-x-sink"
-      - "$model": "javascript/fs-chown-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.chownSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-readlink-any-x-sink"
-      - "$model": "javascript/fs-readlink-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.readlink($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-readlink-sync-any-x-sink"
-      - "$model": "javascript/fs-readlink-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.readlinkSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-exists-any-x-sink"
-      - "$model": "javascript/fs-exists-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.exists($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-exists-sync-any-x-sink"
-      - "$model": "javascript/fs-exists-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.existsSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-watch-any-x-sink"
-      - "$model": "javascript/fs-watch-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.watch($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-watch-file-any-x-sink"
-      - "$model": "javascript/fs-watch-file-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.watchFile($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-opendir-any-x-sink"
-      - "$model": "javascript/fs-opendir-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.opendir($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-opendir-sync-any-x-sink"
-      - "$model": "javascript/fs-opendir-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.opendirSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-utimes-any-x-sink"
-      - "$model": "javascript/fs-utimes-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.utimes($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-utimes-sync-any-x-sink"
-      - "$model": "javascript/fs-utimes-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.utimesSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-mkdtemp-any-x-sink"
-      - "$model": "javascript/fs-mkdtemp-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.mkdtemp($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-mkdtemp-sync-any-x-sink"
-      - "$model": "javascript/fs-mkdtemp-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.mkdtempSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-ensure-dir-any-x-sink"
-      - "$model": "javascript/fs-ensure-dir-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.ensureDir($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-ensure-file-any-x-sink"
-      - "$model": "javascript/fs-ensure-file-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.ensureFile($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-ensure-dir-sync-any-x-sink"
-      - "$model": "javascript/fs-ensure-dir-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.ensureDirSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-ensure-file-sync-any-x-sink"
-      - "$model": "javascript/fs-ensure-file-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.ensureFileSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-empty-dir-any-x-sink"
-      - "$model": "javascript/fs-empty-dir-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.emptyDir($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-empty-dir-sync-any-x-sink"
-      - "$model": "javascript/fs-empty-dir-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.emptyDirSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-output-file-any-x-sink"
-      - "$model": "javascript/fs-output-file-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.outputFile($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-output-file-sync-any-x-sink"
-      - "$model": "javascript/fs-output-file-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.outputFileSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-output-json-any-x-sink"
-      - "$model": "javascript/fs-output-json-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.outputJson($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-output-json-sync-any-x-sink"
-      - "$model": "javascript/fs-output-json-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.outputJsonSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-read-json-any-x-sink"
-      - "$model": "javascript/fs-read-json-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.readJson($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-read-json-sync-any-x-sink"
-      - "$model": "javascript/fs-read-json-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.readJsonSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-write-json-any-x-sink"
-      - "$model": "javascript/fs-write-json-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.writeJson($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-write-json-sync-any-x-sink"
-      - "$model": "javascript/fs-write-json-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.writeJsonSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-remove-any-x-sink"
-      - "$model": "javascript/fs-remove-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.remove($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-remove-sync-any-x-sink"
-      - "$model": "javascript/fs-remove-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.removeSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-path-exists-any-x-sink"
-      - "$model": "javascript/fs-path-exists-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.pathExists($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-path-exists-sync-any-x-sink"
-      - "$model": "javascript/fs-path-exists-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.pathExistsSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-create-file-any-x-sink"
-      - "$model": "javascript/fs-create-file-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.createFile($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-create-file-sync-any-x-sink"
-      - "$model": "javascript/fs-create-file-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.createFileSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-mkdirs-any-x-sink"
-      - "$model": "javascript/fs-mkdirs-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.mkdirs($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-mkdirs-sync-any-x-sink"
-      - "$model": "javascript/fs-mkdirs-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.mkdirsSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-mkdirp-any-x-sink"
-      - "$model": "javascript/fs-mkdirp-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.mkdirp($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-mkdirp-sync-any-x-sink"
-      - "$model": "javascript/fs-mkdirp-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.mkdirpSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-read-json-any-x-sink-upper"
-      - "$model": "javascript/fs-read-json-any-x-sink-upper"
-      - patterns:
-          - pattern: "fs.promises.readJSON($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-read-json-sync-any-x-sink-upper"
-      - "$model": "javascript/fs-read-json-sync-any-x-sink-upper"
-      - patterns:
-          - pattern: "fs.promises.readJSONSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-write-json-any-x-sink-upper"
-      - "$model": "javascript/fs-write-json-any-x-sink-upper"
-      - patterns:
-          - pattern: "fs.promises.writeJSON($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-write-json-sync-any-x-sink-upper"
-      - "$model": "javascript/fs-write-json-sync-any-x-sink-upper"
-      - patterns:
-          - pattern: "fs.promises.writeJSONSync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-output-json-any-x-sink-upper"
-      - "$model": "javascript/fs-output-json-any-x-sink-upper"
-      - patterns:
-          - pattern: "fs.promises.outputJSON($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-lutimes-any-x-sink"
-      - "$model": "javascript/fs-lutimes-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.lutimes($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-statfs-any-x-sink"
-      - "$model": "javascript/fs-statfs-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.statfs($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-cp-any-x-sink"
-      - "$model": "javascript/fs-cp-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.cp($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/any-fs-cp-sync-any-x-sink"
-      - "$model": "javascript/fs-cp-sync-any-x-sink"
-      - patterns:
-          - pattern: "fs.promises.cpSync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.rename($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - &f_fs_module_name
-            metavariable-regex:
-              metavariable: "$FS"
-              regex:
-                "$text": "javascript/fs-module-name-regex"
-      - patterns:
-          - pattern: "fs.rename($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.rename($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.rename($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.renameSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.renameSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.renameSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.renameSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.copyFile($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.copyFile($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.copyFile($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.copyFile($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.copyFileSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.copyFileSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.copyFileSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.copyFileSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.symlink($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.symlink($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.symlink($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.symlink($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.symlinkSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.symlinkSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.symlinkSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.symlinkSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.link($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.link($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.link($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.link($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.linkSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.linkSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.linkSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.linkSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.copy($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.copy($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.copy($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.copy($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.copySync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.copySync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.copySync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.copySync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.move($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.move($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.move($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.move($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.moveSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.moveSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.moveSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.moveSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.cp($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.cp($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.cp($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.cp($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.cpSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.cpSync($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.cpSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.cpSync($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.ensureSymlink($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.ensureSymlink($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.ensureSymlink($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.ensureSymlink($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.ensureLink($X, $Y, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.ensureLink($X, $Y, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$FS.ensureLink($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - *f_fs_module_name
-      - patterns:
-          - pattern: "fs.ensureLink($Y, $X, ...)"
-          - focus-metavariable: "$X"
-      - &f_mkdirp_x
-        patterns:
-          - pattern: "mkdirp($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "mkdirp.sync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "rimraf($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "rimraf.sync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "del($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "del.sync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "touch($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "touch.sync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "makeDir($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "makeDir.sync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "readPkgUp($X, ...)"
-          - focus-metavariable: "$X"
-      - &f_open_call_x
-        patterns:
-          - "$model": "common/open-call"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "opn($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "readFileAsync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "rmfr($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "trash($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "require($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$RES.render($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$RES.attachment($X)"
-          - focus-metavariable: "$X"
-      - *f_open_call_x
-      - patterns:
-          - pattern: "resolve($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "resolve.sync($X, ...)"
-          - focus-metavariable: "$X"
-      - "$model": "javascript/execa-x-sink"
-      - patterns:
-          - pattern: "$CP.execFile($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "puppeteer.launch({executablePath: $X})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P.screenshot({..., path: $X, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P.pdf({..., path: $X, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$APP.use(express.static($X))"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "express.static($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "serveStatic($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$H.file($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P.readFile($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "prettier.resolveConfig($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "prettier.resolveConfig.sync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "prettier.getFileInfo($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "prettier.getFileInfo.sync($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$HB.compile($X, ...)"
-          - focus-metavariable: "$X"
-      - *f_mkdirp_x
-      - patterns:
-          - pattern: "tmp.file($X)"
-          - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
-              - pattern: "$RM.$M($X, ...)"
-              - pattern: "$RM.$M.sync($X, ...)"
+              - "$model": javascript/fs-path-sinks
           - metavariable-regex:
               metavariable: "$M"
-              regex: "^(?:sync|native|manual|windows|moveRemove|posix|rimrafSync|nativeSync|manualSync|windowsSync|moveRemoveSync|posixSync)$"
-          - pattern-either:
-              - pattern-inside: |
-                  $RM = require("rimraf"); ...
-              - pattern-inside: |
-                  import $RM from "rimraf"; ...
-              - pattern-inside: |
-                  import * as $RM from "rimraf"; ...
-          - focus-metavariable: "$X"
+              regex: "^(?!realpath(?:Sync)?$)"
+      # mkdirp e rimraf: o módulo, e só pelo import.
       - patterns:
-          - pattern: "$MK.$M($X, ...)"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:sync|native|nativeSync|manual|manualSync|mkdirpNative|mkdirpManual|mkdirpManualSync|mkdirpNativeSync|mkdirpSync)$"
           - pattern-either:
               - pattern-inside: |
                   $MK = require("mkdirp"); ...
@@ -816,6 +64,34 @@ rules:
                   import $MK from "mkdirp"; ...
               - pattern-inside: |
                   import * as $MK from "mkdirp"; ...
+          - pattern-either:
+              - pattern: "$MK($X, ...)"
+              - patterns:
+                  - pattern: "$MK.$M($X, ...)"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:sync|native|nativeSync|manual|manualSync|mkdirpNative|mkdirpManual|mkdirpManualSync|mkdirpNativeSync|mkdirpSync)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $RM = require("rimraf"); ...
+              - pattern-inside: |
+                  import $RM from "rimraf"; ...
+              - pattern-inside: |
+                  import * as $RM from "rimraf"; ...
+          - pattern-either:
+              - pattern: "$RM($X, ...)"
+              - patterns:
+                  - pattern: "$RM.$M($X, ...)"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:sync|native|manual|windows|moveRemove|posix|rimrafSync|nativeSync|manualSync|windowsSync|moveRemoveSync|posixSync)$"
+              - patterns:
+                  - pattern: "$RM.$M.sync($X, ...)"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:native|manual|windows|moveRemove|posix)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$F($X, ...)"
@@ -843,19 +119,99 @@ rules:
               - pattern-inside: |
                   import * as $MD from "make-dir"; ...
           - focus-metavariable: "$X"
+      # open: o pacote `open` (a função padrão e `openApp`).
       - patterns:
-          - pattern: "$RP.$F({..., cwd: $X, ...})"
-          - metavariable-regex:
-              metavariable: "$F"
-              regex: "^(?:readPackageAsync|readPackageSync)$"
+          - "$model": "common/open-call"
           - pattern-either:
               - pattern-inside: |
-                  $RP = require("read-pkg"); ...
+                  open = require("open"); ...
               - pattern-inside: |
-                  import $RP from "read-pkg"; ...
+                  import open from "open"; ...
               - pattern-inside: |
-                  import * as $RP from "read-pkg"; ...
+                  import open, {...} from "open"; ...
           - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$O.openApp($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $O = require("open"); ...
+              - pattern-inside: |
+                  import $O from "open"; ...
+              - pattern-inside: |
+                  import $O, {...} from "open"; ...
+              - pattern-inside: |
+                  import * as $O from "open"; ...
+              - pattern-inside: |
+                  import {..., openApp, ...} from "open"; ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "require($X)"
+          - focus-metavariable: "$X"
+      # resolve: o pacote `resolve`, não o `path.resolve`.
+      - patterns:
+          - pattern-either:
+              - pattern: "$R($X, ...)"
+              - pattern: "$R.sync($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $R = require("resolve"); ...
+              - pattern-inside: |
+                  import $R from "resolve"; ...
+              - pattern-inside: |
+                  import * as $R from "resolve"; ...
+          - focus-metavariable: "$X"
+      # Execa: `inputFile`, `pipe*` e o `cwd`, pelos nomes que o módulo exporta.
+      - patterns:
+          - pattern-either:
+              - pattern: "$F($C, {..., inputFile: $X, ...}, ...)"
+              - pattern: "$F($C, [...], {..., inputFile: $X, ...}, ...)"
+              - pattern: "$F($C, {..., cwd: $X, ...}, ...)"
+              - pattern: "$F($C, [...], {..., cwd: $X, ...}, ...)"
+              - pattern: "$F(...).pipeStdout($X, ...)"
+              - pattern: "$F(...).pipeStderr($X, ...)"
+              - pattern: "$F(...).pipeAll($X, ...)"
+          - pattern-inside: |
+              import {..., $F, ...} from "execa"; ...
+          - metavariable-regex:
+              metavariable: "$F"
+              regex: "^(?:execa|execaCommand|execaCommandSync|execaSync)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$({..., inputFile: $X, ...})`...`"
+          - pattern-inside: |
+              import {..., $, ...} from "execa"; ...
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.$F($C, {..., inputFile: $X, ...}, ...)"
+              - pattern: "$E.$F($C, [...], {..., inputFile: $X, ...}, ...)"
+              - pattern: "$E.$F($C, {..., cwd: $X, ...}, ...)"
+              - pattern: "$E.$F($C, [...], {..., cwd: $X, ...}, ...)"
+              - pattern: "$E.$F(...).pipeStdout($X, ...)"
+              - pattern: "$E.$F(...).pipeStderr($X, ...)"
+              - pattern: "$E.$F(...).pipeAll($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("execa"); ...
+              - pattern-inside: |
+                  import * as $E from "execa"; ...
+              - pattern-inside: |
+                  import $E from "execa"; ...
+          - metavariable-regex:
+              metavariable: "$F"
+              regex: "^(?:execa|execaCommand|execaCommandSync|execaSync)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$E.$({..., inputFile: $X, ...})`...`"
+          - pattern-either:
+              - pattern-inside: |
+                  $E = require("execa"); ...
+              - pattern-inside: |
+                  import * as $E from "execa"; ...
+              - pattern-inside: |
+                  import $E from "execa"; ...
+          - focus-metavariable: "$X"
+      # `cwd` das funções de processo do `child_process`.
       - patterns:
           - pattern-either:
               - pattern: "$CP.$F($C, {..., cwd: $X, ...}, ...)"
@@ -871,39 +227,127 @@ rules:
               - pattern-inside: |
                   import $CP from "child_process"; ...
               - pattern-inside: |
+                  import $CP from "node:child_process"; ...
+              - pattern-inside: |
                   import * as $CP from "child_process"; ...
+              - pattern-inside: |
+                  import * as $CP from "node:child_process"; ...
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
-              - pattern: "execa($C, {..., inputFile: $X, ...}, ...)"
-              - pattern: "execa($C, [...], {..., inputFile: $X, ...}, ...)"
-              - pattern: "execa(...).pipeStdout($X, ...)"
-              - pattern: "execa(...).pipeStderr($X, ...)"
-              - pattern: "execa(...).pipeAll($X, ...)"
-              - pattern: "$({..., inputFile: $X, ...})`...`"
+              - pattern: "$F($C, {..., cwd: $X, ...}, ...)"
+              - pattern: "$F($C, [...], {..., cwd: $X, ...}, ...)"
+          - metavariable-regex:
+              metavariable: "$F"
+              regex: "^(?:exec|execSync|execFile|execFileSync|spawn|spawnSync)$"
+          - pattern-either:
+              - pattern-inside: |
+                  import {..., $F, ...} from "child_process"; ...
+              - pattern-inside: |
+                  import {..., $F, ...} from "node:child_process"; ...
+          - focus-metavariable: "$X"
+      # Puppeteer: o `path` de `pdf` e `screenshot` de uma página aberta pelo navegador do módulo.
+      - patterns:
+          - pattern-either:
+              - pattern: "$PG.screenshot({..., path: $X, ...})"
+              - pattern: "$PG.pdf({..., path: $X, ...})"
+          - &f_puppeteer_module
+            pattern-either:
+              - pattern-inside: |
+                  $P = require("puppeteer"); ...
+              - pattern-inside: |
+                  $P = require("puppeteer-core"); ...
+              - pattern-inside: |
+                  import $P from "puppeteer"; ...
+              - pattern-inside: |
+                  import $P from "puppeteer-core"; ...
+              - pattern-inside: |
+                  import * as $P from "puppeteer"; ...
+              - pattern-inside: |
+                  import * as $P from "puppeteer-core"; ...
+          - pattern-inside: |
+              $B = await $P.$LAUNCH(...);
+              ...
+          - pattern-inside: |
+              $PG = await $B.newPage();
+              ...
+          - metavariable-regex:
+              metavariable: "$LAUNCH"
+              regex: "^(?:launch|connect)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$R.files.$F.mv($X, ...)"
+          - pattern-either:
+              - pattern: "$PGS[$I].screenshot({..., path: $X, ...})"
+              - pattern: "$PGS[$I].pdf({..., path: $X, ...})"
+          - *f_puppeteer_module
           - pattern-inside: |
-              $FU = require("express-fileupload"); ...
+              $B = await $P.$LAUNCH(...);
+              ...
+          - pattern-inside: |
+              $PGS = await $B.pages();
+              ...
+          - metavariable-regex:
+              metavariable: "$LAUNCH"
+              regex: "^(?:launch|connect)$"
+          - focus-metavariable: "$X"
+      # Prettier: o arquivo de configuração.
+      - patterns:
+          - pattern-either:
+              - pattern: "$PR.resolveConfig($X, ...)"
+              - pattern: "$PR.resolveConfigFile($X, ...)"
+              - pattern: "$PR.getFileInfo($X, ...)"
+          - &f_prettier_module
+            pattern-either:
+              - pattern-inside: |
+                  $PR = require("prettier"); ...
+              - pattern-inside: |
+                  import $PR from "prettier"; ...
+              - pattern-inside: |
+                  import * as $PR from "prettier"; ...
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$PR.resolveConfig($F, {..., config: $X, ...})"
+          - *f_prettier_module
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "$RP.$F({..., cwd: $X, ...})"
+          - metavariable-regex:
+              metavariable: "$F"
+              regex: "^(?:readPackageAsync|readPackageSync)$"
+          - pattern-either:
+              - pattern-inside: |
+                  $RP = require("read-pkg"); ...
+              - pattern-inside: |
+                  import $RP from "read-pkg"; ...
+              - pattern-inside: |
+                  import * as $RP from "read-pkg"; ...
+          - focus-metavariable: "$X"
+      # Express: `req.files.<nome>.mv`, `render`, `sendFile`, `sendfile` e `download` da resposta
+      # de um tratador registrado no `app` ou no roteador do Express.
+      - patterns:
+          - pattern: "$REQ.files.$F.mv($X, ...)"
           - pattern-inside: |
-              $PR = require("prettier"); ...
+              $FU = require("express-fileupload"); ...
+          - &f_express_handler
+            "$model": "javascript/express-route-handler"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$RES.sendFile($X, ...)"
-          - pattern-not: "$RES.sendFile($X, {..., root: $R, ...}, ...)"
+          - pattern: "$RES.render($X, ...)"
+          - *f_express_handler
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$RES.sendfile($X, ...)"
-          - pattern-not: "$RES.sendfile($X, {..., root: $R, ...}, ...)"
+          - pattern: "$RES.$M($X, ...)"
+          - pattern-not: "$RES.$M($X, {..., root: $R, ...}, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:sendFile|sendfile)$"
+          - *f_express_handler
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$RES.download($X, ...)"
           - pattern-not: "$RES.download($X, {..., root: $R, ...}, ...)"
           - pattern-not: "$RES.download($X, $O, {..., root: $R, ...}, ...)"
+          - *f_express_handler
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
@@ -911,6 +355,7 @@ rules:
               - pattern: "$RES.sendfile($P, {..., root: $X, ...}, ...)"
               - pattern: "$RES.download($P, {..., root: $X, ...}, ...)"
               - pattern: "$RES.download($P, $O, {..., root: $X, ...}, ...)"
+          - *f_express_handler
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$S($R, $X, ...)"
@@ -931,30 +376,6 @@ rules:
               - pattern-inside: |
                   import $C from "chownr"; ...
           - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$W(...).$M($X, ...)"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:appendFile|appendFileSync|createReadStream|createWriteStream|outputFile|outputFileSync|outputJSON|outputJson|outputJsonSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync|unlink|unlinkSync|mkdtemp|mkdtempSync|opendir|opendirSync|lstat|lstatSync|truncate|truncateSync|utimes|utimesSync|chmod|chmodSync|chown|chownSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|emptyDir|emptyDirSync)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$W($FS.$M)($X, ...)"
-          - *f_fs_module_name
-          - &f_m_fs_method_name
-            metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|cp|cpSync|createFile|createFileSync|createReadStream|createWriteStream|emptyDir|emptyDirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|exists|existsSync|lstat|lstatSync|lutimes|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|open|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|remove|removeSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$V.$M($X, ...)"
-          - pattern-inside: |
-              $V = require($ARG);
-              ...
-          - metavariable-regex:
-              metavariable: "$ARG"
-              regex: "(?s).*[\\\"'](?:node:)?(?:fs|original-fs|graceful-fs|fs-extra|fs/promises)[\\\"']"
-          - *f_m_fs_method_name
-          - focus-metavariable: "$X"
     pattern-sanitizers:
       - &s_common_0
         "$model": "javascript/filename-sanitizers"
@@ -963,19 +384,26 @@ rules:
       - &s_common_2
         "$model": "javascript/number-x-sanitizer"
       - &s_common_3
-        pattern: "path.parse($X).name"
-      - &s_common_4
         "$model": "javascript/encode-uri-component-x-sanitizer"
+      - &s_common_4
+        patterns:
+          - pattern: "$M.extname($X)"
+          - &path_module
+            "$model": javascript/path-module
       - &s_common_5
-        pattern: "path.extname($X)"
-      - &s_common_6
         "$model": "javascript/x-length"
-      - &s_common_7
-        pattern: "slug($X)"
-      - &s_common_8
-        pattern: "slugify($X, ...)"
-      - &s_common_9
-        pattern: "sanitize_filename($X)"
+      - &s_common_6
+        patterns:
+          - pattern: "$S($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $S = require("slugify"); ...
+              - pattern-inside: |
+                  import $S from "slugify"; ...
+              - pattern-inside: |
+                  $S = require("slug"); ...
+              - pattern-inside: |
+                  import $S from "slug"; ...
       # replace que tira o `/` (flag g, ou flags que não são literais): nenhum estado passa. A que só
       # tira `../` do começo passa.
       - &s_replace_slash
@@ -1426,16 +854,7 @@ rules:
       - &g_relative_call
         patterns:
           - pattern: "$X"
-          - &path_module
-            pattern-either:
-              - pattern-inside: |
-                  $M = require("path"); ...
-              - pattern-inside: |
-                  $M = require("node:path"); ...
-              - pattern-inside: |
-                  import $M from "path"; ...
-              - pattern-inside: |
-                  import * as $M from "path"; ...
+          - *path_module
           - pattern-inside: |
               $R = $M.relative($W, $X);
               ...
@@ -1758,14 +1177,13 @@ rules:
           - pattern-not-inside: "$B + $M.$F(...)"
       # A entrada do realpath/realpathSync não é destino, e o resultado é absoluto normalizado: nos
       # outros estados o taint não passa por ele.
-      - &k_realpath_0
-        "$model": "javascript/any-fs-realpath-any-x-sink"
-      - &k_realpath_1
-        "$model": "javascript/any-fs-realpath-sync-any-x-sink"
-      - &k_realpath_2
-        "$model": "javascript/fs-realpath-any-x-sink"
-      - &k_realpath_3
-        "$model": "javascript/fs-realpath-sync-any-x-sink"
+      - &k_realpath
+        patterns:
+          - pattern-either:
+              - "$model": javascript/fs-path-sinks
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^realpath(?:Sync)?$"
       # res.sendFile sem `root` rejeita `../`: nos estados crus não é destino.
       - &s_sendfile_raw
         patterns:
@@ -2089,9 +1507,6 @@ rules:
       - *s_common_4
       - *s_common_5
       - *s_common_6
-      - *s_common_7
-      - *s_common_8
-      - *s_common_9
       - *s_replace_slash
       - *s_replace_dots_unknown_flags
       - *s_falsy_assignment_rhs
@@ -2108,10 +1523,7 @@ rules:
       - *g_resolve_prefix
       - *s_replace_dots
       - *k_normalizing_calls
-      - *k_realpath_0
-      - *k_realpath_1
-      - *k_realpath_2
-      - *k_realpath_3
+      - *k_realpath
       - *s_sendfile_raw
       # Operando tardio de uma concatenação cujo primeiro operando é texto relativo: o resultado é
       # relativo, não passa em RA.
@@ -2273,9 +1685,6 @@ rules:
       - *s_common_4
       - *s_common_5
       - *s_common_6
-      - *s_common_7
-      - *s_common_8
-      - *s_common_9
       - *s_replace_slash
       - *s_replace_dots_unknown_flags
       - *s_falsy_assignment_rhs
@@ -2297,10 +1706,7 @@ rules:
               metavariable: "$F"
               regex: "^resolve$"
           - *path_module
-      - *k_realpath_0
-      - *k_realpath_1
-      - *k_realpath_2
-      - *k_realpath_3
+      - *k_realpath
       - patterns:
           - pattern: "$M.normalize(...).replace(/$RE/, ...)"
           - metavariable-regex:
@@ -2485,9 +1891,6 @@ rules:
       - *s_common_4
       - *s_common_5
       - *s_common_6
-      - *s_common_7
-      - *s_common_8
-      - *s_common_9
       - *s_replace_slash
       - *s_replace_dots_unknown_flags
       - *s_falsy_assignment_rhs
@@ -2735,17 +2138,17 @@ rules:
       - *p_or_assign
       - patterns:
           - pattern: "$FS.realpath($FROM, function ($E, $TO) {...})"
-          - *f_fs_module_name
+          - "$model": javascript/fs-module-receiver
         from: "$FROM"
         to: "$TO"
       - patterns:
           - pattern: "$FS.realpath($FROM, function $F($E, $TO) {...})"
-          - *f_fs_module_name
+          - "$model": javascript/fs-module-receiver
         from: "$FROM"
         to: "$TO"
       - patterns:
           - pattern: "$FS.realpath($FROM, ($E, $TO) => {...})"
-          - *f_fs_module_name
+          - "$model": javascript/fs-module-receiver
         from: "$FROM"
         to: "$TO"
     options:

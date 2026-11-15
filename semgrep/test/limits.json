@@ -45,6 +45,13 @@
     ],
     "should_find": ["lib.js:2"]
   },
+  "cross-file-function-returns-module": {
+    "capability": "Saber que a chamada `lib.pick(true)` devolve o módulo `fs` quando a função está em outro arquivo (`exports.pick = (especial) => require(\"fs\")`): o padrão que liga o receptor à função que devolve o `fs` só vê o arquivo da consulta.",
+    "tried": [
+      "mode: taint com `options: interfile: true`, fonte `$REQ.query.$K` e sumidouro `$W(...).readFileSync($X)` ligado por `pattern-inside` à função que devolve `require($N)`: a função do mesmo arquivo é achada (linha 9 do app.js), a de outro arquivo não"
+    ],
+    "should_find": ["app.js:13"]
+  },
   "cross-file-module-property": {
     "capability": "O taint do Semgrep (mesmo no motor Pro, com `interfile: true`) não leva o rótulo de um valor de módulo de um arquivo para a propriedade que outro arquivo lê (`module.exports = { coll }` e `db.coll.find(...)`): só o retorno de função atravessa o arquivo.",
     "tried": [
@@ -53,6 +60,21 @@
       "`metavariable-type` (só TypeScript, e exige declaração de tipo)"
     ],
     "should_find": ["to.js:7"]
+  },
+  "cross-file-named-export": {
+    "capability": "Levar o modelo do mongoose criado em um arquivo (`export const Conta = mongoose.model(...)`) ao receptor da consulta de outro (`import { Conta } from \"./from\"; Conta.find(...)`). O alias `$M = $MG.model(...)` só vale no arquivo; o `metavariable-type` só resolve o tipo declarado no mesmo arquivo.",
+    "tried": [
+      "mode: taint com `options: interfile: true` e o sumidouro `$M.find($X)` ligado ao alias `$M = $MG.model(...)` por `pattern-inside`: o modelo do mesmo arquivo é achado (linha 8 do to.js), o importado não",
+      "regra TypeScript com `metavariable-type` (`mongoose.Model`), que não resolve o tipo de um símbolo importado de outro arquivo"
+    ],
+    "should_find": ["to.js:12"]
+  },
+  "cross-file-route-handler": {
+    "capability": "Tratar como requisição o parâmetro de uma função que um módulo exporta e que outro arquivo registra como rota do Express (`module.exports = (req, res) => ...` e `app.get(caminho, require(\"./views\"))`). O padrão do tratador registrado só vê o arquivo da consulta; o Semgrep não leva o registro para o arquivo do tratador.",
+    "tried": [
+      "mode: taint com `options: interfile: true`; fonte `$REQ.params` dentro de `$APP.$VERB(..., ($REQ, $RES, ...) => $E)` e sumidouro `$RES.render($X)`: o tratador escrito na própria chamada é achado (linha 4 do app.js), o exportado não"
+    ],
+    "should_find": ["handler.js:1"]
   },
   "field-across-framework-hooks": {
     "capability": "Seguir um campo gravado no objeto da requisição dentro de um gancho do framework (`fastify.addHook`) até a leitura do mesmo campo em outro tratador: o fastify entrega o mesmo objeto aos dois callbacks, mas o motor analisa cada função à parte e não liga o parâmetro de uma ao da outra.",
@@ -72,6 +94,15 @@
       "fonte e sumidouro sobre a propriedade (`$E.innerHTML = $X`): sem a escrita no ramo (linha 11) o Semgrep acha"
     ],
     "should_find": ["a.js:6"]
+  },
+  "graphql-root-value-by-variable": {
+    "capability": "Levar o dado de `graphql({variableValues})` ao primeiro parâmetro das funções do `rootValue` (resumo do CodeQL em graph-ql.model.json) quando o objeto é definido antes e passado por variável: o parâmetro de uma função anônima é analisado no corpo dela, sem ver a contaminação que só chega na chamada, e o propagador só alcança o objeto escrito dentro da chamada.",
+    "tried": [
+      "propagador `graphql({..., variableValues: $V, ..., rootValue: {..., $K: ($P) => {...}, ...}, ...})` com `from: $V` e `to: $P` por efeito colateral (funciona com o objeto escrito dentro da chamada: linha 7)",
+      "propagador com `rootValue: $ROOT` e `to: $ROOT` por efeito colateral (o objeto fica contaminado, mas o parâmetro da função dentro dele não)",
+      "mode: taint com `options: interfile: true`"
+    ],
+    "should_find": ["target.js:23"]
   },
   "guard-else-branch": {
     "capability": "O sanitizador por guarda (`pattern-inside: if (guarda($X)) {...}`) cobre o `if` inteiro: não há como limitá-lo ao ramo verdadeiro, e o `else` perde o rastro do dado.",
@@ -103,6 +134,14 @@
     ],
     "should_find": ["page.html:5"]
   },
+  "index-write-labels": {
+    "capability": "Reunir, em uma lista montada por atribuição de índices (`args[0] = ...; args[1] = ...`), os rótulos de taint de cada escrita: o `requires: A and B` do sumidouro não vê os dois na lista inteira, ao contrário da lista escrita de uma vez ou montada por `push`.",
+    "tried": [
+      "mode: taint com dois rótulos de fonte e `requires: FLAG and USER` no sumidouro (a lista literal e a de `push` acusam: linhas 4 e 15)",
+      "`options: interfile: true`"
+    ],
+    "should_find": ["target.js:27"]
+  },
   "labeled-receiver-object-argument": {
     "capability": "Com `requires` no receptor (rótulo vindo do retorno de uma função), o argumento do sumidouro só conta quando o dado é uma expressão tainted inteira; um objeto tainted por escrita de propriedade (`query.title = req.body.title`) não dispara o sumidouro.",
     "tried": [
@@ -112,6 +151,14 @@
       "função de retorno declarada dentro e fora do handler"
     ],
     "should_find": ["target.js:10"]
+  },
+  "next-props-across-functions": {
+    "capability": "Levar o `props` que `getServerSideProps` devolve ao parâmetro do componente padrão da página do Next.js: o propagador do Semgrep só leva o dado dentro da função onde o `to` está, e o parâmetro do componente fica em outra função.",
+    "tried": [
+      "pattern-propagators com o trecho inteiro `export async function getServerSideProps(...) {... return {..., props: $V, ...}; } ... export default function $F($P) {...}`, `from: $V` e `to: $P`; o mesmo trecho como `pattern` casa, mas o dado não chega ao parâmetro",
+      "mode: taint com `options: interfile: true`; a fonte direta no `innerHTML` (controle, linha 2) é achada"
+    ],
+    "should_find": ["a.js:11"]
   },
   "react-class-state-props": {
     "capability": "Levar o dado de `this.state`/`this.props` entre métodos da classe e dos pontos que preenchem as props (`defaultProps`, atributos JSX, construtor): o Semgrep analisa cada método sozinho, sem o estado do objeto.",
@@ -167,6 +214,15 @@
     ],
     "should_find": ["target.js:8"]
   },
+  "template-helper-by-name": {
+    "capability": "Ligar o parâmetro do helper que `hb.registerHelper(\"catFile\", fn)` registra ao dado que a chamada do modelo compilado entrega (`compiled({ path: x })`), só quando o texto de `hb.compile(\"{{catFile path}}\")` cita o helper pelo nome. O Semgrep não compara o nome do helper com o texto do modelo, nem leva o dado da chamada ao parâmetro de outra função.",
+    "tried": [
+      "mode: taint com `options: interfile: true`, fonte `$REQ.params.$P` e sumidouro `fs.readFileSync($X)`: a chamada direta do mesmo dado é achada (linha 15), a do helper não",
+      "pattern-propagators `$T({..., $K: $V, ...})` de `$V` para `$T`: o `to` fica na chamada do modelo, e o parâmetro do helper está em outro trecho do arquivo",
+      "fonte no parâmetro de todo helper registrado (reprovada: alerta também o helper que nenhum modelo usa, o que o CodeQL não faz)"
+    ],
+    "should_find": ["a.js:5"]
+  },
   "typeahead-callback": {
     "capability": "Ligar o dado entregue ao callback `cb(valor)` da opção `source` do typeahead ao parâmetro da função `templates.suggestion` do mesmo objeto de opções.",
     "tried": [
@@ -185,5 +241,14 @@
       "uma regra `generic` só casaria o texto `v-html=\"...\"`, sem o fluxo do dado, e acusaria todo `v-html` (também os de valor constante)"
     ],
     "should_find": ["a.vue:7"]
+  },
+  "web-storage-key-flow": {
+    "capability": "Levar o dado guardado por `setItem(chave, dado)` ao `getItem(chave)` da mesma chave quando a leitura é usada direto como argumento (`$(...).html(storage.getItem(chave))`): o propagador de trecho só atinge o `to` quando a leitura é atribuída a uma variável (`$GET = $ST.getItem($K)`).",
+    "tried": [
+      "pattern-propagators com o trecho `$ST.setItem($K, $V); ...; $GET = $ST.getItem($K);`, `from: $V` e `to: $GET`: acha a leitura atribuída a variável (função `assigned`), não a usada direto",
+      "pattern-propagators com `$GET` e `metavariable-pattern` `$ST.getItem($K)` dentro de `pattern-inside` do `setItem`: não acha nenhuma das duas formas",
+      "mode: taint com `options: interfile: true`"
+    ],
+    "should_find": ["a.js:9"]
   }
 }

@@ -13,7 +13,7 @@ rules:
       cwe: "CWE-770: Allocation of Resources Without Limits or Throttling"
       codeql: js/resource-exhaustion
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/http-request-sources-cookies
       - "$model": javascript/process-argv-source
     pattern-sanitizers:
       - patterns:

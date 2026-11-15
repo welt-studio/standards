@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.outputFileSync($X, ...)"
-    - focus-metavariable: "$X"

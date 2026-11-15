@@ -14,7 +14,7 @@ rules:
       codeql: js/polynomial-redos
       note: "aproximação sintática; o CodeQL usa análise de autômato"
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-ctx-or-this-request
+      - "$model": javascript/http-request-sources-cookies
       - "$model": javascript/dom-xss-sources
     pattern-sanitizers:
       - pattern: "$X.slice(0, ...)"

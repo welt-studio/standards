@@ -1,0 +1,37 @@
+# O parâmetro de requisição (`$REQ`) de um tratador do Hapi, como o `RouteSetup` do `Hapi.qll` do
+# CodeQL: a função passada como `handler` ao `server.route(...)` (um objeto ou uma lista de objetos)
+# ou ao `server.ext(evento, ...)`, de um servidor criado por `new Hapi.Server()` ou `Hapi.server()` do
+# `hapi` ou do `@hapi/hapi`. Nenhuma forma casa pelo nome do parâmetro. Um item só, para entrar em
+# uma lista `patterns`.
+- pattern-either:
+    - patterns:
+        - pattern-either:
+            - pattern-inside: "$SERVER.route({..., handler: function ($REQ, ...) {...}, ...})"
+            - pattern-inside: "$SERVER.route([..., {..., handler: function ($REQ, ...) {...}, ...}, ...])"
+            - pattern-inside: "$SERVER.ext($EVENT, function ($REQ, ...) {...}, ...)"
+        - pattern-either:
+            - pattern-inside: |
+                $SERVER = new $HP.Server(...); ...
+            - pattern-inside: |
+                $SERVER = $HP.server(...); ...
+            - pattern-inside: |
+                $SERVER = $HP.Server(...); ...
+        - pattern-either:
+            - patterns:
+                - pattern-inside: |
+                    $HP = require("$MOD"); ...
+                - metavariable-regex:
+                    metavariable: "$MOD"
+                    regex: &hapi_module "^(?:hapi|@hapi/hapi)$"
+            - patterns:
+                - pattern-inside: |
+                    import $HP from "$MOD"; ...
+                - metavariable-regex:
+                    metavariable: "$MOD"
+                    regex: *hapi_module
+            - patterns:
+                - pattern-inside: |
+                    import * as $HP from "$MOD"; ...
+                - metavariable-regex:
+                    metavariable: "$MOD"
+                    regex: *hapi_module

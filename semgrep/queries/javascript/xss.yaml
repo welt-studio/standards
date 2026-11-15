@@ -11,44 +11,69 @@ rules:
       codeql: js/xss
     mode: taint
     pattern-sources:
-      - "$model": javascript/express-request-sources
-      - "$model": javascript/nextjs-server-side-sources
-      - "$model": javascript/window-name
-      - "$model": javascript/window-message-sources
-      - pattern: "useRouter().query"
-      - pattern: "useRouter().query.$K"
-      - pattern: "useSearchParams()"
-      - pattern: "useSearchParams().get(...)"
-      - pattern: "useParams()"
-      - pattern: "useParams().$K"
-      - pattern: router.query
-      - pattern: "router.query.$K"
-      # `$ROUTER.query` é o objeto de consulta do roteador, não a chamada de um método `query`.
+      - pattern-either: &xss_sources
+          - "$model": javascript/http-request-sources
+          - "$model": javascript/window-name
+          - "$model": javascript/window-message-sources
+          - "$model": javascript/message-event-data-sources
+          # Roteador do Next.js (`next/router`): `useRouter().query` e, em página embrulhada por
+          # `withRouter`, a prop `router`.
+          - patterns:
+              - pattern-either:
+                  - pattern: "useRouter().query"
+                  - patterns:
+                      - pattern: "$R.query"
+                      - pattern-inside: |
+                          $R = useRouter();
+                          ...
+              - pattern-inside: |
+                  import { useRouter } from "next/router";
+                  ...
+          - patterns:
+              - pattern-either:
+                  - pattern: "$P.router.query"
+                  - patterns:
+                      - pattern: "router.query"
+                      - pattern-either:
+                          - pattern-inside: |
+                              function $F({..., router, ...}) {...}
+                          - pattern-inside: |
+                              ({..., router, ...}) => {...}
+              - pattern-inside: |
+                  import { withRouter } from "next/router";
+                  ...
+          # Roteador do `react-router-dom`: `useParams()` e o `params`/`url` do `useRouteMatch()`.
+          - patterns:
+              - pattern: "useParams()"
+              - pattern-inside: |
+                  import { useParams } from "react-router-dom";
+                  ...
+          - patterns:
+              - pattern-either:
+                  - pattern: "useRouteMatch(...).params"
+                  - pattern: "useRouteMatch(...).url"
+                  - patterns:
+                      - pattern-either:
+                          - pattern: "$MATCH.params"
+                          - pattern: "$MATCH.url"
+                      - pattern-inside: |
+                          $MATCH = useRouteMatch(...);
+                          ...
+              - pattern-inside: |
+                  import { useRouteMatch } from "react-router-dom";
+                  ...
+          # HTML vindo da área de transferência ou de arrastar e soltar (DataTransfer).
+          - pattern: "$DT.getData('text/html')"
+      # A URL da página pelo `react-router-dom` (`useLocation()`): o atacante controla só o sufixo
+      # dela, e o `pathname` não é fonte.
       - patterns:
-          - pattern: "$ROUTER.query"
-          - pattern-not-inside: "$ROUTER.query(...)"
-      - pattern: props.searchParams
-      - pattern: props.params
-      - pattern: "$P.searchParams"
-      - pattern: "useLocation().search"
-      - pattern: "useLocation().hash"
-      - pattern: "useLocation().pathname"
-      - pattern: "useRouteMatch().params"
+          - pattern-either:
+              - pattern: "useLocation().search"
+              - pattern: "useLocation().hash"
+          - pattern-inside: |
+              import { useLocation } from "react-router-dom";
+              ...
       - pattern: "new URLSearchParams(location.search).get(...)"
-      - pattern: "$.urlParam(...)"
-      # HTML vindo da área de transferência ou de arrastar e soltar (DataTransfer).
-      - pattern: "$DT.getData('text/html')"
-      - "$model": javascript/message-event-data-sources
-      # Página do Next.js: as props do componente padrão vêm do que `getServerSideProps` (ou
-      # `getStaticProps`) devolve, montado com a requisição.
-      - patterns:
-          - pattern: "$P"
-          - pattern-inside: |
-              export default function $F($P, ...) {...}
-          - pattern-inside: |
-              ...
-              export async function getServerSideProps(...) {...}
-              ...
     pattern-sinks:
       - "$model": javascript/dom-xss-sinks
       - "$model": javascript/dom-node-insertion-sinks
@@ -61,54 +86,45 @@ rules:
               ...
           - focus-metavariable: "$X"
     pattern-sanitizers: &html_sanitizers
-      - "$model": javascript/escape-core-sanitizers
+      # Os sanitizadores de HTML do CodeQL (`HtmlSanitizerCall`): os pacotes conhecidos amarrados ao
+      # módulo, o `DOMPurify.sanitize` e a heurística de nome (`html` mais `saniti|escape|strip`).
+      - "$model": javascript/escape-function-sanitizers
       - "$model": javascript/encode-uri-component-x-sanitizer
       - "$model": javascript/encode-uri-x-sanitizer
-      - "$model": javascript/sanitize-x-sanitizer
-      - "$model": javascript/html-sanitizer-core-sanitizers
+      - "$model": javascript/html-sanitizer-library-sanitizers
       - "$model": javascript/dom-purify-sanitize-x-sanitizer
-      - "$model": javascript/validator-escape-sanitizers
       - "$model": javascript/parse-int-x-sanitizer
       - "$model": javascript/parse-float-x-sanitizer
       - "$model": javascript/number-x-sanitizer
       - "$model": javascript/boolean-x-sanitizer
       - "$model": javascript/numeric-and-strip-tags-sanitizers
-      # Pacotes de escape e de remoção de tags, ligados pelo módulo e não pelo nome que o código deu.
-      - patterns:
-          - pattern: "$F($X)"
-          - pattern-either:
-              - pattern-inside: |
-                  import $F from "escape-html";
-                  ...
-              - pattern-inside: |
-                  $F = require("escape-html");
-                  ...
-              - pattern-inside: |
-                  import $F from "striptags";
-                  ...
-              - pattern-inside: |
-                  $F = require("striptags");
-                  ...
       - "$model": javascript/html-encoding-sanitizers
       - "$model": javascript/x-length
       - pattern: "+$X"
       - pattern: "typeof $X"
+      # Só o `$()` do jQuery olha o prefixo: uma concatenação que não começa por `<` é um seletor,
+      # não HTML. Em qualquer outro sumidouro o prefixo de texto não limpa nada.
       - patterns:
           - pattern: '"$P" + $X'
+          - pattern-either:
+              - pattern-inside: '$("$P" + $X)'
+              - pattern-inside: 'jQuery("$P" + $X)'
+              - pattern-inside: 'cash("$P" + $X)'
           - metavariable-regex:
               metavariable: "$P"
               regex:
                 "$text": javascript/non-html-string-prefix-regex
-      - "$model": javascript/dom-purify-sanitize-x-sanitizer
+      - patterns:
+          - pattern: '"$P" + $A + $X'
+          - pattern-either:
+              - pattern-inside: '$("$P" + $A + $X)'
+              - pattern-inside: 'jQuery("$P" + $A + $X)'
+              - pattern-inside: 'cash("$P" + $A + $X)'
+          - metavariable-regex:
+              metavariable: "$P"
+              regex:
+                "$text": javascript/non-html-string-prefix-regex
       - "$model": javascript/dom-text-sanitizers
-      - "$model": javascript/jquery-check-sanitizer
-      - patterns:
-          - pattern: "$X"
-          - pattern-inside: "if (typeof $X === 'object') {...}"
-      - patterns:
-          - pattern: "$X"
-          - pattern-inside: "if (typeof $X !== 'string') {...}"
-      - "$model": javascript/is-element-check-sanitizer
       - "$model": javascript/angle-bracket-replacement-sanitizers
       - "$model": javascript/indexof-call
       - "$model": javascript/message-origin-check-sanitizers
@@ -219,18 +235,67 @@ rules:
                         if ($X.includes("\"")) { return; }
                         $...REST
                 - focus-metavariable: "$...REST"
-      # Sanitização opcional (`ligado ? DOMPurify.sanitize(x) : x`, ou o `if` que a aplica): quem
-      # a desliga é a configuração, e o CodeQL não conta o ramo sem sanitizar como fluxo.
+      # Sanitização opcional (`ligado ? sanitizador(x) : x`, ou o `if` que a aplica): quem a desliga é
+      # a configuração, e o CodeQL não conta o ramo sem sanitizar como fluxo. Vale para o
+      # `DOMPurify.sanitize` e para o sanitizador reconhecido pelo nome (`html` mais
+      # `saniti|escape|strip`); o de pacote, amarrado ao módulo, não entra (um padrão não consegue
+      # perguntar se uma chamada é de um sanitizador, só enumerá-los).
       - pattern-either:
-          - pattern: "$C ? DOMPurify.sanitize($X) : $X"
-          - pattern: "$C ? $X : DOMPurify.sanitize($X)"
+          - pattern: "$C ? DOMPurify.sanitize($X, ...) : $X"
+          - pattern: "$C ? $X : DOMPurify.sanitize($X, ...)"
       - patterns:
           - pattern: "$X"
           - pattern-inside: |
               if ($C) {
-                $X = DOMPurify.sanitize($X);
+                $X = DOMPurify.sanitize($X, ...);
               }
               ...
+      - patterns:
+          - pattern-either:
+              - pattern: "$C ? $F($X, ...) : $X"
+              - pattern: "$C ? $X : $F($X, ...)"
+          - metavariable-regex:
+              metavariable: "$F"
+              regex:
+                "$text": javascript/identifier-name-regex
+          - metavariable-regex:
+              metavariable: "$F"
+              regex:
+                "$text": javascript/html-sanitizer-name-regex
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if ($C) {
+                $X = $F($X, ...);
+              }
+              ...
+          - metavariable-regex:
+              metavariable: "$F"
+              regex:
+                "$text": javascript/identifier-name-regex
+          - metavariable-regex:
+              metavariable: "$F"
+              regex:
+                "$text": javascript/html-sanitizer-name-regex
+      - patterns:
+          - pattern-either:
+              - pattern: "$C ? $O.$F($X, ...) : $X"
+              - pattern: "$C ? $X : $O.$F($X, ...)"
+          - metavariable-regex:
+              metavariable: "$F"
+              regex:
+                "$text": javascript/html-sanitizer-name-regex
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside: |
+              if ($C) {
+                $X = $O.$F($X, ...);
+              }
+              ...
+          - metavariable-regex:
+              metavariable: "$F"
+              regex:
+                "$text": javascript/html-sanitizer-name-regex
     pattern-propagators:
       &state_propagators # `const [estado, setEstado] = useState(...)`: o que entra no setter vira o estado.
       - patterns:
@@ -243,6 +308,19 @@ rules:
               ...
         from: "$X"
         to: "$STATE"
+      # Armazenamento da página (`PersistentWebStorage` do CodeQL): o que se guarda em
+      # `setItem(chave, dado)` volta em `getItem(chave)` da mesma chave. Só a leitura atribuída a uma
+      # variável; a usada direto como argumento é o limite `web-storage-key-flow`.
+      - patterns:
+          - pattern: |
+              $ST.setItem($K, $V);
+              ...
+              $GET = $ST.getItem($K);
+          - metavariable-regex:
+              metavariable: "$ST"
+              regex: "^(?:localStorage|sessionStorage|window\\.localStorage|window\\.sessionStorage)$"
+        from: "$V"
+        to: "$GET"
       # Função declarada depois da chamada (a declaração sobe ao topo do escopo): o argumento da
       # chamada chega ao parâmetro, como na função declarada antes.
       - patterns:
@@ -292,11 +370,9 @@ rules:
       - "$model": javascript/window-location-hash
       - "$model": javascript/window-location-search
       - "$model": javascript/window-location-href
-      - "$model": javascript/window-location-pathname-source
       - "$model": javascript/document-location-hash
       - "$model": javascript/document-location-search
       - "$model": javascript/document-location-href
-      - "$model": javascript/document-location-pathname-source
       - "$model": javascript/document-url-sources
       - "$model": javascript/document-base-uri-source
       - "$model": javascript/document-referrer
@@ -322,27 +398,23 @@ rules:
                       - pattern: location
                       - pattern: window.location
                       - pattern: document.location
-      # Armazenamento da página: o que se guarda em `setItem(chave, ...)` volta em `getItem(chave)`.
-      - patterns:
-          - pattern: "$ST.getItem($K)"
-          - pattern-inside: |
-              $ST.setItem($K, $V);
-              ...
-          - metavariable-pattern:
-              metavariable: "$V"
-              pattern-either:
-                - "$model": javascript/location-search
-                - "$model": javascript/location-hash
-                - "$model": javascript/window-location-search
-                - "$model": javascript/window-location-hash
-                - "$model": javascript/document-location-search
-                - "$model": javascript/document-location-hash
     pattern-propagators: *state_propagators
     pattern-sinks:
       - "$model": javascript/dom-xss-sinks
       - "$model": javascript/dom-node-insertion-sinks
     pattern-sanitizers:
       - pattern-either: *html_sanitizers
+      # Ler uma propriedade do `location` que não é `hash`, `search` nem `href` não leva a
+      # contaminação do objeto (`isSafeClientSideUrlProperty` do CodeQL): o `pathname` não é fonte.
+      - patterns:
+          - pattern-either:
+              - pattern: "location.$P"
+              - pattern: "window.location.$P"
+              - pattern: "document.location.$P"
+              - pattern: "self.location.$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?:pathname|host|hostname|port|protocol|origin|username|password)$"
       # Um valor da URL passado a `$(...)` sem extrair o sufixo é um seletor, e só vira HTML nas
       # extrações (`substring(1)`, `replace('#', '')`, `.get(...)`) e nas concatenações com `<` na
       # frente. Inteiro, depois de um prefixo, ou com o começo preservado (`substring(0, n)`), ele é
@@ -416,9 +488,7 @@ rules:
       codeql: js/xss
     mode: taint
     pattern-sources:
-      - "$model": javascript/express-request-sources
-      - "$model": javascript/nextjs-server-side-sources
-      - "$model": javascript/window-name
+      - pattern-either: *xss_sources
       - patterns:
           - pattern-either:
               - pattern: "$L.substr(1)"
@@ -433,10 +503,6 @@ rules:
                 - pattern: window.location.hash
                 - pattern: document.location.search
                 - pattern: document.location.hash
-      - pattern: "router.query.$K"
-      - patterns:
-          - pattern: "$ROUTER.query"
-          - pattern-not-inside: "$ROUTER.query(...)"
     pattern-sinks:
       - patterns:
           - pattern-either:
@@ -471,20 +537,51 @@ rules:
           - pattern-either:
               - pattern: "$H.push($X, ...)"
               - pattern: "$H.replace($X, ...)"
+          # O histórico do navegador (`createBrowserHistory`); o `createHashHistory` só mexe no
+          # fragmento, que não executa `javascript:`.
           - pattern-either:
               - pattern-inside: |
-                  $H = require("history").$CREATE(...);
+                  $H = require("history").createBrowserHistory(...);
                   ...
               - pattern-inside: |
-                  import {..., $CREATE, ...} from "history";
+                  import { createBrowserHistory } from "history";
                   ...
-                  $H = $CREATE(...);
+                  $H = createBrowserHistory(...);
                   ...
-              - pattern-inside: |
-                  function $F(...) {
-                    ...
-                    <... $H.query ...>
-                  }
+          - focus-metavariable: "$X"
+      # Roteador do Next.js (`next/router`): o `push`/`replace` de `useRouter()` e o da prop `router`
+      # de uma página embrulhada por `withRouter`.
+      - patterns:
+          - pattern-either:
+              - pattern: "useRouter().$M($X, ...)"
+              - patterns:
+                  - pattern: "$R.$M($X, ...)"
+                  - pattern-inside: |
+                      $R = useRouter();
+                      ...
+          - pattern-inside: |
+              import { useRouter } from "next/router";
+              ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:push|replace)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$P.router.$M($X, ...)"
+              - patterns:
+                  - pattern: "router.$M($X, ...)"
+                  - pattern-either:
+                      - pattern-inside: |
+                          function $F({..., router, ...}) {...}
+                      - pattern-inside: |
+                          ({..., router, ...}) => {...}
+          - pattern-inside: |
+              import { withRouter } from "next/router";
+              ...
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:push|replace)$"
           - focus-metavariable: "$X"
       - "$model": javascript/location-navigation-sinks
       # Atributo de endereço de um elemento HTML (minúsculo) no JSX.
@@ -498,16 +595,27 @@ rules:
               metavariable: "$EL"
               regex: "^[a-z]"
           - focus-metavariable: "$X"
+      # O `<Link href={...}>` do `next/link`.
+      - patterns:
+          - pattern-either:
+              - pattern: "<$LINK ... href={$X} ... />"
+              - pattern: "<$LINK ... src={$X} ... />"
+              - pattern: "<$LINK ... action={$X} ... />"
+              - pattern: "<$LINK ... formAction={$X} ... />"
+          - pattern-inside: |
+              import $LINK from "next/link";
+              ...
+          - focus-metavariable: "$X"
       # `templateUrl` de uma diretiva do AngularJS.
       - patterns:
           - pattern: "{..., templateUrl: $X, ...}"
           - pattern-inside: "$M.directive(..., function () {...})"
           - focus-metavariable: "$X"
     pattern-sanitizers:
-      - "$model": javascript/escape-core-sanitizers
+      - "$model": javascript/escape-function-sanitizers
       - "$model": javascript/encode-uri-component-x-sanitizer
       - "$model": javascript/encode-uri-x-sanitizer
-      - "$model": javascript/html-sanitizer-core-sanitizers
+      - "$model": javascript/html-sanitizer-library-sanitizers
       - "$model": javascript/dom-purify-sanitize-x-sanitizer
       - "$model": javascript/parse-int-x-sanitizer
       - "$model": javascript/number-x-sanitizer
@@ -582,6 +690,17 @@ rules:
     pattern-sinks:
       - "$model": javascript/dom-xss-sinks
       - "$model": javascript/dom-node-insertion-sinks
+      # `DomSanitizer.bypassSecurityTrustHtml/Style(valor)` promove o valor a HTML/CSS confiável (o
+      # `Script`, `Url` e `ResourceUrl` são sumidouros de outras consultas).
+      - patterns:
+          - pattern-either:
+              - pattern: "$S.bypassSecurityTrustHtml($X)"
+              - pattern: "$S.bypassSecurityTrustStyle($X)"
+          - metavariable-type:
+              metavariable: "$S"
+              types:
+                - DomSanitizer
+          - focus-metavariable: "$X"
       # Renderer2.setProperty(el, "innerHTML", valor)
       - patterns:
           - pattern-either:

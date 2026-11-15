@@ -1,3 +1,10 @@
-- pattern: "path.basename($X, ...)"
-- pattern: "sanitizeFilename($X, ...)"
-- pattern: "sanitize($X, ...)"
+- patterns:
+    - pattern: "$M.basename($X, ...)"
+    - "$model": javascript/path-module
+- patterns:
+    - pattern: "$S($X, ...)"
+    - pattern-either:
+        - pattern-inside: |
+            $S = require("sanitize-filename"); ...
+        - pattern-inside: |
+            import $S from "sanitize-filename"; ...

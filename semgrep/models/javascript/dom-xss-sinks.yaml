@@ -10,54 +10,109 @@
 - patterns:
     - pattern: "$E.outerHTML += $X"
     - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.srcdoc = $X"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "document.write($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "document.writeln($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$D.write($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$D.writeln($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.insertAdjacentHTML($P, $X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.html($X)"
-    - focus-metavariable: "$X"
-# Métodos do jQuery que leem a string como HTML. O `append`/`prepend`/`after`/`before` nativo do
-# DOM (`document.body.append(...)`) insere texto, então um nó de `document` não é receptor jQuery.
+# `document.write`/`writeln` (o receptor é o `document`, ou o `document` de uma janela global): o
+# `write` de um fluxo (`process.stdout.write`, `res.write`) não escreve HTML.
 - patterns:
     - pattern-either:
-        - pattern: "$E.append($X)"
-        - pattern: "$E.prepend($X)"
-        - pattern: "$E.after($X)"
-        - pattern: "$E.before($X)"
-    - pattern-not: "document.$P.$M($X)"
+        - pattern: "document.write(..., $X, ...)"
+        - pattern: "document.writeln(..., $X, ...)"
     - focus-metavariable: "$X"
 - patterns:
-    - pattern: "$E.wrap($X)"
+    - pattern-either:
+        - pattern: "$W.document.write(..., $X, ...)"
+        - pattern: "$W.document.writeln(..., $X, ...)"
+    - metavariable-regex:
+        metavariable: "$W"
+        regex: "^(?:window|self|top|parent|globalThis)$"
     - focus-metavariable: "$X"
 - patterns:
-    - pattern: "$E.wrapAll($X)"
+    - pattern: "$E.insertAdjacentHTML($P, $X, ...)"
     - focus-metavariable: "$X"
+# Métodos do jQuery que leem a string como HTML (`JQuery::MethodCall.interpretsArgumentAsHtml` do
+# CodeQL): o receptor é um objeto jQuery, isto é, o resultado de `$(...)`, `jQuery(...)` ou
+# `cash(...)` (com ou sem encadeamento) ou uma variável atribuída dele. O `append`/`prepend`/
+# `after`/`before` do DOM nativo (`document.body.append(...)`) e o do cheerio inserem texto ou
+# outro objeto, então um receptor qualquer não serve.
 - patterns:
-    - pattern: "$E.wrapInner($X)"
+    - pattern-either:
+        - pattern: "<... $D(...) ...>.$M(..., $X, ...)"
+        - patterns:
+            - pattern: "$J.$M(..., $X, ...)"
+            - pattern-inside: |
+                $J = $D(...);
+                ...
+    - metavariable-regex:
+        metavariable: "$D"
+        regex: '^(?:\$|jQuery|cash)$'
+    - metavariable-regex:
+        metavariable: "$M"
+        regex:
+          "$text": javascript/jquery-html-method-regex
     - focus-metavariable: "$X"
+# Os mesmos métodos com callback que devolve o HTML (`.html(d => ...)`, `.replaceWith(function () {...})`).
 - patterns:
-    - pattern: "$E.replaceWith($X)"
+    - pattern-either:
+        - pattern: "<... $D(...) ...>.$M((...) => $X)"
+        - pattern: "<... $D(...) ...>.$M(function (...) { ... return $X; })"
+        - patterns:
+            - pattern-either:
+                - pattern: "$J.$M((...) => $X)"
+                - pattern: "$J.$M(function (...) { ... return $X; })"
+            - pattern-inside: |
+                $J = $D(...);
+                ...
+    - metavariable-regex:
+        metavariable: "$D"
+        regex: '^(?:\$|jQuery|cash)$'
+    - metavariable-regex:
+        metavariable: "$M"
+        regex:
+          "$text": javascript/jquery-html-method-regex
     - focus-metavariable: "$X"
+# O jqLite do AngularJS é um objeto jQuery: o resultado de `angular.element(...)` e o elemento que a
+# diretiva recebe em `link: function (scope, element) {...}`.
 - patterns:
-    - pattern: "$E.appendTo($X)"
+    - pattern-either:
+        - pattern: "<... angular.element(...) ...>.$M(..., $X, ...)"
+        - pattern: "<... angular.element(...) ...>.$M((...) => $X)"
+        - pattern: "<... angular.element(...) ...>.$M(function (...) { ... return $X; })"
+        - patterns:
+            - pattern-either:
+                - pattern: "$J.$M(..., $X, ...)"
+                - pattern: "$J.$M((...) => $X)"
+                - pattern: "$J.$M(function (...) { ... return $X; })"
+            - pattern-inside: |
+                $J = angular.element(...);
+                ...
+        - patterns:
+            - pattern-either:
+                - pattern: "$EL.$M(..., $X, ...)"
+                - pattern: "$EL.$M((...) => $X)"
+                - pattern: "$EL.$M(function (...) { ... return $X; })"
+            - pattern-inside: "{..., link: function ($SCOPE, $EL, ...) {...}, ...}"
+            - pattern-inside: "$APP.directive(...)"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex:
+          "$text": javascript/jquery-html-method-regex
     - focus-metavariable: "$X"
+# d3: o `html` de uma seleção (`d3.select(...)`, `d3.selectAll(...)`) lê a string como HTML (D3.qll).
 - patterns:
-    - pattern: "$E.prependTo($X)"
+    - pattern-either:
+        - pattern: "<... d3.$R(...) ...>.html($X)"
+        - pattern: "<... d3.$R(...) ...>.html((...) => $X)"
+        - pattern: "<... d3.$R(...) ...>.html(function (...) { ... return $X; })"
+        - patterns:
+            - pattern-either:
+                - pattern: "$J.html($X)"
+                - pattern: "$J.html((...) => $X)"
+                - pattern: "$J.html(function (...) { ... return $X; })"
+            - pattern-inside: |
+                $J = <... d3.$R(...) ...>;
+                ...
+    - metavariable-regex:
+        metavariable: "$R"
+        regex: "^(?:select|selectAll|selection)$"
     - focus-metavariable: "$X"
 - patterns:
     - pattern: "$($X)"
@@ -66,10 +121,7 @@
     - "$model": javascript/jquery-call
     - focus-metavariable: "$X"
 - patterns:
-    - pattern: "$.parseHTML($X, ...)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "jQuery.parseHTML($X, ...)"
+    - pattern: "cash($X)"
     - focus-metavariable: "$X"
 - patterns:
     - pattern: "$R.createContextualFragment($X)"
@@ -97,53 +149,11 @@
     - pattern: "angular.element($X)"
     - focus-metavariable: "$X"
 - patterns:
-    - pattern: "$S.bypassSecurityTrustHtml($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$S.bypassSecurityTrustScript($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$S.bypassSecurityTrustStyle($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$S.bypassSecurityTrustUrl($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$S.bypassSecurityTrustResourceUrl($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.setAttribute('srcdoc', $X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.setAttribute('on$EV', $X)"
-    - focus-metavariable: "$X"
-- patterns:
     - pattern: "<$C dangerouslySetInnerHTML={{__html: $X}} />"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.setHTML($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.setHTMLUnsafe($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$W.document.write($X)"
-    - focus-metavariable: "$X"
-- patterns:
-    - pattern: "$E.insertAdjacentHTML($P, $X, ...)"
     - focus-metavariable: "$X"
 - patterns:
     - pattern: "{__html: $X}"
     - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
-    - focus-metavariable: "$X"
-# Métodos do jQuery cujo callback devolve o HTML (`.html(d => ...)`, `.replaceWith(function () {...})`).
-- patterns:
-    - pattern-either:
-        - pattern: "$E.$M(($D) => $X)"
-        - pattern: "$E.$M(function ($D) { ... return $X; })"
-    - metavariable-regex:
-        metavariable: "$M"
-        regex: "^(?:html|append|prepend|before|after|wrap|wrapAll|wrapInner|replaceWith)$"
     - focus-metavariable: "$X"
 # DOMParser: o instanciado com `new DOMParser()` interpreta o texto como HTML/XML.
 - patterns:
@@ -155,8 +165,19 @@
 - patterns:
     - pattern: "new Handlebars.SafeString($X)"
     - focus-metavariable: "$X"
+# `jGrowl` do jQuery (`$.jGrowl(msg)`, `$(...).jGrowl(msg)`): a mensagem vira HTML.
 - patterns:
-    - pattern: "$J.jGrowl($X, ...)"
+    - pattern-either:
+        - pattern: "$D.jGrowl($X, ...)"
+        - pattern: "<... $D(...) ...>.jGrowl($X, ...)"
+        - patterns:
+            - pattern: "$J.jGrowl($X, ...)"
+            - pattern-inside: |
+                $J = $D(...);
+                ...
+    - metavariable-regex:
+        metavariable: "$D"
+        regex: '^(?:\$|jQuery|cash)$'
     - focus-metavariable: "$X"
 # MooTools: a opção/propriedade `html` do Element e o appendHtml.
 - patterns:

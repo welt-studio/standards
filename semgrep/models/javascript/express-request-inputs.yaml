@@ -1,0 +1,18 @@
+# As entradas da requisição que o `Express.qll` do CodeQL modela, sobre o `$REQ` de um tratador, mais as
+# do Node (`node-request-inputs`), de que a requisição do Express é um caso: `query`, `params`,
+# `param(nome)`, `originalUrl`, `files`, `file`, `body`, `path`, `_parsedUrl`, `get(nome)`,
+# `header(nome)`, `host` e `hostname`. Os cookies ficam em `req-cookies`, à parte. Não há modelo para
+# `signedCookies`, `baseUrl`, `subdomains` nem `rawBody`.
+- "$model": javascript/node-request-inputs
+- "$model": javascript/req-query
+- "$model": javascript/req-params
+- "$model": javascript/req-param
+- "$model": javascript/req-original-url
+- "$model": javascript/req-path
+- "$model": javascript/req-files
+- pattern: "$REQ.file"
+- pattern: "$REQ._parsedUrl"
+- "$model": javascript/req-get
+- "$model": javascript/req-header
+- "$model": javascript/req-host
+- "$model": javascript/req-hostname

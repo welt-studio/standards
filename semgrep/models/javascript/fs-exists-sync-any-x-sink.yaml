@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.existsSync($X, ...)"
-    - focus-metavariable: "$X"

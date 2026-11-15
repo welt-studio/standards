@@ -1,3 +1,0 @@
-- patterns:
-    - pattern: "fs.outputJson($X, ...)"
-    - focus-metavariable: "$X"

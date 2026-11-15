@@ -13,15 +13,13 @@ rules:
       cwe: "CWE-502: Deserialization of Untrusted Data"
       codeql: js/unsafe-deserialization
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-or-context
+      - "$model": javascript/http-request-sources-cookies
       - "$model": javascript/document-location-hash
       - "$model": javascript/document-location-search
       - "$model": javascript/document-location-href
-      - "$model": javascript/document-location-pathname-source
       - "$model": javascript/window-location-hash
       - "$model": javascript/window-location-search
       - "$model": javascript/window-location-href
-      - "$model": javascript/window-location-pathname-source
       - "$model": javascript/location-hash
       - "$model": javascript/location-search
       - "$model": javascript/location-href-and-pathname-sources

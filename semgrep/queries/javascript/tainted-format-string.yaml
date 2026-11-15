@@ -13,7 +13,7 @@ rules:
       cwe: "CWE-134: Use of Externally-Controlled Format String"
       codeql: js/tainted-format-string
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-or-context
+      - "$model": javascript/http-request-sources-cookies
     pattern-sinks:
       - patterns:
           - pattern-either:

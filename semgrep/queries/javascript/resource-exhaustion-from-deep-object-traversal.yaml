@@ -13,7 +13,7 @@ rules:
       cwe: "CWE-400: Uncontrolled Resource Consumption"
       codeql: js/resource-exhaustion-from-deep-object-traversal
     pattern-sources:
-      - "$model": javascript/request-sources-named-req-or-context
+      - "$model": javascript/http-request-sources-cookies
     pattern-sinks:
       - patterns:
           - pattern-inside: |

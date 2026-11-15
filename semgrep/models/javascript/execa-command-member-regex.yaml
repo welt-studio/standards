@@ -1,0 +1,1 @@
+"^(?:execa|execaSync|execaCommand|execaCommandSync|node|stdout|stderr|sync|shell|shellSync)$"
