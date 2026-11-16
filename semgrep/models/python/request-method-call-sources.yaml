@@ -1,7 +1,18 @@
-- pattern-either:
-    - pattern: "request.$M(...)"
-    - pattern: "self.request.$M(...)"
-    - pattern: "await request.$M(...)"
-- metavariable-regex:
-    metavariable: "$M"
-    regex: "^(get_json|get_data|json|form|body|post|text|read|get_full_path|get_host)$"
+# Método da requisição HTTP do framework que devolve o dado do cliente (`$R.$M(...)`).
+- patterns:
+    - pattern-either:
+        - pattern: "flask.request.$M(...)"
+        - pattern: "bottle.request.$M(...)"
+        - patterns:
+            - "$model": python/http-request-receiver
+            - pattern-either:
+                - pattern: "$R.$M(...)"
+                - pattern: "await $R.$M(...)"
+        - patterns:
+            - "$model": python/view-class-context
+            - pattern-either:
+                - pattern: "self.request.$M(...)"
+                - pattern: "await self.request.$M(...)"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(get_json|get_data|json|form|body|post|text|read|get_full_path|get_host)$"

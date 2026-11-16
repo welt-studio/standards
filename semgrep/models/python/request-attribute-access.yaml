@@ -1,2 +1,11 @@
-- pattern: "request.$A"
-- pattern: "self.request.$A"
+# Atributo da requisição HTTP do framework (`$R.$A`): o objeto global do Flask e do Bottle
+# (`from flask import request`), a requisição de `http-request-receiver`, e o `self.request` da
+# view de classe do Django/DRF e do Tornado, o atributo que o framework põe na instância.
+- pattern: "flask.request.$A"
+- pattern: "bottle.request.$A"
+- patterns:
+    - "$model": python/http-request-receiver
+    - pattern: "$R.$A"
+- patterns:
+    - "$model": python/view-class-context
+    - pattern: "self.request.$A"

@@ -5,19 +5,21 @@ extend = "ruff-base.toml"
 # próprio é o de `hooks/`, e o dos ajudantes dos testes (`tests/gitrepo.py`).
 src = ["hooks", "tests"]
 
-# Os testes próprios das regras do Semgrep (`semgrep/test/own/`) são código vulnerável de propósito,
-# escrito como o de um projeto qualquer (sem anotação, `except Exception`, `open` com caminho
-# montado) para as regras acusarem; a marca `$ Alert[...]` aponta a linha exata. As famílias de
-# regra que esse código fere de propósito ficam desligadas só ali; as protegidas (`TID251`,
-# `PGH004`) continuam.
+# Os testes próprios das regras do Semgrep (`semgrep/test/own/`) e as reproduções dos limites
+# (`semgrep/test/limits/`) são código vulnerável de propósito, escrito como o de um projeto
+# qualquer (sem anotação, `except Exception`, `open` com caminho montado) para as regras acusarem;
+# a marca `$ Alert[...]` e o `should_find` apontam a linha exata. As famílias de regra que esse
+# código fere de propósito ficam desligadas só ali; as protegidas (`TID251`, `PGH004`) continuam.
 [lint.extend-per-file-ignores]
-"semgrep/test/own/**" = [
+"semgrep/test/{own,limits}/**" = [
     "ANN",
     "ARG",
+    "ASYNC",
     "B",
     "BLE",
     "E501",
     "EM",
+    "I",
     "N",
     "PTH",
     "RET",

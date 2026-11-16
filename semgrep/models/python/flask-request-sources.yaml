@@ -1,8 +1,6 @@
 - patterns:
     - pattern-either:
-        - pattern: "flask.request.$A"
         - pattern: "flask.request.$A(...)"
-        - pattern: "bottle.request.$A"
         - "$model": python/request-attribute-access
     - metavariable-regex:
         metavariable: "$A"

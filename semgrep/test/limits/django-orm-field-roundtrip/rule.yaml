@@ -1,0 +1,21 @@
+rules:
+  - id: django-orm-field-roundtrip
+    languages:
+      - python
+    severity: WARNING
+    message: "O texto da exceção gravado no campo do modelo volta numa leitura do banco."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - patterns:
+          - pattern-inside: |
+              try:
+                ...
+              except $T as $E:
+                ...
+          - pattern: "$E"
+    pattern-sinks:
+      - patterns:
+          - pattern: "print($X)"
+          - focus-metavariable: "$X"

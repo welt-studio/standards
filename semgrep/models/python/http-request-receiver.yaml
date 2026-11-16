@@ -1,0 +1,484 @@
+# A requisição HTTP (`$R`) amarrada ao framework, nunca ao nome da variável (`request` local
+# qualquer não é requisição): o parâmetro anotado com a classe de requisição do framework
+# (Starlette/FastAPI, DRF e Django: `RequestHandlerParam`, `HttpRequest` dos `.qll`), o parâmetro
+# depois do `self` num método de view com nome de verbo HTTP (Django/DRF), e o primeiro parâmetro
+# da função registrada por chamada de rota no mesmo arquivo (`DjangoRouteSetup`) ou com decorador de view
+# do Django/DRF. O `$V` é a função.
+- pattern-either:
+    - pattern-inside: |
+        def $V(..., $R: fastapi.Request, ...):
+          ...
+    - pattern-inside: |
+        async def $V(..., $R: fastapi.Request, ...):
+          ...
+    - pattern-inside: |
+        def $V(..., $R: starlette.requests.Request, ...):
+          ...
+    - pattern-inside: |
+        async def $V(..., $R: starlette.requests.Request, ...):
+          ...
+    - pattern-inside: |
+        def $V(..., $R: rest_framework.request.Request, ...):
+          ...
+    - pattern-inside: |
+        async def $V(..., $R: rest_framework.request.Request, ...):
+          ...
+    - pattern-inside: |
+        def $V(..., $R: django.http.HttpRequest, ...):
+          ...
+    - pattern-inside: |
+        async def $V(..., $R: django.http.HttpRequest, ...):
+          ...
+    - pattern-inside: |
+        def $V(..., $R: django.http.request.HttpRequest, ...):
+          ...
+    - pattern-inside: |
+        async def $V(..., $R: django.http.request.HttpRequest, ...):
+          ...
+    - patterns:
+        - "$model": python/view-class-context
+        - pattern-either:
+            - pattern-inside: |
+                def $V(self, $R, ...):
+                  ...
+            - pattern-inside: |
+                async def $V(self, $R, ...):
+                  ...
+        - metavariable-regex:
+            metavariable: "$V"
+            regex: "^(get|post|put|patch|delete|head|options|list|retrieve|create|update|partial_update|destroy|dispatch)$"
+    # A view de função com um decorador de view do Django/DRF (pelo módulo): a registrada no
+    # `urls.py` de outro arquivo (o `DjangoRouteSetup` do CodeQL), que o Semgrep não liga à função.
+    - pattern-inside: |
+        @django.contrib.auth.decorators.login_required
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.login_required
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.login_required(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.login_required(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.permission_required
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.permission_required
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.permission_required(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.permission_required(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.user_passes_test
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.user_passes_test
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.user_passes_test(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.auth.decorators.user_passes_test(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.admin.views.decorators.staff_member_required
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.admin.views.decorators.staff_member_required
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.admin.views.decorators.staff_member_required(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.contrib.admin.views.decorators.staff_member_required(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_http_methods
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_http_methods
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_http_methods(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_http_methods(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_GET
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_GET
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_GET(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_GET(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_POST
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_POST
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_POST(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_POST(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_safe
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_safe
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_safe(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.require_safe(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.condition
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.condition
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.condition(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.condition(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.etag
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.etag
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.etag(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.etag(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.last_modified
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.last_modified
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.last_modified(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.http.last_modified(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.csrf_exempt
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.csrf_exempt
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.csrf_exempt(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.csrf_exempt(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.csrf_protect
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.csrf_protect
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.csrf_protect(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.csrf_protect(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.ensure_csrf_cookie
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.ensure_csrf_cookie
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.ensure_csrf_cookie(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.ensure_csrf_cookie(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.requires_csrf_token
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.requires_csrf_token
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.requires_csrf_token(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.csrf.requires_csrf_token(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.cache_page
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.cache_page
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.cache_page(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.cache_page(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.never_cache
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.never_cache
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.never_cache(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.never_cache(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.cache_control
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.cache_control
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.cache_control(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.cache.cache_control(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_exempt
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_exempt
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_exempt(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_exempt(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_deny
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_deny
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_deny(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_deny(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_sameorigin
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_sameorigin
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_sameorigin(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.clickjacking.xframe_options_sameorigin(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.gzip.gzip_page
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.gzip.gzip_page
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.gzip.gzip_page(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.gzip.gzip_page(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.vary.vary_on_headers
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.vary.vary_on_headers
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.vary.vary_on_headers(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.vary.vary_on_headers(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.vary.vary_on_cookie
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.vary.vary_on_cookie
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.vary.vary_on_cookie(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @django.views.decorators.vary.vary_on_cookie(...)
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @rest_framework.decorators.api_view
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @rest_framework.decorators.api_view
+        async def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @rest_framework.decorators.api_view(...)
+        def $V($R, ...):
+          ...
+    - pattern-inside: |
+        @rest_framework.decorators.api_view(...)
+        async def $V($R, ...):
+          ...
+    # A view de função registrada no mesmo arquivo pela chamada de rota do Django (`path`, `re_path`,
+    # `url`: o `DjangoRouteSetup`), em qualquer lista. A região começa na própria função, e a
+    # rota vem depois dela no arquivo.
+    - pattern-inside: |
+        def $V($R, ...):
+          ...
+        ...
+        $L = [..., django.urls.path($ROUTE, $V, ...), ...]
+    - pattern-inside: |
+        async def $V($R, ...):
+          ...
+        ...
+        $L = [..., django.urls.path($ROUTE, $V, ...), ...]
+    - pattern-inside: |
+        def $V($R, ...):
+          ...
+        ...
+        $L = [..., django.urls.re_path($ROUTE, $V, ...), ...]
+    - pattern-inside: |
+        async def $V($R, ...):
+          ...
+        ...
+        $L = [..., django.urls.re_path($ROUTE, $V, ...), ...]
+    - pattern-inside: |
+        def $V($R, ...):
+          ...
+        ...
+        $L = [..., django.conf.urls.url($ROUTE, $V, ...), ...]
+    - pattern-inside: |
+        async def $V($R, ...):
+          ...
+        ...
+        $L = [..., django.conf.urls.url($ROUTE, $V, ...), ...]

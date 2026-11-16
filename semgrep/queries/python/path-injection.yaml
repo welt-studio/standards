@@ -23,28 +23,21 @@ rules:
       interfile: true
     pattern-sources:
       - "$model": python/flask-request-sources
-      # Parâmetro de rota anotado com uma classe do projeto (modelo Pydantic): os campos declarados
-      # carregam o dado da requisição (PydanticModelRequestHandlerParam, FastApi.qll). O motor Pro
-      # não propaga a contaminação do parâmetro para o campo de uma classe que ele conhece.
+    pattern-propagators:
+      # Leitura de atributo: o campo de uma instância de modelo Pydantic carrega a contaminação do
+      # objeto (`instanceStepToPydanticModel`, o `AdditionalTaintStep` do Pydantic.qll; o parâmetro
+      # da rota do FastAPI é instância). O motor Pro já faz esse passo quando não conhece o tipo, mas
+      # não quando a função anota o parâmetro com a classe do projeto (`def ajudante(p: Pedido)`).
+      # Aproximação: o passo vale para todo objeto contaminado, não só o Pydantic; restringir ao
+      # parâmetro anotado exige reler o nome com `metavariable-pattern`, que estoura o tempo do Pro.
       - patterns:
-          - pattern-either:
-              - pattern-inside: |
-                  @$APP.$VERB(...)
-                  def $F(..., $P: $T, ...):
-                    ...
-              - pattern-inside: |
-                  @$APP.$VERB(...)
-                  async def $F(..., $P: $T, ...):
-                    ...
+          - pattern: "$E"
+          - pattern: "$X.$A"
           - metavariable-regex:
-              metavariable: "$VERB"
-              regex:
-                "$text": python/http-verb-decorator-regex
-          - metavariable-regex:
-              metavariable: "$T"
-              regex:
-                "$text": python/fastapi-dependency-parameter-regex
-          - pattern: "$P.$FIELD"
+              metavariable: "$X"
+              regex: "^[A-Za-z_]\\w*$"
+        from: "$X"
+        to: "$E"
     pattern-sanitizers:
       # Normalizar (normpath/abspath/realpath) e conferir o prefixo (StartswithCall, SafeAccessCheck
       # do Concepts.qll): a conferência só vale depois da normalização (estado NormalizedUnchecked).
@@ -235,7 +228,16 @@ rules:
               - pattern-inside: |
                   $P = $A / $B
                   ...
-          - pattern: "$P.$PM(...)"
+          # O `parent` e os métodos que devolvem outro `Path` também são `Path` (pathlibPathAttribute,
+          # pathlibPathMethod e pathlibPathInjection do Stdlib.qll).
+          - pattern-either:
+              - pattern: "$P.$PM(...)"
+              - pattern: "$P.parent.$PM(...)"
+              - patterns:
+                  - pattern: "$P.$RM(...).$PM(...)"
+                  - metavariable-regex:
+                      metavariable: "$RM"
+                      regex: "^(absolute|relative_to|rename|replace|resolve|joinpath|with_name|with_stem|with_suffix)$"
           - metavariable-regex:
               metavariable: "$PM"
               regex: "^(read_text|read_bytes|write_text|write_bytes|mkdir|rmdir|unlink|touch|symlink_to|hardlink_to|iterdir|rglob|glob|is_file|is_dir|open|chmod|rename|replace|stat|lstat|resolve|samefile|exists|expanduser|group|owner|readlink|is_mount|is_symlink|is_socket|is_fifo|is_block_device|is_char_device|lchmod|link_to)$"

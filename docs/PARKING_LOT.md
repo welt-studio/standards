@@ -108,6 +108,20 @@ Coisas que surgem no meio do caminho e não podem se perder: dúvidas, decisões
   lote 3 por ser trabalho grande.
 - **Próximo passo**: medir numa consulta só (`py/path-injection`) o efeito nos testes do CodeQL e nos
   19 repos antes de estender.
+- **Andamento (lote 4, 2026-11-16, checkpoint)**:
+  - **Feito.** As 8 perdas Python em código nosso foram diagnosticadas:
+    - 2 pegas: o campo Pydantic e o `parent` de `Path`;
+    - 6 em limites provados: `python-slice`, `python-import-shadowed-by-folder` e
+      `django-orm-field-roundtrip`.
+  - **Feito.** A requisição HTTP foi amarrada ao framework (tipo, view registrada ou decorada,
+    classe-base de view) e não mais ao nome `request`. Medido: 124/137 e 97 a mais.
+  - **Falta:**
+    - medir a última mudança (a classe-base da view), que é só herança direta. Se custar alerta
+      real, vira limite;
+    - revisar os ~28 a mais do `py/path-injection`;
+    - estender o propagador do campo às outras consultas Python;
+    - fazer a revisão independente.
+  - **Medição mais rápida:** só as regras Python, nos repos com Python.
 
 ### [Segurança] Publicar as regras do Semgrep para os projetos: travas da CI
 
@@ -120,6 +134,10 @@ Coisas que surgem no meio do caminho e não podem se perder: dúvidas, decisões
 - **Item**: quando as regras forem publicadas para os projetos:
   - a CI deles tem de reprovar com erro de motor (nível `error` no JSON), como a paridade do
     standards já faz;
+  - o pacote Python numa subpasta cujo nome repete uma pasta da raiz (`apps/` e
+    `apps/api/apps/`) perde o fluxo entre arquivos, porque o motor Pro resolve o import a partir da
+    raiz da varredura (limite `python-import-shadowed-by-folder`, 2026-11-16). Nesses repos, a CI
+    varre cada pacote a partir da pasta dele;
   - o estouro de tempo por arquivo também sai como nível `error` ("Timeout during interfile
     analysis"). Na fase 3 (2026-11-15) deu 15 casos em 3 repos, quase todos no
     `js/html-constructed-from-input`, em código gerado, bundle de terceiro e alguns arquivos

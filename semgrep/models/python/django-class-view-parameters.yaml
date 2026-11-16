@@ -1,9 +1,12 @@
+# Os parâmetros da URL (`$P`) de um método de view de classe com nome de verbo HTTP: os que vêm
+# depois do `self` e da requisição (o nome da requisição não importa).
+- "$model": python/view-class-context
 - pattern-either:
     - pattern-inside: |
-        def $V(self, request, ..., $P, ...):
+        def $V(self, $R, ..., $P, ...):
           ...
     - pattern-inside: |
-        async def $V(self, request, ..., $P, ...):
+        async def $V(self, $R, ..., $P, ...):
           ...
 - metavariable-regex:
     metavariable: "$V"

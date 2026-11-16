@@ -76,6 +76,15 @@
     ],
     "should_find": ["handler.js:1"]
   },
+  "django-orm-field-roundtrip": {
+    "capability": "Levar o dado gravado no campo de um modelo do Django (`device.status = ...` e `save()`) até a leitura do mesmo campo num objeto que volta de uma consulta (`Device.objects.filter(...)`) em outra função, como o passo `[orm-model]` do modelo do Django ORM no CodeQL. A leitura no mesmo fluxo da gravação (`service.py:10`) é achada. O CodeQL acha (`py/stack-trace-exposure`, alertas reais).",
+    "tried": [
+      "mode: taint com `options: interfile: true`, motor Pro 1.184.0",
+      "pattern-propagators não ajudam: o `to` é escrito no objeto da gravação, e a consulta devolve outro objeto, sem ligação no fluxo",
+      "fonte na leitura do campo depois da consulta não vale: o Semgrep não guarda o que foi gravado em cada campo de cada modelo para conferir na leitura"
+    ],
+    "should_find": ["views.py:6"]
+  },
   "field-across-framework-hooks": {
     "capability": "Seguir um campo gravado no objeto da requisição dentro de um gancho do framework (`fastify.addHook`) até a leitura do mesmo campo em outro tratador: o fastify entrega o mesmo objeto aos dois callbacks, mas o motor analisa cada função à parte e não liga o parâmetro de uma ao da outra.",
     "tried": [
@@ -169,6 +178,26 @@
       "Semgrep 1.185.0 (rodado em 2026-11-15 sobre o alvo de uma linha, fora do projeto, com `uvx semgrep@1.185.0 --pro`): também aborta"
     ],
     "should_find": ["target.js:1"]
+  },
+  "python-import-shadowed-by-folder": {
+    "capability": "Resolver o import absoluto de um pacote Python que fica numa subpasta (`apps/api/apps/...`) quando a raiz do repo tem uma pasta com o mesmo nome (`apps/`): o motor Pro procura `apps.core.helpers` a partir da raiz da varredura, não acha o arquivo e perde o fluxo entre arquivos. O mesmo fluxo por um pacote sem esse choque de nome (`lib.helpers`, linha 2 de `apps/api/lib/helpers.py`) é achado. O CodeQL acha (`py/stack-trace-exposure`, alertas reais).",
+    "tried": [
+      "mode: taint com `options: interfile: true`, motor Pro 1.184.0",
+      "varrer a partir da pasta do pacote (`apps/api`) acha o fluxo, mas a regra não escolhe a raiz da varredura",
+      "`pyproject.toml` na pasta do pacote não muda a resolução",
+      "o `semgrep scan` não tem opção para declarar a raiz dos pacotes Python (só `--project-root`, que trata dos arquivos ignorados)"
+    ],
+    "should_find": ["apps/api/apps/core/helpers.py:2"]
+  },
+  "python-slice": {
+    "capability": "Passar a contaminação pela fatia de um texto (`s[:n]`, `s[a:b]`), como o `subscriptStep` do TaintTrackingPrivate.qll do CodeQL, que vale para todo subscrito. O Semgrep (Pro e aberto, 1.184.0) passa o índice (`s[0]`, linha 16), mas o valor da fatia sai limpo.",
+    "tried": [
+      "mode: taint com `options: interfile: true`, motor Pro e motor aberto",
+      "pattern-propagators com `to` na expressão da fatia: o propagador só escreve em variável ou campo, e a fatia não é nenhum dos dois",
+      "pattern-propagators na atribuição (`$V = $X[:$B]`, from `$X` to `$V`): a atribuição grava o valor limpo da fatia depois do propagador",
+      "fonte com rótulo e `requires: INPUT` na própria fatia (`$X[:$B]`), a forma que pega a montagem de HTML no JS: a fatia não fica rotulada"
+    ],
+    "should_find": ["a.py:11"]
   },
   "react-class-state-props": {
     "capability": "Levar o dado de `this.state`/`this.props` entre métodos da classe e dos pontos que preenchem as props (`defaultProps`, atributos JSX, construtor): o Semgrep analisa cada método sozinho, sem o estado do objeto.",

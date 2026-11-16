@@ -1,0 +1,30 @@
+rules:
+  - id: python-slice
+    languages:
+      - python
+    severity: WARNING
+    message: "A fatia do parâmetro da rota chega ao caminho do arquivo."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - label: INPUT
+        patterns:
+          - pattern-inside: |
+              @$APP.get(...)
+              async def $F(..., $P, ...):
+                ...
+          - focus-metavariable: "$P"
+      - label: INPUT
+        requires: INPUT
+        pattern-either:
+          - pattern: "$X[:$B]"
+          - pattern: "$X[$A:]"
+          - pattern: "$X[$A:$B]"
+    pattern-propagators:
+      - pattern: "$V = $X[:$B]"
+        from: $X
+        to: $V
+    pattern-sinks:
+      - requires: INPUT
+        pattern: "Path(...)"

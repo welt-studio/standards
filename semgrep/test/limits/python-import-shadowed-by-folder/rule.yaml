@@ -1,0 +1,15 @@
+rules:
+  - id: python-import-shadowed-by-folder
+    languages:
+      - python
+    severity: WARNING
+    message: "O texto lido chega à função de outro arquivo do pacote."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: "input()"
+    pattern-sinks:
+      - patterns:
+          - pattern: "print($X)"
+          - focus-metavariable: "$X"

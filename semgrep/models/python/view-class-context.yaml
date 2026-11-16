@@ -1,0 +1,39 @@
+# A classe de view do framework, pela classe-base importada (Django `View` e as genéricas, DRF
+# `APIView`, `generics`, `viewsets` e `mixins`, Tornado `RequestHandler`): o `ClassBasedViewClass`
+# do Django.qll e o `RequestHandler` do Tornado.qll. Só a herança direta: o Semgrep não sobe a
+# hierarquia, então a subclasse de uma base do próprio projeto (`class X(MinhaBase)`, com
+# `MinhaBase(APIView)`) não é reconhecida, nem com a base no mesmo arquivo.
+- pattern-either:
+    - pattern-inside: |
+        class $C(..., django.views.View, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., django.views.generic.$G, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., django.views.generic.base.$G, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., django.views.generic.edit.$G, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., django.views.generic.list.$G, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., django.views.generic.detail.$G, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., rest_framework.views.APIView, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., rest_framework.generics.$G, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., rest_framework.viewsets.$G, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., rest_framework.mixins.$G, ...):
+          ...
+    - pattern-inside: |
+        class $C(..., tornado.web.RequestHandler, ...):
+          ...

@@ -7,6 +7,7 @@ import shutil
 import uuid
 from pathlib import Path
 
+from django.contrib.auth.decorators import login_required
 from fastapi import FastAPI
 from fastapi.responses import FileResponse as FastFileResponse
 from flask import Flask, abort, request, send_file, send_from_directory
@@ -245,3 +246,33 @@ def own_file_response():
     name = request.args["name"]
     # `FileResponse` do projeto (ou do Django, que recebe o arquivo) não é a do Starlette.
     return FileResponse(name)
+
+
+class Upload(BaseModel):
+    folder: str
+    size: int = 0
+
+
+@api.post("/upload-helper")
+async def upload_helper(payload: Upload):
+    await store_upload(payload)
+
+
+async def store_upload(payload: Upload):
+    # O campo do modelo Pydantic continua contaminado na função anotada com a classe (Pydantic.qll).
+    target = Path("/srv/uploads") / f"{payload.folder}/{payload.size}.bin"
+    target.write_bytes(b"")  # $ Alert[py/path-injection]
+
+
+@api.get("/parent/{name}")
+async def parent_dir(name: str):
+    target = Path("/srv/data") / name
+    # O `parent` de um `Path` também é `Path` (pathlibPathAttribute).
+    target.parent.mkdir(parents=True)  # $ Alert[py/path-injection]
+    target.with_suffix(".tmp").touch()  # $ Alert[py/path-injection]
+
+
+@login_required
+def serve_file(request, path):
+    # View do Django registrada no `urls.py` de outro arquivo: o decorador de view a identifica.
+    return open(os.path.join("/srv/media", path))  # $ Alert[py/path-injection]
