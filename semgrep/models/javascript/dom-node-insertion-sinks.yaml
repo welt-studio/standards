@@ -1,7 +1,21 @@
 # Métodos do DOM que recebem um nó: o receptor é um nó do DOM (o Semgrep não tem o tipo dele).
+# O nó que a própria página acabou de criar (`document.createElement(...)`) não leva o dado: o
+# motor marca o objeto inteiro como contaminado quando se escreve uma propriedade dele
+# (`el.href = valor`), e o CodeQL não faz isso.
 - patterns:
     - pattern-either:
         - pattern: "$E.appendChild($X)"
         - pattern: "$E.insertBefore($X, ...)"
         - pattern: "$E.insertAdjacentElement($P, $X)"
+    - pattern-not-inside:
+        pattern-either:
+          - pattern: |
+              $X = document.createElement(...);
+              ...
+          - pattern: |
+              $X = document.createElementNS(...);
+              ...
+          - pattern: |
+              $X = document.createDocumentFragment();
+              ...
     - focus-metavariable: "$X"

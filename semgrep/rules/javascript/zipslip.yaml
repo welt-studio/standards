@@ -14,581 +14,1337 @@ rules:
     mode: taint
     pattern-sources:
       - patterns:
-          - pattern: "$E.path"
-          - pattern-inside: "$S.on('entry', ($E) => {...})"
-      - patterns:
-          - pattern: "$E.path"
-          - pattern-inside: "$S.on('entry', function($E) {...})"
-      - patterns:
-          - pattern: "$E.fileName"
-          - pattern-inside: "$S.on('entry', ($E) => {...})"
-      - patterns:
-          - pattern: "$E.fileName"
-          - pattern-inside: "$S.on('entry', function($E) {...})"
-      - patterns:
-          - pattern: "$E.header.name"
-          - pattern-inside: "$S.on('entry', function($E) {...})"
-      - patterns:
-          - pattern: "$E.entryName"
-          - pattern-inside: "$Z.forEach(function($E) {...})"
-      - patterns:
-          - pattern: "$E.entryName"
-          - pattern-inside: "$Z.forEach(($E) => {...})"
-      - patterns:
-          - pattern: "$E.entryName"
-          - pattern-inside: "for (const $E of $Z.getEntries()) {...}"
-      - pattern: "$Z.getEntries()"
+          - pattern: "$NAME"
+          - pattern-either:
+              - pattern-inside: "$Z.$M(($NAME, ...) => {...})"
+              - pattern-inside: "$Z.$M(function ($NAME, ...) {...})"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:forEach|filter)$"
+          - patterns:
+              - pattern-inside: |
+                  $Z = new $J(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: |
+                      $J = require("jszip");
+                      ...
+                  - pattern-inside: |
+                      import $J from "jszip";
+                      ...
+                  - pattern-inside: |
+                      import * as $J from "jszip";
+                      ...
       - patterns:
           - pattern: "$NAME"
           - pattern-inside: "for ($NAME in $Z.files) {...}"
+          - patterns:
+              - pattern-inside: |
+                  $Z = new $J(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: |
+                      $J = require("jszip");
+                      ...
+                  - pattern-inside: |
+                      import $J from "jszip";
+                      ...
+                  - pattern-inside: |
+                      import * as $J from "jszip";
+                      ...
       - patterns:
-          - pattern: "$NAME"
-          - pattern-inside: "$Z.forEach(function($NAME, ...) {...})"
-      - patterns:
-          - pattern: "$NAME"
-          - pattern-inside: "$Z.forEach(($NAME, ...) => {...})"
-      - patterns:
-          - pattern: "$H.name"
-          - pattern-inside: "$X.on('entry', function($H, ...) {...})"
-      - patterns:
-          - pattern: "$E.path"
-          - pattern-inside: "tar.extract({..., filter: ($E) => {...}})"
-      - patterns:
-          - pattern: "$ENTRY.$P"
+          - pattern: "$E.$P"
           - metavariable-regex:
               metavariable: "$P"
-              regex: "^(?:fileName|entryName|path)$"
-          - pattern-inside: "$Y.eachEntry(function($ENTRY) {...})"
+              regex: "^(?:path|name|linkname)$"
+          - pattern-either:
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: '$S.$ON("entry", ($E, ...) => {...})'
+                      - pattern-inside: '$S.$ON("entry", function ($E, ...) {...})'
+                  - metavariable-regex:
+                      metavariable: "$ON"
+                      regex: "^(?:addListener|on|once|prependListener|prependOnceListener)$"
+                  - metavariable-regex:
+                      metavariable: "$S"
+                      regex: "(?s)^(?!\\()"
+                  - metavariable-pattern:
+                      metavariable: "$S"
+                      pattern-either:
+                        - pattern: "$U.Parse(...)"
+                        - pattern: "$X.pipe($U.Parse(...))"
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: '$S.$ON("entry", ($E, ...) => {...})'
+                      - pattern-inside: '$S.$ON("entry", function ($E, ...) {...})'
+                  - metavariable-regex:
+                      metavariable: "$ON"
+                      regex: "^(?:addListener|on|once|prependListener|prependOnceListener)$"
+                  - pattern-inside: |
+                      $S = $RHS;
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$RHS"
+                      regex: "(?s)^(?!\\()"
+                  - metavariable-pattern:
+                      metavariable: "$RHS"
+                      pattern-either:
+                        - pattern: "$U.Parse(...)"
+                        - pattern: "$X.pipe($U.Parse(...))"
+          - pattern-either:
+              - pattern-inside: |
+                  $U = require("unzipper");
+                  ...
+              - pattern-inside: |
+                  $U = require("unzip");
+                  ...
+              - pattern-inside: |
+                  import $U from "unzipper";
+                  ...
+              - pattern-inside: |
+                  import $U from "unzip";
+                  ...
+              - pattern-inside: |
+                  import * as $U from "unzipper";
+                  ...
+              - pattern-inside: |
+                  import * as $U from "unzip";
+                  ...
+      - patterns:
+          - pattern: "$E.$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?:path|name|linkname)$"
+          - pattern-either:
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: '$S.$ON("entry", ($E, ...) => {...})'
+                      - pattern-inside: '$S.$ON("entry", function ($E, ...) {...})'
+                  - metavariable-regex:
+                      metavariable: "$ON"
+                      regex: "^(?:addListener|on|once|prependListener|prependOnceListener)$"
+                  - metavariable-regex:
+                      metavariable: "$S"
+                      regex: "(?s)^(?!\\()"
+                  - metavariable-pattern:
+                      metavariable: "$S"
+                      pattern-either:
+                        - pattern: "$U.extract(...)"
+                        - pattern: "$X.pipe($U.extract(...))"
+              - patterns:
+                  - pattern-either:
+                      - pattern-inside: '$S.$ON("entry", ($E, ...) => {...})'
+                      - pattern-inside: '$S.$ON("entry", function ($E, ...) {...})'
+                  - metavariable-regex:
+                      metavariable: "$ON"
+                      regex: "^(?:addListener|on|once|prependListener|prependOnceListener)$"
+                  - pattern-inside: |
+                      $S = $RHS;
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$RHS"
+                      regex: "(?s)^(?!\\()"
+                  - metavariable-pattern:
+                      metavariable: "$RHS"
+                      pattern-either:
+                        - pattern: "$U.extract(...)"
+                        - pattern: "$X.pipe($U.extract(...))"
+          - pattern-either:
+              - pattern-inside: |
+                  $U = require("tar-stream");
+                  ...
+              - pattern-inside: |
+                  import $U from "tar-stream";
+                  ...
+              - pattern-inside: |
+                  import * as $U from "tar-stream";
+                  ...
+      - patterns:
+          - pattern: "$ZIP.getEntry(...).entryName"
+          - pattern-inside: |
+              $ZIP = new $A(...);
+              ...
+          - pattern-either:
+              - pattern-inside: |
+                  $A = require("adm-zip");
+                  ...
+              - pattern-inside: |
+                  import $A from "adm-zip";
+                  ...
+              - pattern-inside: |
+                  import * as $A from "adm-zip";
+                  ...
+      - patterns:
+          - pattern: "$ZIP.getEntries()[$I].entryName"
+          - pattern-inside: |
+              $ZIP = new $A(...);
+              ...
+          - pattern-either:
+              - pattern-inside: |
+                  $A = require("adm-zip");
+                  ...
+              - pattern-inside: |
+                  import $A from "adm-zip";
+                  ...
+              - pattern-inside: |
+                  import * as $A from "adm-zip";
+                  ...
+      - patterns:
+          - pattern: "$ENT.entryName"
+          - pattern-inside: |
+              $ENT = $ZIP.getEntry(...);
+              ...
+          - pattern-inside: |
+              $ZIP = new $A(...);
+              ...
+          - pattern-either:
+              - pattern-inside: |
+                  $A = require("adm-zip");
+                  ...
+              - pattern-inside: |
+                  import $A from "adm-zip";
+                  ...
+              - pattern-inside: |
+                  import * as $A from "adm-zip";
+                  ...
+      - patterns:
+          - pattern: "$ENT.entryName"
+          - pattern-either:
+              - pattern-inside: "$ZIP.getEntries().$M(($ENT, ...) => {...})"
+              - pattern-inside: "$ZIP.getEntries().$M(function ($ENT, ...) {...})"
+              - pattern-inside: |
+                  $ENTRIES = $ZIP.getEntries();
+                  ...
+                  $ENTRIES.$M(($ENT, ...) => {...})
+              - pattern-inside: |
+                  $ENTRIES = $ZIP.getEntries();
+                  ...
+                  $ENTRIES.$M(function ($ENT, ...) {...})
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:forEach|map)$"
+          - pattern-inside: |
+              $ZIP = new $A(...);
+              ...
+          - pattern-either:
+              - pattern-inside: |
+                  $A = require("adm-zip");
+                  ...
+              - pattern-inside: |
+                  import $A from "adm-zip";
+                  ...
+              - pattern-inside: |
+                  import * as $A from "adm-zip";
+                  ...
+      - patterns:
+          - pattern: "$ENTRIES[$I].entryName"
+          - pattern-inside: |
+              $ENTRIES = $ZIP.getEntries();
+              ...
+          - pattern-inside: |
+              $ZIP = new $A(...);
+              ...
+          - pattern-either:
+              - pattern-inside: |
+                  $A = require("adm-zip");
+                  ...
+              - pattern-inside: |
+                  import $A from "adm-zip";
+                  ...
+              - pattern-inside: |
+                  import * as $A from "adm-zip";
+                  ...
     pattern-sinks:
       - patterns:
-          - pattern: "$FS.$M($X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
           - pattern-either:
-              - pattern-either:
-                  - patterns:
+              - patterns:
+                  - pattern: "$FS.$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - pattern-either:
+                          - patterns:
+                              - pattern-inside: |
+                                  $FS = require("$MOD"); ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import $FS from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import * as $FS from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - pattern-either:
+                          - patterns:
+                              - pattern-inside: |
+                                  $FS = require("$MOD").promises; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import {..., promises as $FS, ...} from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+                          - patterns:
+                              - pattern-inside: |
+                                  const {..., promises: $FS, ...} = require("$MOD"); ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+              - patterns:
+                  - pattern: "$FS.$M($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
+                      - pattern-either:
+                          - patterns:
+                              - pattern-inside: |
+                                  $FS = require("$MOD"); ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import $FS from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import * as $FS from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - pattern-either:
+                          - patterns:
+                              - pattern-inside: |
+                                  $FS = require("$MOD").promises; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import {..., promises as $FS, ...} from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+                          - patterns:
+                              - pattern-inside: |
+                                  const {..., promises: $FS, ...} = require("$MOD"); ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+              - patterns:
+                  - pattern: "$FS.promises.$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              - patterns:
+                  - pattern: "$FS.promises.$M($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              - patterns:
+                  - pattern: "promises.$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
                       - pattern-inside: |
-                          $FS = require("$MOD"); ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-                  - patterns:
+                          import {..., promises, ...} from "$MOD"; ...
                       - pattern-inside: |
-                          import $FS from "$MOD"; ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-                  - patterns:
+                          const {..., promises, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?fs$"
+              - patterns:
+                  - pattern: "promises.$M($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
                       - pattern-inside: |
-                          import * as $FS from "$MOD"; ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - pattern-either:
-                  - patterns:
+                          import {..., promises, ...} from "$MOD"; ...
                       - pattern-inside: |
-                          $FS = require("$MOD").promises; ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?fs$"
-                  - patterns:
+                          const {..., promises, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?fs$"
+              - patterns:
+                  - pattern: "$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
                       - pattern-inside: |
-                          import {..., promises as $FS, ...} from "$MOD"; ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?fs$"
-                  - patterns:
+                          import {..., $M, ...} from "$MOD"; ...
                       - pattern-inside: |
-                          const {..., promises: $FS, ...} = require("$MOD"); ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?fs$"
-      - patterns:
-          - pattern: "$FS.$M($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
-          - pattern-either:
-              - pattern-either:
-                  - patterns:
+                          const {..., $M, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              - patterns:
+                  - pattern: "$M($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
                       - pattern-inside: |
-                          $FS = require("$MOD"); ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-                  - patterns:
+                          import {..., $M, ...} from "$MOD"; ...
                       - pattern-inside: |
-                          import $FS from "$MOD"; ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-                  - patterns:
+                          const {..., $M, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              - patterns:
+                  - pattern: "$A($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
                       - pattern-inside: |
-                          import * as $FS from "$MOD"; ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - pattern-either:
-                  - patterns:
+                          import {..., $M as $A, ...} from "$MOD"; ...
                       - pattern-inside: |
-                          $FS = require("$MOD").promises; ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?fs$"
-                  - patterns:
+                          const {..., $M: $A, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              - patterns:
+                  - pattern: "$A($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
                       - pattern-inside: |
-                          import {..., promises as $FS, ...} from "$MOD"; ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?fs$"
-                  - patterns:
+                          import {..., $M as $A, ...} from "$MOD"; ...
                       - pattern-inside: |
-                          const {..., promises: $FS, ...} = require("$MOD"); ...
-                      - metavariable-regex:
-                          metavariable: "$MOD"
-                          regex: "^(?:node:)?fs$"
-      - patterns:
-          - pattern: "$FS.promises.$M($X, ...)"
-          - focus-metavariable: "$X"
+                          const {..., $M: $A, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              - patterns:
+                  - pattern: "$V.$M($X, ...)"
+                  - pattern-inside: |
+                      $V = require($ARG);
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$ARG"
+                      regex: "(?s).*[\\\"'](?:node:)?(?:fs|original-fs|graceful-fs|fs-extra|fs/promises)[\\\"']"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$U.promisify($FS.$M)($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $U = require("$PM"); ...
+                      - pattern-inside: |
+                          import $U from "$PM"; ...
+                      - pattern-inside: |
+                          import * as $U from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:node:)?(?:util|bluebird)$"
+              - patterns:
+                  - pattern: 'require("$PM").promisify($FS.$M)($X, ...)'
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:node:)?(?:util|bluebird)$"
+              - patterns:
+                  - pattern: "$P($FS.$M)($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $P = require("$PM"); ...
+                      - pattern-inside: |
+                          import $P from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:pify|util\\.promisify|util-promisify|thenify|@gar/promisify|es6-promisify)$"
+              - patterns:
+                  - pattern: 'require("$PM")($FS.$M)($X, ...)'
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:pify|util\\.promisify|util-promisify|thenify|@gar/promisify|es6-promisify)$"
+              - patterns:
+                  - pattern: "$P($FS).$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $P = require("$PM"); ...
+                      - pattern-inside: |
+                          import $P from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:util-promisifyall|pify|thenify-all|@gar/promisify|util\\.promisify-all)$"
+              - patterns:
+                  - pattern: 'require("$PM")($FS).$M($X, ...)'
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:util-promisifyall|pify|thenify-all|@gar/promisify|util\\.promisify-all)$"
+              - patterns:
+                  - pattern: "$U.promisifyAll($FS).$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $U = require("$PM"); ...
+                      - pattern-inside: |
+                          import $U from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:bluebird|@google-cloud/promisify|es6-promisify)$"
+              - patterns:
+                  - pattern: 'require("$PM").promisifyAll($FS).$M($X, ...)'
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:bluebird|@google-cloud/promisify|es6-promisify)$"
+              - patterns:
+                  - pattern: "$R($X, ...)"
+                  - focus-metavariable: "$X"
+                  - pattern-inside: |
+                      $R = $U.promisify($FS.$M); ...
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $U = require("$PM"); ...
+                      - pattern-inside: |
+                          import $U from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:node:)?(?:util|bluebird)$"
           - metavariable-regex:
               metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+              regex: "^(?:appendFile|appendFileSync|createWriteStream|link|linkSync|writeFile|writeFileSync)$"
+      - patterns:
           - pattern-either:
               - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
+                  - pattern: "$FS.$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - pattern-either:
+                          - patterns:
+                              - pattern-inside: |
+                                  $FS = require("$MOD"); ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import $FS from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import * as $FS from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - pattern-either:
+                          - patterns:
+                              - pattern-inside: |
+                                  $FS = require("$MOD").promises; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import {..., promises as $FS, ...} from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+                          - patterns:
+                              - pattern-inside: |
+                                  const {..., promises: $FS, ...} = require("$MOD"); ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+              - patterns:
+                  - pattern: "$FS.$M($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
+                      - pattern-either:
+                          - patterns:
+                              - pattern-inside: |
+                                  $FS = require("$MOD"); ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import $FS from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import * as $FS from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - pattern-either:
+                          - patterns:
+                              - pattern-inside: |
+                                  $FS = require("$MOD").promises; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+                          - patterns:
+                              - pattern-inside: |
+                                  import {..., promises as $FS, ...} from "$MOD"; ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+                          - patterns:
+                              - pattern-inside: |
+                                  const {..., promises: $FS, ...} = require("$MOD"); ...
+                              - metavariable-regex:
+                                  metavariable: "$MOD"
+                                  regex: "^(?:node:)?fs$"
+              - patterns:
+                  - pattern: "$FS.promises.$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              - patterns:
+                  - pattern: "$FS.promises.$M($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              - patterns:
+                  - pattern: "promises.$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          import {..., promises, ...} from "$MOD"; ...
+                      - pattern-inside: |
+                          const {..., promises, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?fs$"
+              - patterns:
+                  - pattern: "promises.$M($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          import {..., promises, ...} from "$MOD"; ...
+                      - pattern-inside: |
+                          const {..., promises, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?fs$"
+              - patterns:
+                  - pattern: "$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          import {..., $M, ...} from "$MOD"; ...
+                      - pattern-inside: |
+                          const {..., $M, ...} = require("$MOD"); ...
                   - metavariable-regex:
                       metavariable: "$MOD"
                       regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
               - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
+                  - pattern: "$M($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          import {..., $M, ...} from "$MOD"; ...
+                      - pattern-inside: |
+                          const {..., $M, ...} = require("$MOD"); ...
                   - metavariable-regex:
                       metavariable: "$MOD"
                       regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
               - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
+                  - pattern: "$A($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          import {..., $M as $A, ...} from "$MOD"; ...
+                      - pattern-inside: |
+                          const {..., $M: $A, ...} = require("$MOD"); ...
                   - metavariable-regex:
                       metavariable: "$MOD"
                       regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-      - patterns:
-          - pattern: "$FS.promises.$M($Y, $X, ...)"
-          - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$A($Y, $X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          import {..., $M as $A, ...} from "$MOD"; ...
+                      - pattern-inside: |
+                          const {..., $M: $A, ...} = require("$MOD"); ...
+                  - metavariable-regex:
+                      metavariable: "$MOD"
+                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              - patterns:
+                  - pattern: "$V.$M($X, ...)"
+                  - pattern-inside: |
+                      $V = require($ARG);
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$ARG"
+                      regex: "(?s).*[\\\"'](?:node:)?(?:fs|original-fs|graceful-fs|fs-extra|fs/promises)[\\\"']"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$U.promisify($FS.$M)($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $U = require("$PM"); ...
+                      - pattern-inside: |
+                          import $U from "$PM"; ...
+                      - pattern-inside: |
+                          import * as $U from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:node:)?(?:util|bluebird)$"
+              - patterns:
+                  - pattern: 'require("$PM").promisify($FS.$M)($X, ...)'
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:node:)?(?:util|bluebird)$"
+              - patterns:
+                  - pattern: "$P($FS.$M)($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $P = require("$PM"); ...
+                      - pattern-inside: |
+                          import $P from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:pify|util\\.promisify|util-promisify|thenify|@gar/promisify|es6-promisify)$"
+              - patterns:
+                  - pattern: 'require("$PM")($FS.$M)($X, ...)'
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:pify|util\\.promisify|util-promisify|thenify|@gar/promisify|es6-promisify)$"
+              - patterns:
+                  - pattern: "$P($FS).$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $P = require("$PM"); ...
+                      - pattern-inside: |
+                          import $P from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:util-promisifyall|pify|thenify-all|@gar/promisify|util\\.promisify-all)$"
+              - patterns:
+                  - pattern: 'require("$PM")($FS).$M($X, ...)'
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:util-promisifyall|pify|thenify-all|@gar/promisify|util\\.promisify-all)$"
+              - patterns:
+                  - pattern: "$U.promisifyAll($FS).$M($X, ...)"
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $U = require("$PM"); ...
+                      - pattern-inside: |
+                          import $U from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:bluebird|@google-cloud/promisify|es6-promisify)$"
+              - patterns:
+                  - pattern: 'require("$PM").promisifyAll($FS).$M($X, ...)'
+                  - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:bluebird|@google-cloud/promisify|es6-promisify)$"
+              - patterns:
+                  - pattern: "$R($X, ...)"
+                  - focus-metavariable: "$X"
+                  - pattern-inside: |
+                      $R = $U.promisify($FS.$M); ...
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
+                  - pattern-either:
+                      - patterns:
+                          - pattern-inside: |
+                              $FS = require("$MOD"); ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                      - patterns:
+                          - pattern-inside: |
+                              import * as $FS from "$MOD"; ...
+                          - metavariable-regex:
+                              metavariable: "$MOD"
+                              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $U = require("$PM"); ...
+                      - pattern-inside: |
+                          import $U from "$PM"; ...
+                  - metavariable-regex:
+                      metavariable: "$PM"
+                      regex: "^(?:node:)?(?:util|bluebird)$"
           - metavariable-regex:
               metavariable: "$M"
-              regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
+              regex: "^(?:open|openSync)$"
+          - pattern-inside: "$CALLEE($X, $MODE, ...)"
+          - metavariable-regex:
+              metavariable: "$MODE"
+              regex: '^["''`](?i:w.{0,2})["''`]$'
       - patterns:
-          - pattern: "promises.$M($X, ...)"
+          - pattern-either:
+              - pattern: "$F.Writer({..., path: $X, ...})"
+              - pattern: "new $F.Writer({..., path: $X, ...})"
+              - patterns:
+                  - pattern: "$F.Writer($X, ...)"
+                  - pattern-not: "$F.Writer({...}, ...)"
+              - patterns:
+                  - pattern: "new $F.Writer($X, ...)"
+                  - pattern-not: "new $F.Writer({...}, ...)"
           - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
           - pattern-either:
               - pattern-inside: |
-                  import {..., promises, ...} from "$MOD"; ...
+                  $F = require("fstream");
+                  ...
               - pattern-inside: |
-                  const {..., promises, ...} = require("$MOD"); ...
-          - metavariable-regex:
-              metavariable: "$MOD"
-              regex: "^(?:node:)?fs$"
+                  import $F from "fstream";
+                  ...
+              - pattern-inside: |
+                  import * as $F from "fstream";
+                  ...
       - patterns:
-          - pattern: "promises.$M($Y, $X, ...)"
+          - pattern-either:
+              - pattern: "$W({..., path: $X, ...})"
+              - pattern: "new $W({..., path: $X, ...})"
+              - patterns:
+                  - pattern: "$W($X, ...)"
+                  - pattern-not: "$W({...}, ...)"
+              - patterns:
+                  - pattern: "new $W($X, ...)"
+                  - pattern-not: "new $W({...}, ...)"
           - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
           - pattern-either:
               - pattern-inside: |
-                  import {..., promises, ...} from "$MOD"; ...
+                  $W = require("fstream").Writer;
+                  ...
               - pattern-inside: |
-                  const {..., promises, ...} = require("$MOD"); ...
-          - metavariable-regex:
-              metavariable: "$MOD"
-              regex: "^(?:node:)?fs$"
-      - patterns:
-          - pattern: "$M($X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
+                  const {..., Writer: $W, ...} = require("fstream");
+                  ...
               - pattern-inside: |
-                  import {..., $M, ...} from "$MOD"; ...
-              - pattern-inside: |
-                  const {..., $M, ...} = require("$MOD"); ...
-          - metavariable-regex:
-              metavariable: "$MOD"
-              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-      - patterns:
-          - pattern: "$M($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
-          - pattern-either:
-              - pattern-inside: |
-                  import {..., $M, ...} from "$MOD"; ...
-              - pattern-inside: |
-                  const {..., $M, ...} = require("$MOD"); ...
-          - metavariable-regex:
-              metavariable: "$MOD"
-              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-      - patterns:
-          - pattern: "$A($X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - pattern-inside: |
-                  import {..., $M as $A, ...} from "$MOD"; ...
-              - pattern-inside: |
-                  const {..., $M: $A, ...} = require("$MOD"); ...
-          - metavariable-regex:
-              metavariable: "$MOD"
-              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-      - patterns:
-          - pattern: "$A($Y, $X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:copy|copyFile|copyFileSync|copySync|cp|cpSync|createLink|createLinkSync|createSymLink|createSymlinkSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|link|linkSync|move|moveSync|rename|renameSync|symlink|symlinkSync)$"
-          - pattern-either:
-              - pattern-inside: |
-                  import {..., $M as $A, ...} from "$MOD"; ...
-              - pattern-inside: |
-                  const {..., $M: $A, ...} = require("$MOD"); ...
-          - metavariable-regex:
-              metavariable: "$MOD"
-              regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-      - patterns:
-          - pattern: "$V.$M($X, ...)"
-          - pattern-inside: |
-              $V = require($ARG);
-              ...
-          - metavariable-regex:
-              metavariable: "$ARG"
-              regex: "(?s).*[\\\"'](?:node:)?(?:fs|original-fs|graceful-fs|fs-extra|fs/promises)[\\\"']"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$U.promisify($FS.$M)($X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-          - pattern-either:
-              - pattern-inside: |
-                  $U = require("$PM"); ...
-              - pattern-inside: |
-                  import $U from "$PM"; ...
-              - pattern-inside: |
-                  import * as $U from "$PM"; ...
-          - metavariable-regex:
-              metavariable: "$PM"
-              regex: "^(?:node:)?(?:util|bluebird)$"
-      - patterns:
-          - pattern: 'require("$PM").promisify($FS.$M)($X, ...)'
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-          - metavariable-regex:
-              metavariable: "$PM"
-              regex: "^(?:node:)?(?:util|bluebird)$"
-      - patterns:
-          - pattern: "$P($FS.$M)($X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-          - pattern-either:
-              - pattern-inside: |
-                  $P = require("$PM"); ...
-              - pattern-inside: |
-                  import $P from "$PM"; ...
-          - metavariable-regex:
-              metavariable: "$PM"
-              regex: "^(?:pify|util\\.promisify|util-promisify|thenify|@gar/promisify|es6-promisify)$"
-      - patterns:
-          - pattern: 'require("$PM")($FS.$M)($X, ...)'
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-          - metavariable-regex:
-              metavariable: "$PM"
-              regex: "^(?:pify|util\\.promisify|util-promisify|thenify|@gar/promisify|es6-promisify)$"
-      - patterns:
-          - pattern: "$P($FS).$M($X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-          - pattern-either:
-              - pattern-inside: |
-                  $P = require("$PM"); ...
-              - pattern-inside: |
-                  import $P from "$PM"; ...
-          - metavariable-regex:
-              metavariable: "$PM"
-              regex: "^(?:util-promisifyall|pify|thenify-all|@gar/promisify|util\\.promisify-all)$"
-      - patterns:
-          - pattern: 'require("$PM")($FS).$M($X, ...)'
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-          - metavariable-regex:
-              metavariable: "$PM"
-              regex: "^(?:util-promisifyall|pify|thenify-all|@gar/promisify|util\\.promisify-all)$"
-      - patterns:
-          - pattern: "$U.promisifyAll($FS).$M($X, ...)"
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-          - pattern-either:
-              - pattern-inside: |
-                  $U = require("$PM"); ...
-              - pattern-inside: |
-                  import $U from "$PM"; ...
-          - metavariable-regex:
-              metavariable: "$PM"
-              regex: "^(?:bluebird|@google-cloud/promisify|es6-promisify)$"
-      - patterns:
-          - pattern: 'require("$PM").promisifyAll($FS).$M($X, ...)'
-          - focus-metavariable: "$X"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-          - metavariable-regex:
-              metavariable: "$PM"
-              regex: "^(?:bluebird|@google-cloud/promisify|es6-promisify)$"
-      - patterns:
-          - pattern: "$R($X, ...)"
-          - focus-metavariable: "$X"
-          - pattern-inside: |
-              $R = $U.promisify($FS.$M); ...
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:access|accessSync|appendFile|appendFileSync|chmod|chmodSync|chown|chownSync|copy|copyFile|copyFileSync|copySync|cp|cpSync|createFile|createFileSync|createLink|createLinkSync|createReadStream|createSymLink|createSymlinkSync|createWriteStream|emptyDir|emptyDirSync|emptydir|emptydirSync|ensureDir|ensureDirSync|ensureFile|ensureFileSync|ensureLink|ensureLinkSync|ensureSymlink|ensureSymlinkSync|exists|existsSync|link|linkSync|lstat|lstatSync|lutimes|lutimesSync|mkdir|mkdirSync|mkdirp|mkdirpSync|mkdirs|mkdirsSync|mkdtemp|mkdtempSync|move|moveSync|open|openAsBlob|openSync|opendir|opendirSync|outputFile|outputFileSync|outputJSON|outputJSONSync|outputJson|outputJsonSync|pathExists|pathExistsSync|readFile|readFileSync|readJSON|readJSONSync|readJson|readJsonSync|readdir|readdirSync|readlink|readlinkSync|realpath|realpathSync|remove|removeSync|rename|renameSync|rm|rmSync|rmdir|rmdirSync|stat|statSync|statfs|statfsSync|symlink|symlinkSync|truncate|truncateSync|unlink|unlinkSync|utimes|utimesSync|watch|watchFile|writeFile|writeFileSync|writeJSON|writeJSONSync|writeJson|writeJsonSync)$"
-          - pattern-either:
-              - patterns:
-                  - pattern-inside: |
-                      $FS = require("$MOD"); ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-              - patterns:
-                  - pattern-inside: |
-                      import * as $FS from "$MOD"; ...
-                  - metavariable-regex:
-                      metavariable: "$MOD"
-                      regex: "^(?:node:)?(?:fs|fs-extra|graceful-fs|mz/fs|original-fs|fs/promises)$"
-          - pattern-either:
-              - pattern-inside: |
-                  $U = require("$PM"); ...
-              - pattern-inside: |
-                  import $U from "$PM"; ...
-          - metavariable-regex:
-              metavariable: "$PM"
-              regex: "^(?:node:)?(?:util|bluebird)$"
-      - patterns:
-          - pattern: "Writer({path: $X})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "fstream.Writer({path: $X})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$W.Writer({path: $X})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new Writer({path: $X})"
-          - focus-metavariable: "$X"
+                  import {..., Writer as $W, ...} from "fstream";
+                  ...
     pattern-sanitizers:
       - patterns:
           - pattern: "$M.basename($X, ...)"
@@ -629,13 +1385,13 @@ rules:
       - pattern: "parseInt($X, ...)"
       - pattern: "Number($X)"
       - patterns:
-          - pattern: "$X"
+          - pattern: "$T"
           - pattern-inside: "if ($T.startsWith($P)) {...}"
       - patterns:
-          - pattern: "$X"
+          - pattern: "$T"
           - pattern-inside: "if (!$T.startsWith($P)) { throw ...; } ..."
       - patterns:
-          - pattern: "$X"
+          - pattern: "$T"
           - pattern-inside: "if (!$T.startsWith($P)) { return ...; } ..."
     options:
       interfile: true

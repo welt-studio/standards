@@ -1,0 +1,6 @@
+# A prop `router` desestruturada no parâmetro do componente de página.
+- pattern-either:
+    - pattern-inside: |
+        function $F({..., router, ...}) {...}
+    - pattern-inside: |
+        ({..., router, ...}) => {...}

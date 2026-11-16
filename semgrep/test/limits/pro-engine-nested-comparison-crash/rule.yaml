@@ -1,0 +1,29 @@
+rules:
+  - id: limit-pro-engine-nested-comparison-crash
+    languages:
+      - javascript
+    severity: ERROR
+    message: "A guarda de igualdade com texto fixo que o motor Pro não aguenta."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - pattern: "$REQ.query"
+    pattern-sinks:
+      - patterns:
+          - pattern: "require($X)"
+          - focus-metavariable: "$X"
+    pattern-sanitizers:
+      - patterns:
+          - pattern: "$X"
+          - pattern-inside:
+              patterns:
+                - pattern: "$C ? $KT : $KE"
+                - metavariable-pattern:
+                    metavariable: "$C"
+                    patterns:
+                      - pattern: "$X === $L"
+                      - metavariable-regex:
+                          metavariable: "$L"
+                          regex: '^["''`]'
+                - focus-metavariable: "$KT"

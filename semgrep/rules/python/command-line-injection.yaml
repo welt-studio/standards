@@ -50,17 +50,51 @@ rules:
       - patterns:
           - pattern-either:
               - pattern-inside: |
-                  def $F(request, ..., $P, ...):
+                  def $V(self, request, ..., $P, ...):
                     ...
               - pattern-inside: |
-                  def $F(self, request, ..., $P, ...):
+                  async def $V(self, request, ..., $P, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(get|post|put|patch|delete|head|options|list|retrieve|create|update|partial_update|destroy|dispatch|form_valid|get_object|get_queryset)$"
+          - focus-metavariable: "$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!self$|cls$|request$|args$|kwargs$)"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$D
+                  def $V(request, ..., $P, ...):
                     ...
               - pattern-inside: |
-                  async def $F(request, ..., $P, ...):
+                  @$D(...)
+                  def $V(request, ..., $P, ...):
                     ...
               - pattern-inside: |
-                  async def $F(self, request, ..., $P, ...):
+                  @$D
+                  async def $V(request, ..., $P, ...):
                     ...
+              - pattern-inside: |
+                  @$D(...)
+                  async def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $V(request, ..., $P, ...):
+                    ...
+          - pattern-not-inside: |
+              def $V2(request: $T, ...):
+                ...
+          - pattern-not-inside: |
+              async def $V2(request: $T, ...):
+                ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!_)"
           - focus-metavariable: "$P"
           - metavariable-regex:
               metavariable: "$P"
@@ -80,6 +114,12 @@ rules:
       - pattern: "shlex.quote(...)"
       - pattern: "pipes.quote(...)"
       - pattern: "int(...)"
+        exact: true
+      - patterns:
+          - pattern-inside: |
+              $Y = int(...)
+              ...
+          - pattern: "$Y"
     pattern-sinks:
       - patterns:
           - pattern-either:

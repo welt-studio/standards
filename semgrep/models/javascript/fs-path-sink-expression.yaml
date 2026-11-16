@@ -1,0 +1,4 @@
+# Qualquer sumidouro de caminho do módulo fs (`fs-path-sinks`), em um item só de lista `patterns`,
+# para a consulta filtrar o método pelo `$M` (`metavariable-regex`) sem repetir a união.
+- pattern-either:
+    - "$model": javascript/fs-path-sinks

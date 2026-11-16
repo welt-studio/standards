@@ -160,6 +160,16 @@
     ],
     "should_find": ["a.js:11"]
   },
+  "pro-engine-nested-comparison-crash": {
+    "capability": "Casar, com `metavariable-pattern` sobre a condição do `?:`, um texto fixo comparado com `===`, quando a condição começa por um operando entre parênteses (`(index % 2 === 0) === flip ? a : b`): o motor Pro aborta com erro interno (`Invalid_argument: String.sub`) e a varredura do repositório inteiro volta vazia, em vez de apenas deixar de casar essa linha. O reparse do texto da metavariável perde o deslocamento do parêntese de abertura. As guardas de js/path-injection que usam o mesmo `metavariable-pattern` sobre `if ($C)`, `if ($P)` e `$P ? a : b` abortam igual com condição que começa por parêntese (conferido com a regra antiga inteira).",
+    "tried": [
+      "o motor aberto (sem `--pro`) com a mesma regra e o mesmo alvo: termina sem erro, o aborto é do motor Pro",
+      "a mesma regra com `$X === $L ? $KT : $KE` direto, sem `metavariable-pattern`: não aborta; com o `metavariable-pattern` mantido e um `metavariable-regex` `(?s)^(?!\\()` sobre `$C` antes dele (o contorno usado nas guardas de js/path-injection): também não aborta",
+      "a mesma regra sem a condição aninhada (`index % 2 === 0 ? a : b`, ou `(index) === flip ? a : b`): não aborta",
+      "Semgrep 1.185.0 (rodado em 2026-11-15 sobre o alvo de uma linha, fora do projeto, com `uvx semgrep@1.185.0 --pro`): também aborta"
+    ],
+    "should_find": ["target.js:1"]
+  },
   "react-class-state-props": {
     "capability": "Levar o dado de `this.state`/`this.props` entre métodos da classe e dos pontos que preenchem as props (`defaultProps`, atributos JSX, construtor): o Semgrep analisa cada método sozinho, sem o estado do objeto.",
     "tried": [
@@ -250,5 +260,13 @@
       "mode: taint com `options: interfile: true`"
     ],
     "should_find": ["a.js:9"]
+  },
+  "xml-parsed-at-the-sink": {
+    "capability": "Marcar o alerta na entrada do fluxo, não no sumidouro: o CodeQL marca o argumento do `parseFromString` (a folha do XML parseado), e o Semgrep no modo taint só reporta o sumidouro, o `appendChild` que recebe o nó, a vários passos e linhas dali. A entrada do parser não pode ser o sumidouro porque só se sabe que o nó chega ao DOM seguindo o fluxo para a frente.",
+    "tried": [
+      "mode: taint com rótulos (`label`/`requires`): a fonte do `parseFromString` exige o rótulo da entrada da biblioteca e o sumidouro `appendChild` exige o rótulo do XML; acha o `appendChild` (linhas 9 e 13), não o `parseFromString` (linha 7)",
+      "pattern-propagators `$R.appendChild($X)` de `$X` para `$R`, para o nó que recebe o filho seguir até o `appendChild` final: o fluxo passa, mas o alerta continua no sumidouro"
+    ],
+    "should_find": ["a.js:7"]
   }
 }

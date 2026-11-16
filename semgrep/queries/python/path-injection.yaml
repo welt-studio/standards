@@ -17,44 +17,144 @@ rules:
         Normalizar e conferir o prefixo (SafeAccessCheck do Concepts.qll).
         Conferência de contenção com pathlib: `if not path.is_relative_to(root): raise`.
         pathlib: o `Path` montado com dado da requisição, acessado por um método de arquivo.
+        Werkzeug.qll: `FileStorage.save` (FileStorageSaveCall).
     mode: taint
     options:
       interfile: true
     pattern-sources:
       - "$model": python/flask-request-sources
-    pattern-sanitizers:
+      # Parâmetro de rota anotado com uma classe do projeto (modelo Pydantic): os campos declarados
+      # carregam o dado da requisição (PydanticModelRequestHandlerParam, FastApi.qll). O motor Pro
+      # não propaga a contaminação do parâmetro para o campo de uma classe que ele conhece.
       - patterns:
           - pattern-either:
               - pattern-inside: |
-                  $Y = os.path.normpath(...)
+                  @$APP.$VERB(...)
+                  def $F(..., $P: $T, ...):
+                    ...
+              - pattern-inside: |
+                  @$APP.$VERB(...)
+                  async def $F(..., $P: $T, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$VERB"
+              regex:
+                "$text": python/http-verb-decorator-regex
+          - metavariable-regex:
+              metavariable: "$T"
+              regex:
+                "$text": python/fastapi-dependency-parameter-regex
+          - pattern: "$P.$FIELD"
+    pattern-sanitizers:
+      # Normalizar (normpath/abspath/realpath) e conferir o prefixo (StartswithCall, SafeAccessCheck
+      # do Concepts.qll): a conferência só vale depois da normalização (estado NormalizedUnchecked).
+      # Vale dentro do `if` (forma positiva) e depois dele, quando o `if` da forma negativa sai da
+      # função (`raise`, `return` ou `abort`), como o BarrierGuard do CodeQL.
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $Y = os.path.$N(...)
                   ...
                   if $Y.startswith(...):
                     ...
               - pattern-inside: |
-                  $Y = os.path.realpath(...)
+                  $Y = os.path.$N(...)
                   ...
-                  if $Y.startswith(...):
+                  if $Y.startswith(...) and ...:
                     ...
               - pattern-inside: |
-                  $Y = os.path.abspath(...)
+                  $Y = os.path.$N(...)
                   ...
-                  if $Y.startswith(...):
+                  if ... and $Y.startswith(...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(normpath|realpath|abspath)$"
+          - pattern: "$Y"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $Y = os.path.$N(...)
+                  ...
+                  if not $Y.startswith(...):
+                    ...
+                    $EXIT
+                  ...
+              - pattern-inside: |
+                  $Y = os.path.$N(...)
+                  ...
+                  if not $Y.startswith(...) or ...:
+                    ...
+                    $EXIT
+                  ...
+              - pattern-inside: |
+                  $Y = os.path.$N(...)
+                  ...
+                  if ... or not $Y.startswith(...):
+                    ...
+                    $EXIT
+                  ...
+          - metavariable-regex:
+              metavariable: "$N"
+              regex: "^(normpath|realpath|abspath)$"
+          - metavariable-pattern:
+              metavariable: "$EXIT"
+              pattern-either:
+                - pattern: "raise ..."
+                - pattern: "return"
+                - pattern: "return ..."
+                - pattern: "abort(...)"
+                - pattern: "flask.abort(...)"
+          - pattern: "$Y"
+      # `Path.is_relative_to` não é do CodeQL: divergência declarada. O CodeQL não modela a
+      # conferência de contenção do pathlib, e quem confere o caminho com ela fica fora do alerta.
+      # Só vale dentro do `if` positivo ou depois do `if` negativo que sai (`raise`, `return`,
+      # `abort`).
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  if $Y.is_relative_to(...):
                     ...
               - pattern-inside: |
-                  $Y = $N(...)
-                  ...
-                  if $Y.startswith(...):
+                  if $Y.is_relative_to(...) and ...:
+                    ...
+              - pattern-inside: |
+                  if ... and $Y.is_relative_to(...):
                     ...
           - pattern: "$Y"
       - patterns:
-          - pattern-inside: |
-              if not $Y.is_relative_to(...):
-                ...
-              ...
+          - pattern-either:
+              - pattern-inside: |
+                  if not $Y.is_relative_to(...):
+                    ...
+                    $EXIT
+                  ...
+              - pattern-inside: |
+                  if not $Y.is_relative_to(...) or ...:
+                    ...
+                    $EXIT
+                  ...
+              - pattern-inside: |
+                  if ... or not $Y.is_relative_to(...):
+                    ...
+                    $EXIT
+                  ...
+          - metavariable-pattern:
+              metavariable: "$EXIT"
+              pattern-either:
+                - pattern: "raise ..."
+                - pattern: "return"
+                - pattern: "return ..."
+                - pattern: "abort(...)"
+                - pattern: "flask.abort(...)"
           - pattern: "$Y"
+      # `basename` e `secure_filename` removem o `../`, mas o CodeQL não os trata como
+      # sanitizadores: para ele são passos que propagam a contaminação. Divergência declarada
+      # (decisão do PO).
       - pattern: "os.path.basename(...)"
       - pattern: "werkzeug.utils.secure_filename(...)"
-      - pattern: "secure_filename(...)"
+      # `int(...)` e `uuid.UUID(...)` limpam só o valor convertido (`exact`): o sumidouro de dentro
+      # deles (`int(os.path.getmtime(p))`) continua alertando.
       - "$model": python/int-sanitizer
       - "$model": python/uuid-uuid-sanitizer
     pattern-sinks:
@@ -65,15 +165,19 @@ rules:
               - pattern: "codecs.open($X, ...)"
               - pattern: "aiofiles.open($X, ...)"
               - pattern: "flask.send_file($X, ...)"
-              - pattern: "send_file($X, ...)"
+              # Só o `directory` é sumidouro: o Flask confina o nome do arquivo dentro dele.
               - pattern: "flask.send_from_directory($X, ...)"
-              - pattern: "send_from_directory($X, ...)"
-              - pattern: "send_from_directory($Z, $X, ...)"
-              - pattern: "flask.send_from_directory($Z, $X, ...)"
-              - pattern: "FileResponse($X, ...)"
-              - pattern: "$R.FileResponse($X, ...)"
-              - pattern: "FileResponse(..., path=$X, ...)"
-              - pattern: "$R.FileResponse(..., path=$X, ...)"
+              - pattern: "flask.send_from_directory(..., directory=$X, ...)"
+              - pattern: "starlette.responses.FileResponse($X, ...)"
+              - pattern: "starlette.responses.FileResponse(..., path=$X, ...)"
+              - pattern: "fastapi.responses.FileResponse($X, ...)"
+              - pattern: "fastapi.responses.FileResponse(..., path=$X, ...)"
+              - pattern: "sanic.response.file($X, ...)"
+              - pattern: "sanic.response.file_stream($X, ...)"
+              - pattern: "cherrypy.lib.static.serve_file($X, ...)"
+              - pattern: "cherrypy.lib.static.serve_download($X, ...)"
+              - pattern: "cherrypy.lib.static.staticfile($X, ...)"
+              - pattern: "shutil.disk_usage($X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "os.$FN($X, ...)"
@@ -81,32 +185,78 @@ rules:
               metavariable: "$FN"
               regex: "^(open|access|chdir|chflags|chmod|chown|chroot|lchflags|lchmod|lchown|link|listdir|lstat|mkdir|makedirs|mkfifo|mknod|pathconf|readlink|remove|removedirs|rename|renames|replace|rmdir|scandir|stat|statvfs|symlink|truncate|unlink|utime|walk|startfile)$"
           - focus-metavariable: "$X"
+      # Segundo caminho das funções que recebem dois (o destino do `rename`, do `link`...).
       - patterns:
-          - pattern-either:
-              - pattern: "shutil.$SH($X, ...)"
-              - pattern: "shutil.$SH($Z, $X, ...)"
+          - pattern: "os.$FN($Z, $X, ...)"
+          - metavariable-regex:
+              metavariable: "$FN"
+              regex: "^(link|rename|renames|replace|symlink)$"
+          - focus-metavariable: "$X"
+      # shutil: `rmtree` e `chown` só leem o primeiro caminho; copiar e mover, a origem e o destino.
+      - patterns:
+          - pattern: "shutil.$SH($X, ...)"
           - metavariable-regex:
               metavariable: "$SH"
-              regex: "^(copy|copy2|copyfile|copytree|move|rmtree|copymode|copystat|make_archive|unpack_archive|chown)$"
+              regex: "^(copy|copy2|copyfile|copytree|move|rmtree|copymode|copystat|chown)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "shutil.$SH($Z, $X, ...)"
+          - metavariable-regex:
+              metavariable: "$SH"
+              regex: "^(copy|copy2|copyfile|copytree|move|copymode|copystat)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "os.path.$PF($X, ...)"
           - metavariable-regex:
               metavariable: "$PF"
-              regex: "^(exists|isfile|isdir|islink|ismount|lexists|getsize|getmtime|getatime|getctime|realpath|samefile)$"
+              regex: "^(exists|isfile|isdir|islink|ismount|lexists|getsize|getmtime|getatime|getctime|samefile)$"
           - focus-metavariable: "$X"
       - patterns:
-          - pattern: "$R.$FS($X, ...)"
-          - metavariable-regex:
-              metavariable: "$R"
-              regex: "^(response|sanic_response|static|cherrypy_static)$"
-          - metavariable-regex:
-              metavariable: "$FS"
-              regex: "^(file|file_stream|serve_file|staticfile|serve_download)$"
+          - pattern: "os.path.samefile($Z, $X, ...)"
           - focus-metavariable: "$X"
+      # pathlib: o `Path` (a própria chamada `Path(...)`, a divisão `a / b` ou a variável que os
+      # recebeu) acessado por um método de arquivo (PathlibFileAccess, Stdlib.qll).
       - patterns:
+          - pattern: "$P.$PM(...)"
+          - metavariable-pattern:
+              metavariable: "$P"
+              pattern-either:
+                - pattern: "pathlib.Path(...)"
+                - pattern: "$A / $B"
+          - metavariable-regex:
+              metavariable: "$PM"
+              regex: "^(read_text|read_bytes|write_text|write_bytes|mkdir|rmdir|unlink|touch|symlink_to|hardlink_to|iterdir|rglob|glob|is_file|is_dir|open|chmod|rename|replace|stat|lstat|resolve|samefile|exists|expanduser|group|owner|readlink|is_mount|is_symlink|is_socket|is_fifo|is_block_device|is_char_device|lchmod|link_to)$"
+          - focus-metavariable: "$P"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $P = pathlib.Path(...)
+                  ...
+              - pattern-inside: |
+                  $P = $A / $B
+                  ...
           - pattern: "$P.$PM(...)"
           - metavariable-regex:
               metavariable: "$PM"
-              regex: "^(read_text|read_bytes|write_text|write_bytes|mkdir|rmdir|unlink|touch|symlink_to|hardlink_to|iterdir|rglob|glob|is_file|is_dir|open|chmod|rename|stat|resolve|samefile)$"
+              regex: "^(read_text|read_bytes|write_text|write_bytes|mkdir|rmdir|unlink|touch|symlink_to|hardlink_to|iterdir|rglob|glob|is_file|is_dir|open|chmod|rename|replace|stat|lstat|resolve|samefile|exists|expanduser|group|owner|readlink|is_mount|is_symlink|is_socket|is_fifo|is_block_device|is_char_device|lchmod|link_to)$"
           - focus-metavariable: "$P"
+      # werkzeug FileStorage.save(dst): o destino é caminho de arquivo (FileStorageSaveCall).
+      - patterns:
+          - pattern-either:
+              - pattern: "flask.request.files[...].save($X, ...)"
+              - pattern: "flask.request.files.get(...).save($X, ...)"
+              - pattern: "flask.request.files[...].save(..., dst=$X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $F = flask.request.files[...]
+                  ...
+              - pattern-inside: |
+                  $F = flask.request.files.get(...)
+                  ...
+              - pattern-inside: |
+                  $F = werkzeug.datastructures.FileStorage(...)
+                  ...
+          - pattern: "$F.save($X, ...)"
+          - focus-metavariable: "$X"

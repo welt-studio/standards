@@ -1,12 +1,56 @@
+# Todos os parâmetros de um método de plugin do jQuery (`JQueryPluginMethod`, jQuery.qll): o
+# `$.fn.<nome> = <função>` e o `$.extend($.fn, {<nome>: <função>})`, mais o `$.fn.extend({...})`.
+# O `$` é o `$`, o `jQuery` ou o `cash`; a função vale como literal ou declarada no arquivo e
+# atribuída pelo nome.
 - patterns:
-    - pattern-inside: "$.fn.$N = function ($P, ...) {...}"
-    - pattern: "$P"
+    - pattern-either:
+        - pattern: "$D.fn.$N = function (..., $P, ...) {...}"
+        - pattern: "$D.fn.$N = (..., $P, ...) => ..."
+        - pattern: "$D.fn.extend({..., $N: function (..., $P, ...) {...}, ...})"
+        - pattern: "$D.fn.extend({..., $N: (..., $P, ...) => ..., ...})"
+        - pattern: "$D.fn.extend({..., $N(..., $P, ...) {...}, ...})"
+    - metavariable-regex:
+        metavariable: "$D"
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "jQuery.fn.$N = function ($P, ...) {...}"
-    - pattern: "$P"
+    - pattern-either:
+        - pattern: "$D.extend($G.fn, {..., $N: function (..., $P, ...) {...}, ...})"
+        - pattern: "$D.extend($G.fn, {..., $N: (..., $P, ...) => ..., ...})"
+        - pattern: "$D.extend($G.fn, {..., $N(..., $P, ...) {...}, ...})"
+    - metavariable-regex:
+        metavariable: "$D"
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
+    - metavariable-regex:
+        metavariable: "$G"
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "$.fn.$N = function $F($P, ...) {...}"
-    - pattern: "$P"
+    - pattern-either:
+        - pattern: |
+            function $F(..., $P, ...) {...}
+        - pattern: |
+            const $F = function (..., $P, ...) {...}
+        - pattern: |
+            const $F = (..., $P, ...) => ...
+    - pattern-either:
+        - pattern-inside: |
+            ...
+            $D.fn.$N = $F;
+            ...
+        - pattern-inside: |
+            ...
+            $D.fn.extend({..., $N: $F, ...});
+            ...
+        - pattern-inside: |
+            ...
+            $D.extend($G.fn, {..., $N: $F, ...});
+            ...
+    - metavariable-regex:
+        metavariable: "$D"
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
     - focus-metavariable: "$P"

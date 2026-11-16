@@ -1,0 +1,26 @@
+rules:
+  - id: xml-parsed-at-the-sink
+    languages:
+      - javascript
+    severity: WARNING
+    message: "O XML montado a partir da entrada da biblioteca chega a um sumidouro do DOM."
+    mode: taint
+    options:
+      interfile: true
+    pattern-sources:
+      - label: INPUT
+        patterns:
+          - pattern: "module.exports.$F = function (..., $P, ...) {...}"
+          - focus-metavariable: "$P"
+      - label: XML
+        requires: INPUT
+        pattern: 'new DOMParser().parseFromString($X, "text/xml")'
+    pattern-propagators:
+      - pattern: "$R.appendChild($X)"
+        from: $X
+        to: $R
+    pattern-sinks:
+      - requires: XML
+        patterns:
+          - pattern: "$E.appendChild($X)"
+          - focus-metavariable: "$X"

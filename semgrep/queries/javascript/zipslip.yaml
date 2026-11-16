@@ -11,78 +11,263 @@ rules:
       codeql: js/zipslip
     mode: taint
     pattern-sources:
+      # jszip (`JSZipFilesSource` e `JSZipFileSource` do CodeQL): o caminho relativo que o
+      # `forEach`/`filter` de uma instância (`new JSZip()`) entrega ao callback, e a chave do
+      # `for (nome in zip.files)`. Outro objeto com `forEach` não é arquivo compactado.
       - patterns:
-          - pattern: "$E.path"
-          - pattern-inside: "$S.on('entry', ($E) => {...})"
-      - patterns:
-          - pattern: "$E.path"
-          - pattern-inside: "$S.on('entry', function($E) {...})"
-      - patterns:
-          - pattern: "$E.fileName"
-          - pattern-inside: "$S.on('entry', ($E) => {...})"
-      - patterns:
-          - pattern: "$E.fileName"
-          - pattern-inside: "$S.on('entry', function($E) {...})"
-      - patterns:
-          - pattern: "$E.header.name"
-          - pattern-inside: "$S.on('entry', function($E) {...})"
-      - patterns:
-          - pattern: "$E.entryName"
-          - pattern-inside: "$Z.forEach(function($E) {...})"
-      - patterns:
-          - pattern: "$E.entryName"
-          - pattern-inside: "$Z.forEach(($E) => {...})"
-      - patterns:
-          - pattern: "$E.entryName"
-          - pattern-inside: "for (const $E of $Z.getEntries()) {...}"
-      - pattern: "$Z.getEntries()"
+          - pattern: "$NAME"
+          - pattern-either:
+              - pattern-inside: "$Z.$M(($NAME, ...) => {...})"
+              - pattern-inside: "$Z.$M(function ($NAME, ...) {...})"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:forEach|filter)$"
+          - &jszip_instance
+            patterns:
+              - pattern-inside: |
+                  $Z = new $J(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: |
+                      $J = require("jszip");
+                      ...
+                  - pattern-inside: |
+                      import $J from "jszip";
+                      ...
+                  - pattern-inside: |
+                      import * as $J from "jszip";
+                      ...
       - patterns:
           - pattern: "$NAME"
           - pattern-inside: "for ($NAME in $Z.files) {...}"
+          - *jszip_instance
+      # unzipper e unzip (`UnzipEntrySource` do CodeQL): o `path` da entrada do evento `entry` de
+      # `unzipper.Parse()`, `unzip.Parse()`, com ou sem `.pipe(...)` antes, direto ou por variável.
       - patterns:
-          - pattern: "$NAME"
-          - pattern-inside: "$Z.forEach(function($NAME, ...) {...})"
-      - patterns:
-          - pattern: "$NAME"
-          - pattern-inside: "$Z.forEach(($NAME, ...) => {...})"
-      - patterns:
-          - pattern: "$H.name"
-          - pattern-inside: "$X.on('entry', function($H, ...) {...})"
-      - patterns:
-          - pattern: "$E.path"
-          - pattern-inside: "tar.extract({..., filter: ($E) => {...}})"
-      - patterns:
-          - pattern: "$ENTRY.$P"
+          - pattern: "$E.$P"
           - metavariable-regex:
               metavariable: "$P"
-              regex: "^(?:fileName|entryName|path)$"
-          - pattern-inside: "$Y.eachEntry(function($ENTRY) {...})"
+              regex: "^(?:path|name|linkname)$"
+          - pattern-either:
+              - patterns:
+                  - &entry_listener
+                    pattern-either:
+                      - pattern-inside: '$S.$ON("entry", ($E, ...) => {...})'
+                      - pattern-inside: '$S.$ON("entry", function ($E, ...) {...})'
+                  - &listener_method
+                    metavariable-regex:
+                      metavariable: "$ON"
+                      regex: "^(?:addListener|on|once|prependListener|prependOnceListener)$"
+                  - &not_parenthesized_stream
+                    metavariable-regex:
+                      metavariable: "$S"
+                      regex: "(?s)^(?!\\()"
+                  - metavariable-pattern:
+                      metavariable: "$S"
+                      pattern-either: &unzip_parse_forms
+                        - pattern: "$U.Parse(...)"
+                        - pattern: "$X.pipe($U.Parse(...))"
+              - patterns:
+                  - *entry_listener
+                  - *listener_method
+                  - pattern-inside: |
+                      $S = $RHS;
+                      ...
+                  - &not_parenthesized_assignment
+                    metavariable-regex:
+                      metavariable: "$RHS"
+                      regex: "(?s)^(?!\\()"
+                  - metavariable-pattern:
+                      metavariable: "$RHS"
+                      pattern-either: *unzip_parse_forms
+          - &unzip_module
+            pattern-either:
+              - pattern-inside: |
+                  $U = require("unzipper");
+                  ...
+              - pattern-inside: |
+                  $U = require("unzip");
+                  ...
+              - pattern-inside: |
+                  import $U from "unzipper";
+                  ...
+              - pattern-inside: |
+                  import $U from "unzip";
+                  ...
+              - pattern-inside: |
+                  import * as $U from "unzipper";
+                  ...
+              - pattern-inside: |
+                  import * as $U from "unzip";
+                  ...
+      # tar-stream: o `name` e o `linkname` do cabeçalho do evento `entry` de `tar.extract()`.
+      - patterns:
+          - pattern: "$E.$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?:path|name|linkname)$"
+          - pattern-either:
+              - patterns:
+                  - *entry_listener
+                  - *listener_method
+                  - *not_parenthesized_stream
+                  - metavariable-pattern:
+                      metavariable: "$S"
+                      pattern-either: &tar_extract_forms
+                        - pattern: "$U.extract(...)"
+                        - pattern: "$X.pipe($U.extract(...))"
+              - patterns:
+                  - *entry_listener
+                  - *listener_method
+                  - pattern-inside: |
+                      $S = $RHS;
+                      ...
+                  - *not_parenthesized_assignment
+                  - metavariable-pattern:
+                      metavariable: "$RHS"
+                      pattern-either: *tar_extract_forms
+          - pattern-either:
+              - pattern-inside: |
+                  $U = require("tar-stream");
+                  ...
+              - pattern-inside: |
+                  import $U from "tar-stream";
+                  ...
+              - pattern-inside: |
+                  import * as $U from "tar-stream";
+                  ...
+      # adm-zip (`AdmZipEntrySource` do CodeQL): o `entryName` de `getEntry(...)` e dos elementos
+      # de `getEntries()` (índice, `map` e `forEach`), de uma instância `new AdmZip(...)`.
+      - patterns:
+          - pattern: "$ZIP.getEntry(...).entryName"
+          - &admzip_instance
+            pattern-inside: |
+              $ZIP = new $A(...);
+              ...
+          - &admzip_module
+            pattern-either:
+              - pattern-inside: |
+                  $A = require("adm-zip");
+                  ...
+              - pattern-inside: |
+                  import $A from "adm-zip";
+                  ...
+              - pattern-inside: |
+                  import * as $A from "adm-zip";
+                  ...
+      - patterns:
+          - pattern: "$ZIP.getEntries()[$I].entryName"
+          - *admzip_instance
+          - *admzip_module
+      - patterns:
+          - pattern: "$ENT.entryName"
+          - pattern-inside: |
+              $ENT = $ZIP.getEntry(...);
+              ...
+          - *admzip_instance
+          - *admzip_module
+      - patterns:
+          - pattern: "$ENT.entryName"
+          - pattern-either:
+              - pattern-inside: "$ZIP.getEntries().$M(($ENT, ...) => {...})"
+              - pattern-inside: "$ZIP.getEntries().$M(function ($ENT, ...) {...})"
+              - pattern-inside: |
+                  $ENTRIES = $ZIP.getEntries();
+                  ...
+                  $ENTRIES.$M(($ENT, ...) => {...})
+              - pattern-inside: |
+                  $ENTRIES = $ZIP.getEntries();
+                  ...
+                  $ENTRIES.$M(function ($ENT, ...) {...})
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:forEach|map)$"
+          - *admzip_instance
+          - *admzip_module
+      - patterns:
+          - pattern: "$ENTRIES[$I].entryName"
+          - pattern-inside: |
+              $ENTRIES = $ZIP.getEntries();
+              ...
+          - *admzip_instance
+          - *admzip_module
     pattern-sinks:
-      - "$model": javascript/fs-path-sinks
+      # `FileSystemWriteAccess` do módulo fs (`CreateWriteStreamSink` e `FileSystemWriteSink` do
+      # CodeQL): o caminho de `appendFile`, `writeFile`, `link` (os dois argumentos) e
+      # `createWriteStream`, e o do `open` com modo de escrita (`w`, `wx`, `w+`...). Os métodos
+      # `write`, `writeSync` e `writev` recebem o descritor, não o caminho. A ligação ao módulo e
+      # as formas de importar são as do `fs-path-sinks`, filtradas pelo método.
       - patterns:
-          - pattern: "Writer({path: $X})"
-          - focus-metavariable: "$X"
+          - "$model": javascript/fs-path-sink-expression
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:appendFile|appendFileSync|createWriteStream|link|linkSync|writeFile|writeFileSync)$"
       - patterns:
-          - pattern: "fstream.Writer({path: $X})"
-          - focus-metavariable: "$X"
+          - "$model": javascript/fs-path-sink-expression
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:open|openSync)$"
+          - pattern-inside: "$CALLEE($X, $MODE, ...)"
+          - metavariable-regex:
+              metavariable: "$MODE"
+              regex: '^["''`](?i:w.{0,2})["''`]$'
+      # fstream (`FStreamWriter` do CodeQL): `Writer({path: ...})`, ou o caminho como primeiro
+      # argumento, de um `Writer` do módulo fstream.
       - patterns:
-          - pattern: "$W.Writer({path: $X})"
+          - pattern-either:
+              - pattern: "$F.Writer({..., path: $X, ...})"
+              - pattern: "new $F.Writer({..., path: $X, ...})"
+              - patterns:
+                  - pattern: "$F.Writer($X, ...)"
+                  - pattern-not: "$F.Writer({...}, ...)"
+              - patterns:
+                  - pattern: "new $F.Writer($X, ...)"
+                  - pattern-not: "new $F.Writer({...}, ...)"
           - focus-metavariable: "$X"
+          - pattern-either:
+              - pattern-inside: |
+                  $F = require("fstream");
+                  ...
+              - pattern-inside: |
+                  import $F from "fstream";
+                  ...
+              - pattern-inside: |
+                  import * as $F from "fstream";
+                  ...
       - patterns:
-          - pattern: "new Writer({path: $X})"
+          - pattern-either:
+              - pattern: "$W({..., path: $X, ...})"
+              - pattern: "new $W({..., path: $X, ...})"
+              - patterns:
+                  - pattern: "$W($X, ...)"
+                  - pattern-not: "$W({...}, ...)"
+              - patterns:
+                  - pattern: "new $W($X, ...)"
+                  - pattern-not: "new $W({...}, ...)"
           - focus-metavariable: "$X"
+          - pattern-either:
+              - pattern-inside: |
+                  $W = require("fstream").Writer;
+                  ...
+              - pattern-inside: |
+                  const {..., Writer: $W, ...} = require("fstream");
+                  ...
+              - pattern-inside: |
+                  import {..., Writer as $W, ...} from "fstream";
+                  ...
     pattern-sanitizers:
       - "$model": javascript/filename-sanitizers
       - "$model": javascript/parse-int-x-sanitizer
       - "$model": javascript/number-x-sanitizer
+      # `if (x.startsWith(base)) {...}`: só o `x` da própria guarda fica limpo.
       - patterns:
-          - pattern: "$X"
+          - pattern: "$T"
           - "$model": javascript/startswith-check
       - patterns:
-          - pattern: "$X"
+          - pattern: "$T"
           - pattern-inside: "if (!$T.startsWith($P)) { throw ...; } ..."
       - patterns:
-          - pattern: "$X"
+          - pattern: "$T"
           - pattern-inside: "if (!$T.startsWith($P)) { return ...; } ..."
     options:
       interfile: true

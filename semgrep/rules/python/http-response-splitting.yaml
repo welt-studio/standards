@@ -18,10 +18,11 @@ rules:
         Tornado: argumentos e dados do RequestHandler (Tornado.qll).
         http.server: cabeçalhos e caminho da requisição (Stdlib.qll, BaseHTTPRequestHandler).
         WSGI: o `environ` da aplicação.
-        Remover \r e \n do valor.
-        Flask / Werkzeug: o nome do cabeçalho (o valor é rejeitado pelo framework).
-        http.server.
+        Remover \n do valor (ReplaceLineBreaksSanitizer, HttpHeaderInjectionCustomizations.qll).
+        Flask / Werkzeug: só o NOME do cabeçalho (o valor é rejeitado pelo framework).
+        http.server: o nome e o valor.
         WSGI: start_response(status, headers).
+        Django, FastAPI, Tornado, Bottle e Aiohttp não têm sumidouro: rejeitam quebra de linha.
     mode: taint
     options:
       interfile: true
@@ -56,17 +57,51 @@ rules:
       - patterns:
           - pattern-either:
               - pattern-inside: |
-                  def $F(request, ..., $P, ...):
+                  def $V(self, request, ..., $P, ...):
                     ...
               - pattern-inside: |
-                  def $F(self, request, ..., $P, ...):
+                  async def $V(self, request, ..., $P, ...):
+                    ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(get|post|put|patch|delete|head|options|list|retrieve|create|update|partial_update|destroy|dispatch|form_valid|get_object|get_queryset)$"
+          - focus-metavariable: "$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!self$|cls$|request$|args$|kwargs$)"
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  @$D
+                  def $V(request, ..., $P, ...):
                     ...
               - pattern-inside: |
-                  async def $F(request, ..., $P, ...):
+                  @$D(...)
+                  def $V(request, ..., $P, ...):
                     ...
               - pattern-inside: |
-                  async def $F(self, request, ..., $P, ...):
+                  @$D
+                  async def $V(request, ..., $P, ...):
                     ...
+              - pattern-inside: |
+                  @$D(...)
+                  async def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  def $V(request, ..., $P, ...):
+                    ...
+              - pattern-inside: |
+                  async def $V(request, ..., $P, ...):
+                    ...
+          - pattern-not-inside: |
+              def $V2(request: $T, ...):
+                ...
+          - pattern-not-inside: |
+              async def $V2(request: $T, ...):
+                ...
+          - metavariable-regex:
+              metavariable: "$V"
+              regex: "^(?!_)"
           - focus-metavariable: "$P"
           - metavariable-regex:
               metavariable: "$P"
@@ -82,8 +117,20 @@ rules:
           - pattern: "self.get_secure_cookie(...)"
           - pattern: self.path_args
           - pattern: self.path_kwargs
-      - pattern: self.headers
-      - pattern: self.path
+      - patterns:
+          - pattern-either:
+              - pattern: self.headers
+              - pattern: self.path
+          - pattern-either:
+              - pattern-inside: |
+                  class $C(http.server.BaseHTTPRequestHandler):
+                    ...
+              - pattern-inside: |
+                  class $C(http.server.SimpleHTTPRequestHandler):
+                    ...
+              - pattern-inside: |
+                  class $C(http.server.CGIHTTPRequestHandler):
+                    ...
       - patterns:
           - pattern-either:
               - pattern-inside: |
@@ -96,16 +143,46 @@ rules:
     pattern-sanitizers:
       - patterns:
           - pattern: "$X.replace(\"\\n\", ...)"
-      - patterns:
-          - pattern: "$X.replace(\"\\r\", ...)"
       - pattern: "int(...)"
+        exact: true
+      - patterns:
+          - pattern-inside: |
+              $Y = int(...)
+              ...
+          - pattern: "$Y"
     pattern-sinks:
       - patterns:
+          - pattern: "$R.headers.$M($N, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(add|add_header|set|setdefault)$"
           - pattern-either:
-              - pattern: "$H.add($N, ...)"
-              - pattern: "$H.add_header($N, ...)"
-              - pattern: "$H.set($N, ...)"
-              - pattern: "$H.setdefault($N, ...)"
+              - pattern-inside: |
+                  from flask import $X
+                  ...
+              - pattern-inside: |
+                  from werkzeug.datastructures import $X
+                  ...
+              - pattern-inside: |
+                  import flask
+                  ...
+              - pattern-inside: |
+                  import werkzeug
+                  ...
+          - focus-metavariable: "$N"
+      - patterns:
+          - pattern-inside: |
+              $H = werkzeug.datastructures.Headers(...)
+              ...
+          - pattern: "$H.$M($N, ...)"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(add|add_header|set|setdefault)$"
+          - focus-metavariable: "$N"
+      - patterns:
+          - pattern-either:
+              - pattern: "$R.headers[$N] = $V"
+              - pattern: "$R.headers.extend($N)"
           - pattern-either:
               - pattern-inside: |
                   from flask import $X
@@ -122,32 +199,56 @@ rules:
           - focus-metavariable: "$N"
       - patterns:
           - pattern-either:
-              - pattern: "make_response($B, {$N: $V}, ...)"
-              - pattern: "flask.make_response($B, {$N: $V}, ...)"
-              - pattern: "$R.headers.extend($N)"
-              - pattern: "$R.headers.update($N)"
-              - pattern: "$R.headers[$N] = $V"
-              - pattern: "$R[$N] = $V"
+              - pattern: "flask.make_response($B, {$N: $V, ...})"
+              - pattern: "flask.make_response($B, [($N, $V), ...])"
+              - pattern: "flask.make_response($B, $S, {$N: $V, ...}, ...)"
+              - pattern: "flask.make_response($B, $S, [($N, $V), ...], ...)"
+              - pattern: "flask.make_response(..., headers={$N: $V, ...}, ...)"
+              - pattern: "flask.make_response(..., headers=[($N, $V), ...], ...)"
+              - pattern: "flask.Response($B, $S, {$N: $V, ...}, ...)"
+              - pattern: "flask.Response($B, $S, [($N, $V), ...], ...)"
+              - pattern: "flask.Response(..., headers={$N: $V, ...}, ...)"
+              - pattern: "flask.Response(..., headers=[($N, $V), ...], ...)"
           - focus-metavariable: "$N"
       - patterns:
           - pattern-either:
-              - pattern: "$S.send_header($N, $V)"
-              - pattern: "$S.send_header($N, $V, ...)"
+              - pattern-inside: |
+                  class $C(http.server.BaseHTTPRequestHandler):
+                    ...
+              - pattern-inside: |
+                  class $C(http.server.SimpleHTTPRequestHandler):
+                    ...
+              - pattern-inside: |
+                  class $C(http.server.CGIHTTPRequestHandler):
+                    ...
+          - pattern: "self.send_header($N, $V)"
           - focus-metavariable: "$N"
       - patterns:
-          - pattern: "$S.send_header($N, $V)"
+          - pattern-either:
+              - pattern-inside: |
+                  class $C(http.server.BaseHTTPRequestHandler):
+                    ...
+              - pattern-inside: |
+                  class $C(http.server.SimpleHTTPRequestHandler):
+                    ...
+              - pattern-inside: |
+                  class $C(http.server.CGIHTTPRequestHandler):
+                    ...
+          - pattern: "self.send_header($N, $V)"
           - focus-metavariable: "$V"
       - patterns:
           - pattern-either:
-              - pattern: "$S.extra_response_headers = $X"
-              - pattern: "$C(..., extra_response_headers=$X, ...)"
+              - pattern-inside: |
+                  class $C(http.server.SimpleHTTPRequestHandler):
+                    ...
+              - pattern-inside: |
+                  class $C(http.server.CGIHTTPRequestHandler):
+                    ...
+          - pattern: "$S.extra_response_headers = $X"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern: "http.server.SimpleHTTPRequestHandler(..., extra_response_headers=$X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "start_response($ST, $X, ...)"
           - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$S.setHeader($N, $V)"
-          - focus-metavariable: "$N"
-      - patterns:
-          - pattern: "$S.setHeader($N, $V)"
-          - focus-metavariable: "$V"

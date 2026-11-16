@@ -1,0 +1,28 @@
+# O `$()`/`jQuery()` só lê a string como HTML quando ela começa por `<`
+# (`JQueryHtmlOrSelectorSink`, DomBasedXssCustomizations.qll: todo prefixo tem de casar
+# `\s*<.*|`): um prefixo que não é HTML (`"#id" + x`) faz do argumento um seletor. O sanitizador
+# vale só no argumento do `$()`/`jQuery()`, direto ou por uma variável do mesmo escopo, e não em
+# qualquer concatenação (`el.innerHTML = "texto" + x` continua sumidouro).
+- patterns:
+    - pattern: '"$P" + $X'
+    - pattern-inside: "$D(...)"
+    - metavariable-regex:
+        metavariable: "$D"
+        regex: '^(?:\$|jQuery)$'
+    - metavariable-regex:
+        metavariable: "$P"
+        regex:
+          "$text": javascript/non-html-string-prefix-regex
+- patterns:
+    - pattern: '"$P" + $X'
+    - pattern-inside: |
+        $V = "$P" + $X;
+        ...
+        $D($V);
+    - metavariable-regex:
+        metavariable: "$D"
+        regex: '^(?:\$|jQuery)$'
+    - metavariable-regex:
+        metavariable: "$P"
+        regex:
+          "$text": javascript/non-html-string-prefix-regex

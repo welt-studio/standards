@@ -1,0 +1,4 @@
+# Os sumidouros de HTML e de nó do DOM: o `DomBasedXss::Sink` sem os de endereço.
+- pattern-either:
+    - "$model": javascript/dom-xss-sinks
+    - "$model": javascript/dom-node-insertion-sinks

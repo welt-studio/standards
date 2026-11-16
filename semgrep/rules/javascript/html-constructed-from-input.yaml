@@ -11,326 +11,1357 @@ rules:
       category: security
       cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
       codeql: js/html-constructed-from-input
+    paths:
+      exclude:
+        - "*.test.*"
+        - "*.spec.*"
+        - "__tests__/"
+        - "fixtures/"
+        - "testing/"
     mode: taint
     pattern-sources:
-      - patterns:
-          - pattern-inside: "module.exports.$F = function ($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "module.exports.$F = ($P, ...) => {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "module.exports = function ($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "module.exports = ($P, ...) => {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "exports.$F = function ($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "exports.$F = ($P, ...) => {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "module.exports.$F.$G = function ($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "$C.prototype.$M = function ($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "export function $F($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "export default function $F($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "export default function ($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "export const $F = ($P, ...) => {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "export const $F = function ($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "export async function $F($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "class $C { constructor($P, ...) {...} }"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "class $C { static $M($P, ...) {...} }"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "class $C { $M($P, ...) {...} }"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "module.exports = { $F: function ($P, ...) {...} }"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "module.exports = { $F($P, ...) {...} }"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "module.exports = { $F: ($P, ...) => {...} }"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "module.exports = { ..., $F: function ($P, ...) {...}, ... }"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "$.fn.$N = function ($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "jQuery.fn.$N = function ($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
-      - patterns:
-          - pattern-inside: "$.fn.$N = function $F($P, ...) {...}"
-          - pattern: "$P"
-          - focus-metavariable: "$P"
+      - label: INPUT
+        pattern-either:
+          - patterns:
+              - pattern: "module.exports = function (..., $P, ...) {...}"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "module.exports.$F = function (..., $P, ...) {...}"
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "exports.$F = function (..., $P, ...) {...}"
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "module.exports.$F.$G = function (..., $P, ...) {...}"
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - metavariable-regex:
+                  metavariable: "$G"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "module.exports = { ..., $F: function (..., $P, ...) {...}, ... }"
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "module.exports.$F = { ..., $G: function (..., $P, ...) {...}, ... }"
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - metavariable-regex:
+                  metavariable: "$G"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "module.exports = (..., $P, ...) => ..."
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "module.exports.$F = (..., $P, ...) => ..."
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "exports.$F = (..., $P, ...) => ..."
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "module.exports.$F.$G = (..., $P, ...) => ..."
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - metavariable-regex:
+                  metavariable: "$G"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "module.exports = { ..., $F: (..., $P, ...) => ..., ... }"
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "module.exports.$F = { ..., $G: (..., $P, ...) => ..., ... }"
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - metavariable-regex:
+                  metavariable: "$G"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "export function $F(..., $P, ...) {...}"
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "export default function $F(..., $P, ...) {...}"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "export default function (..., $P, ...) {...}"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "export default (..., $P, ...) => ..."
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "export const $F = function (..., $P, ...) {...}"
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "export const $F = (..., $P, ...) => ..."
+              - metavariable-regex:
+                  metavariable: "$F"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "function $F(..., $P, ...) {...}"
+              - pattern-either:
+                  - pattern-inside: |
+                      function $F(...) {...}
+                      ...
+                      module.exports = $F;
+                  - pattern-inside: |
+                      module.exports = $F;
+                      ...
+                      function $F(...) {...}
+                  - pattern-inside: |
+                      function $F(...) {...}
+                      ...
+                      module.exports.$F = $F;
+                  - pattern-inside: |
+                      module.exports.$F = $F;
+                      ...
+                      function $F(...) {...}
+                  - pattern-inside: |
+                      function $F(...) {...}
+                      ...
+                      exports.$F = $F;
+                  - pattern-inside: |
+                      exports.$F = $F;
+                      ...
+                      function $F(...) {...}
+                  - pattern-inside: |
+                      function $F(...) {...}
+                      ...
+                      module.exports = {..., $F, ...};
+                  - pattern-inside: |
+                      module.exports = {..., $F, ...};
+                      ...
+                      function $F(...) {...}
+                  - pattern-inside: |
+                      function $F(...) {...}
+                      ...
+                      export { $F };
+                  - pattern-inside: |
+                      export { $F };
+                      ...
+                      function $F(...) {...}
+                  - pattern-inside: |
+                      function $F(...) {...}
+                      ...
+                      export default $F;
+                  - pattern-inside: |
+                      export default $F;
+                      ...
+                      function $F(...) {...}
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "const $F = function (..., $P, ...) {...}"
+              - pattern-either:
+                  - pattern-inside: |
+                      const $F = function (...) {...};
+                      ...
+                      module.exports = $F;
+                  - pattern-inside: |
+                      module.exports = $F;
+                      ...
+                      const $F = function (...) {...};
+                  - pattern-inside: |
+                      const $F = function (...) {...};
+                      ...
+                      module.exports.$F = $F;
+                  - pattern-inside: |
+                      module.exports.$F = $F;
+                      ...
+                      const $F = function (...) {...};
+                  - pattern-inside: |
+                      const $F = function (...) {...};
+                      ...
+                      exports.$F = $F;
+                  - pattern-inside: |
+                      exports.$F = $F;
+                      ...
+                      const $F = function (...) {...};
+                  - pattern-inside: |
+                      const $F = function (...) {...};
+                      ...
+                      module.exports = {..., $F, ...};
+                  - pattern-inside: |
+                      module.exports = {..., $F, ...};
+                      ...
+                      const $F = function (...) {...};
+                  - pattern-inside: |
+                      const $F = function (...) {...};
+                      ...
+                      export { $F };
+                  - pattern-inside: |
+                      export { $F };
+                      ...
+                      const $F = function (...) {...};
+                  - pattern-inside: |
+                      const $F = function (...) {...};
+                      ...
+                      export default $F;
+                  - pattern-inside: |
+                      export default $F;
+                      ...
+                      const $F = function (...) {...};
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "const $F = (..., $P, ...) => ..."
+              - pattern-either:
+                  - pattern-inside: |
+                      const $F = (...) => $B;
+                      ...
+                      module.exports = $F;
+                  - pattern-inside: |
+                      module.exports = $F;
+                      ...
+                      const $F = (...) => $B;
+                  - pattern-inside: |
+                      const $F = (...) => $B;
+                      ...
+                      module.exports.$F = $F;
+                  - pattern-inside: |
+                      module.exports.$F = $F;
+                      ...
+                      const $F = (...) => $B;
+                  - pattern-inside: |
+                      const $F = (...) => $B;
+                      ...
+                      exports.$F = $F;
+                  - pattern-inside: |
+                      exports.$F = $F;
+                      ...
+                      const $F = (...) => $B;
+                  - pattern-inside: |
+                      const $F = (...) => $B;
+                      ...
+                      module.exports = {..., $F, ...};
+                  - pattern-inside: |
+                      module.exports = {..., $F, ...};
+                      ...
+                      const $F = (...) => $B;
+                  - pattern-inside: |
+                      const $F = (...) => $B;
+                      ...
+                      export { $F };
+                  - pattern-inside: |
+                      export { $F };
+                      ...
+                      const $F = (...) => $B;
+                  - pattern-inside: |
+                      const $F = (...) => $B;
+                      ...
+                      export default $F;
+                  - pattern-inside: |
+                      export default $F;
+                      ...
+                      const $F = (...) => $B;
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "class $C { $M(..., $P, ...) {...} }"
+              - pattern-not: |
+                  class $C { private $M(...) {...} }
+              - pattern-not: |
+                  class $C { protected $M(...) {...} }
+              - pattern-either:
+                  - pattern-inside: |
+                      export class $C {...}
+                  - pattern-inside: |
+                      export default class $C {...}
+                  - pattern-inside: |
+                      module.exports = class $C {...}
+                  - pattern-inside: |
+                      class $C {...}
+                      ...
+                      module.exports = $C;
+                  - pattern-inside: |
+                      class $C {...}
+                      ...
+                      module.exports.$N = $C;
+                  - pattern-inside: |
+                      class $C {...}
+                      ...
+                      exports.$N = $C;
+                  - pattern-inside: |
+                      class $C {...}
+                      ...
+                      export { $C };
+                  - pattern-inside: |
+                      class $C {...}
+                      ...
+                      export { $C as $N };
+                  - pattern-inside: |
+                      class $C {...}
+                      ...
+                      export default $C;
+                  - pattern-inside: |
+                      class $C {...}
+                      ...
+                      module.exports = new $C(...);
+              - metavariable-regex:
+                  metavariable: "$M"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "class { $M(..., $P, ...) {...} }"
+              - pattern-not: |
+                  class { private $M(...) {...} }
+              - pattern-not: |
+                  class { protected $M(...) {...} }
+              - pattern-either:
+                  - pattern-inside: |
+                      module.exports = class {...}
+                  - pattern-inside: |
+                      export default class {...}
+                  - pattern-inside: |
+                      module.exports.$N = class {...}
+                  - pattern-inside: |
+                      exports.$N = class {...}
+              - metavariable-regex:
+                  metavariable: "$M"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern: "$C.prototype.$M = function (..., $P, ...) {...}"
+              - pattern-inside: |
+                  ...
+                  module.exports = new $C(...);
+                  ...
+              - metavariable-regex:
+                  metavariable: "$M"
+                  regex: "^[a-zA-Z0-9]"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$D.fn.$N = function (..., $P, ...) {...}"
+                  - pattern: "$D.fn.$N = (..., $P, ...) => ..."
+                  - pattern: "$D.fn.extend({..., $N: function (..., $P, ...) {...}, ...})"
+                  - pattern: "$D.fn.extend({..., $N: (..., $P, ...) => ..., ...})"
+                  - pattern: "$D.fn.extend({..., $N(..., $P, ...) {...}, ...})"
+              - metavariable-regex:
+                  metavariable: "$D"
+                  regex: "^(?:\\$|jQuery|cash)$"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$D.extend($G.fn, {..., $N: function (..., $P, ...) {...}, ...})"
+                  - pattern: "$D.extend($G.fn, {..., $N: (..., $P, ...) => ..., ...})"
+                  - pattern: "$D.extend($G.fn, {..., $N(..., $P, ...) {...}, ...})"
+              - metavariable-regex:
+                  metavariable: "$D"
+                  regex: "^(?:\\$|jQuery|cash)$"
+              - metavariable-regex:
+                  metavariable: "$G"
+                  regex: "^(?:\\$|jQuery|cash)$"
+              - focus-metavariable: "$P"
+          - patterns:
+              - pattern-either:
+                  - pattern: |
+                      function $F(..., $P, ...) {...}
+                  - pattern: |
+                      const $F = function (..., $P, ...) {...}
+                  - pattern: |
+                      const $F = (..., $P, ...) => ...
+              - pattern-either:
+                  - pattern-inside: |
+                      ...
+                      $D.fn.$N = $F;
+                      ...
+                  - pattern-inside: |
+                      ...
+                      $D.fn.extend({..., $N: $F, ...});
+                      ...
+                  - pattern-inside: |
+                      ...
+                      $D.extend($G.fn, {..., $N: $F, ...});
+                      ...
+              - metavariable-regex:
+                  metavariable: "$D"
+                  regex: "^(?:\\$|jQuery|cash)$"
+              - focus-metavariable: "$P"
+      - label: HTML
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: '"$A" + $X'
+              - pattern: '$X + "$A"'
+              - pattern: '<... "$A" ...> + $X'
+              - pattern: '$X + <... "$A" ...>'
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?s).*</?[a-zA-Z]"
+      - label: HTML
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "`$A${$X}$B`"
+              - pattern: "`$A${$X}$B${$Y}$C`"
+              - pattern: "`$A${$X}$B${$Y}$C${$Z}$D`"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?s).*</?[a-zA-Z]"
+      - label: HTML
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "`$A${$X}$B`"
+              - pattern: "`$A${$X}$B${$Y}$C`"
+              - pattern: "`$A${$X}$B${$Y}$C${$Z}$D`"
+          - metavariable-regex:
+              metavariable: "$B"
+              regex: "(?s).*</?[a-zA-Z]"
+      - label: HTML
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "`$A${$X}$B${$Y}$C`"
+              - pattern: "`$A${$X}$B${$Y}$C${$Z}$D`"
+          - metavariable-regex:
+              metavariable: "$C"
+              regex: "(?s).*</?[a-zA-Z]"
+      - label: HTML
+        requires: INPUT
+        patterns:
+          - pattern: "`$A${$X}$B${$Y}$C${$Z}$D`"
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "(?s).*</?[a-zA-Z]"
+      - label: HTML
+        requires: INPUT
+        patterns:
+          - pattern: '[..., "$A", ...].join("")'
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: "(?s).*</?[a-zA-Z]"
+      - label: XML
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: 'new DOMParser().parseFromString($X, "$T")'
+              - patterns:
+                  - pattern: '$D.parseFromString($X, "$T")'
+                  - pattern-inside: |
+                      $D = new DOMParser();
+                      ...
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: ".*xml"
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern: "$V($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = require("marked");
+                  ...
+              - pattern-inside: |
+                  import $V from "marked";
+                  ...
+              - pattern-inside: |
+                  import * as $V from "marked";
+                  ...
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern: "marked($X, ...)"
+          - pattern-not-inside: |
+              import marked from "$M";
+              ...
+          - pattern-not-inside: |
+              import * as marked from "$M";
+              ...
+          - pattern-not-inside: |
+              import { ..., marked, ... } from "$M";
+              ...
+          - pattern-not-inside: |
+              import { ..., $O as marked, ... } from "$M";
+              ...
+          - pattern-not-inside: |
+              marked = $E;
+              ...
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern: "$V($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = require("snarkdown");
+                  ...
+              - pattern-inside: |
+                  import $V from "snarkdown";
+                  ...
+              - pattern-inside: |
+                  import * as $V from "snarkdown";
+                  ...
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "new $S.Converter(...).makeHtml($X, ...)"
+              - pattern: "new $S.Converter(...).makeMd($X, ...)"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$C.makeHtml($X, ...)"
+                      - pattern: "$C.makeMd($X, ...)"
+                  - pattern-inside: |
+                      $C = new $S.Converter(...);
+                      ...
+          - pattern-either:
+              - pattern-inside: |
+                  $S = require("showdown");
+                  ...
+              - pattern-inside: |
+                  import $S from "showdown";
+                  ...
+              - pattern-inside: |
+                  import * as $S from "showdown";
+                  ...
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "new showdown.Converter(...).makeHtml($X, ...)"
+              - pattern: "new showdown.Converter(...).makeMd($X, ...)"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$C.makeHtml($X, ...)"
+                      - pattern: "$C.makeMd($X, ...)"
+                  - pattern-inside: |
+                      $C = new showdown.Converter(...);
+                      ...
+          - pattern-not-inside: |
+              import showdown from "$M";
+              ...
+          - pattern-not-inside: |
+              import * as showdown from "$M";
+              ...
+          - pattern-not-inside: |
+              import { ..., showdown, ... } from "$M";
+              ...
+          - pattern-not-inside: |
+              import { ..., $O as showdown, ... } from "$M";
+              ...
+          - pattern-not-inside: |
+              showdown = $E;
+              ...
+          - pattern-not-inside: |
+              function showdown(...) {...}
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "new $K(...).makeHtml($X, ...)"
+              - pattern: "new $K(...).makeMd($X, ...)"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$C.makeHtml($X, ...)"
+                      - pattern: "$C.makeMd($X, ...)"
+                  - pattern-inside: |
+                      $C = new $K(...);
+                      ...
+          - pattern-either:
+              - pattern-inside: |
+                  import { ..., Converter as $K, ... } from "showdown";
+                  ...
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "new Converter(...).makeHtml($X, ...)"
+              - pattern: "new Converter(...).makeMd($X, ...)"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$C.makeHtml($X, ...)"
+                      - pattern: "$C.makeMd($X, ...)"
+                  - pattern-inside: |
+                      $C = new Converter(...);
+                      ...
+          - pattern-either:
+              - pattern-inside: |
+                  import { ..., Converter, ... } from "showdown";
+                  ...
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "$V.render($ID, $X, ...)"
+              - pattern: "$V.mermaidAPI.render($ID, $X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = require("mermaid");
+                  ...
+              - pattern-inside: |
+                  import $V from "mermaid";
+                  ...
+              - pattern-inside: |
+                  import * as $V from "mermaid";
+                  ...
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "mermaid.render($ID, $X, ...)"
+              - pattern: "mermaid.mermaidAPI.render($ID, $X, ...)"
+          - pattern-not-inside: |
+              import mermaid from "$M";
+              ...
+          - pattern-not-inside: |
+              import * as mermaid from "$M";
+              ...
+          - pattern-not-inside: |
+              import { ..., mermaid, ... } from "$M";
+              ...
+          - pattern-not-inside: |
+              import { ..., $O as mermaid, ... } from "$M";
+              ...
+          - pattern-not-inside: |
+              mermaid = $E;
+              ...
+          - pattern-not-inside: |
+              function mermaid(...) {...}
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "<... $U(...) ...>.processSync($X, ...)"
+              - pattern: "<... $U(...) ...>.process($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $U = require("unified");
+                  ...
+              - pattern-inside: |
+                  import $U from "unified";
+                  ...
+              - pattern-inside: |
+                  $U = require("remark");
+                  ...
+              - pattern-inside: |
+                  import $U from "remark";
+                  ...
+          - pattern-not:
+              patterns:
+                - pattern-either:
+                    - pattern: "<... $Q.use($S, ...) ...>.processSync($X, ...)"
+                    - pattern: "<... $Q.use($S, ...) ...>.process($X, ...)"
+                - pattern-either:
+                    - pattern-inside: |
+                        import $S from "$MOD";
+                        ...
+                    - pattern-inside: |
+                        import { ..., $S, ... } from "$MOD";
+                        ...
+                    - pattern-inside: |
+                        $S = require("$MOD");
+                        ...
+                - metavariable-regex:
+                    metavariable: "$MOD"
+                    regex: ".*sanitize"
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "$V.render($X, ...)"
+              - pattern: "$V.renderInline($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = require("markdown-it")({..., html: true, ...});
+                  ...
+              - pattern-inside: |
+                  $V = require("markdown-it")({..., html: true, ...}).$M(...);
+                  ...
+              - pattern-inside: |
+                  $V = require("markdown-it").Markdown({..., html: true, ...});
+                  ...
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: "$V.render($X, ...)"
+              - pattern: "$V.renderInline($X, ...)"
+          - pattern-either:
+              - pattern-inside: |
+                  $V = new $K({..., html: true, ...});
+                  ...
+              - pattern-inside: |
+                  $V = $K({..., html: true, ...});
+                  ...
+              - pattern-inside: |
+                  $V = new $K({..., html: true, ...}).$M(...);
+                  ...
+              - pattern-inside: |
+                  $V = $K({..., html: true, ...}).$M(...);
+                  ...
+          - pattern-either:
+              - pattern-inside: |
+                  $K = require("markdown-it");
+                  ...
+              - pattern-inside: |
+                  import $K from "markdown-it";
+                  ...
+              - pattern-inside: |
+                  import * as $K from "markdown-it";
+                  ...
+      - label: MD
+        requires: INPUT
+        patterns:
+          - pattern-either:
+              - pattern: 'require("markdown-it")({..., html: true, ...}).render($X, ...)'
+              - pattern: 'require("markdown-it")({..., html: true, ...}).renderInline($X, ...)'
+    pattern-propagators:
+      - pattern: "$V.render($ID, $X, function ($SVG) {...})"
+        from: "$X"
+        to: "$SVG"
+        label: MD
+        requires: INPUT
+      - pattern: "$V.render($ID, $X, ($SVG) => {...})"
+        from: "$X"
+        to: "$SVG"
+        label: MD
+        requires: INPUT
+      - pattern: "$V.mermaidAPI.render($ID, $X, function ($SVG) {...})"
+        from: "$X"
+        to: "$SVG"
+        label: MD
+        requires: INPUT
+      - pattern: "$R.appendChild($X)"
+        from: "$X"
+        to: "$R"
+      - pattern: "$R.insertBefore($X, ...)"
+        from: "$X"
+        to: "$R"
+      - pattern: "$R.replaceChild($X, ...)"
+        from: "$X"
+        to: "$R"
+      - pattern: "$R.append(..., $X, ...)"
+        from: "$X"
+        to: "$R"
+      - pattern: "$R.prepend(..., $X, ...)"
+        from: "$X"
+        to: "$R"
+      - pattern: "$R.replaceWith(..., $X, ...)"
+        from: "$X"
+        to: "$R"
+      - pattern: "$R.replaceChildren(..., $X, ...)"
+        from: "$X"
+        to: "$R"
+      - pattern: "$R.insertAdjacentElement($P, $X)"
+        from: "$X"
+        to: "$R"
     pattern-sinks:
-      - patterns:
-          - pattern: "$E.innerHTML = $X"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$E.outerHTML = $X"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$E.innerHTML += $X"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$E.outerHTML += $X"
-          - focus-metavariable: "$X"
-      - patterns:
+      - requires: HTML or MD
+        patterns:
           - pattern-either:
-              - pattern: "document.write(..., $X, ...)"
-              - pattern: "document.writeln(..., $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "$W.document.write(..., $X, ...)"
-              - pattern: "$W.document.writeln(..., $X, ...)"
-          - metavariable-regex:
-              metavariable: "$W"
-              regex: "^(?:window|self|top|parent|globalThis)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$E.insertAdjacentHTML($P, $X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "<... $D(...) ...>.$M(..., $X, ...)"
               - patterns:
-                  - pattern: "$J.$M(..., $X, ...)"
+                  - pattern: "$E.innerHTML = $X"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$E.outerHTML = $X"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$E.innerHTML += $X"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$E.outerHTML += $X"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "document.write(..., $X, ...)"
+                      - pattern: "document.writeln(..., $X, ...)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$W.document.write(..., $X, ...)"
+                      - pattern: "$W.document.writeln(..., $X, ...)"
+                  - metavariable-regex:
+                      metavariable: "$W"
+                      regex: "^(?:window|self|top|parent|globalThis)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$E.insertAdjacentHTML($P, $X, ...)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $D(...) ...>.$M(..., $X, ...)"
+                      - patterns:
+                          - pattern: "$J.$M(..., $X, ...)"
+                          - pattern-inside: |
+                              $J = $D(...);
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "<... $J.$T(...) ...>.$M(..., $X, ...)"
                   - pattern-inside: |
                       $J = $D(...);
                       ...
-          - metavariable-regex:
-              metavariable: "$D"
-              regex: "^(?:\\$|jQuery|cash)$"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "<... $D(...) ...>.$M((...) => $X)"
-              - pattern: "<... $D(...) ...>.$M(function (...) { ... return $X; })"
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$T"
+                      regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
               - patterns:
                   - pattern-either:
-                      - pattern: "$J.$M((...) => $X)"
-                      - pattern: "$J.$M(function (...) { ... return $X; })"
+                      - pattern: "<... $D(...) ...>[$K](..., $X, ...)"
+                      - patterns:
+                          - pattern: "$J[$K](..., $X, ...)"
+                          - pattern-inside: |
+                              $J = $D(...);
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$K"
+                      regex: '(?s).*["''](?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)["''].*'
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $D(...) ...>.$M((...) => $X)"
+                      - pattern: "<... $D(...) ...>.$M(function (...) { ... return $X; })"
+                      - patterns:
+                          - pattern-either:
+                              - pattern: "$J.$M((...) => $X)"
+                              - pattern: "$J.$M(function (...) { ... return $X; })"
+                          - pattern-inside: |
+                              $J = $D(...);
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $J.$T(...) ...>.$M((...) => $X)"
+                      - pattern: "<... $J.$T(...) ...>.$M(function (...) { ... return $X; })"
                   - pattern-inside: |
                       $J = $D(...);
                       ...
-          - metavariable-regex:
-              metavariable: "$D"
-              regex: "^(?:\\$|jQuery|cash)$"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "<... angular.element(...) ...>.$M(..., $X, ...)"
-              - pattern: "<... angular.element(...) ...>.$M((...) => $X)"
-              - pattern: "<... angular.element(...) ...>.$M(function (...) { ... return $X; })"
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$T"
+                      regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
               - patterns:
                   - pattern-either:
-                      - pattern: "$J.$M(..., $X, ...)"
-                      - pattern: "$J.$M((...) => $X)"
-                      - pattern: "$J.$M(function (...) { ... return $X; })"
-                  - pattern-inside: |
-                      $J = angular.element(...);
+                      - pattern: "<... angular.element(...) ...>.$M(..., $X, ...)"
+                      - pattern: "<... angular.element(...) ...>.$M((...) => $X)"
+                      - pattern: "<... angular.element(...) ...>.$M(function (...) { ... return $X; })"
+                      - patterns:
+                          - pattern-either:
+                              - pattern: "$J.$M(..., $X, ...)"
+                              - pattern: "$J.$M((...) => $X)"
+                              - pattern: "$J.$M(function (...) { ... return $X; })"
+                          - pattern-inside: |
+                              $J = angular.element(...);
+                              ...
+                      - patterns:
+                          - pattern-either:
+                              - pattern: "$EL.$M(..., $X, ...)"
+                              - pattern: "$EL.$M((...) => $X)"
+                              - pattern: "$EL.$M(function (...) { ... return $X; })"
+                          - pattern-inside: "{..., link: function ($SCOPE, $EL, ...) {...}, ...}"
+                          - pattern-inside: "$APP.directive(...)"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... d3.$R(...) ...>.html($X)"
+                      - pattern: "<... d3.$R(...) ...>.html((...) => $X)"
+                      - pattern: "<... d3.$R(...) ...>.html(function (...) { ... return $X; })"
+                      - patterns:
+                          - pattern-either:
+                              - pattern: "$J.html($X)"
+                              - pattern: "$J.html((...) => $X)"
+                              - pattern: "$J.html(function (...) { ... return $X; })"
+                          - pattern-inside: |
+                              $J = <... d3.$R(...) ...>;
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$R"
+                      regex: "^(?:select|selectAll|selection)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$($X)"
+                  - pattern-not-inside: |
+                      $ = (...) => ...;
                       ...
-              - patterns:
-                  - pattern-either:
-                      - pattern: "$EL.$M(..., $X, ...)"
-                      - pattern: "$EL.$M((...) => $X)"
-                      - pattern: "$EL.$M(function (...) { ... return $X; })"
-                  - pattern-inside: "{..., link: function ($SCOPE, $EL, ...) {...}, ...}"
-                  - pattern-inside: "$APP.directive(...)"
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "<... d3.$R(...) ...>.html($X)"
-              - pattern: "<... d3.$R(...) ...>.html((...) => $X)"
-              - pattern: "<... d3.$R(...) ...>.html(function (...) { ... return $X; })"
-              - patterns:
-                  - pattern-either:
-                      - pattern: "$J.html($X)"
-                      - pattern: "$J.html((...) => $X)"
-                      - pattern: "$J.html(function (...) { ... return $X; })"
-                  - pattern-inside: |
-                      $J = <... d3.$R(...) ...>;
+                  - pattern-not-inside: |
+                      $ = function (...) {...};
                       ...
-          - metavariable-regex:
-              metavariable: "$R"
-              regex: "^(?:select|selectAll|selection)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "jQuery($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "cash($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$R.createContextualFragment($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "$SCE.trustAsHtml($X)"
-              - pattern: "$SCE.trustAsCss($X)"
-          - metavariable-regex:
-              metavariable: "$SCE"
-              regex: "^\\$sce$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$SCE.trustAs($KIND, $X)"
-          - metavariable-regex:
-              metavariable: "$SCE"
-              regex: "^\\$sce$"
-          - metavariable-regex:
-              metavariable: "$KIND"
-              regex: "^\\$sce\\.(?:HTML|CSS)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "angular.element($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "<$C dangerouslySetInnerHTML={{__html: $X}} />"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "{__html: $X}"
-          - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$P.parseFromString($X, ...)"
-          - pattern-inside: |
-              $P = new DOMParser();
-              ...
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "new Handlebars.SafeString($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "$D.jGrowl($X, ...)"
-              - pattern: "<... $D(...) ...>.jGrowl($X, ...)"
+                  - pattern-not-inside: |
+                      ...
+                      function $(...) {...}
+                      ...
+                  - focus-metavariable: "$X"
               - patterns:
-                  - pattern: "$J.jGrowl($X, ...)"
+                  - pattern: "jQuery($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "cash($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$R.createContextualFragment($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$SCE.trustAsHtml($X)"
+                      - pattern: "$SCE.trustAsCss($X)"
+                  - metavariable-regex:
+                      metavariable: "$SCE"
+                      regex: "^\\$sce$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$SCE.trustAs($KIND, $X)"
+                  - metavariable-regex:
+                      metavariable: "$SCE"
+                      regex: "^\\$sce$"
+                  - metavariable-regex:
+                      metavariable: "$KIND"
+                      regex: "^\\$sce\\.(?:HTML|CSS)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "angular.element($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "<$C dangerouslySetInnerHTML={{__html: $X}} />"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "{__html: $X}"
+                  - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$P.parseFromString($X, ...)"
+                  - pattern-inside: |
+                      $P = new DOMParser();
+                      ...
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "new Handlebars.SafeString($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$D.jGrowl($X, ...)"
+                      - pattern: "<... $D(...) ...>.jGrowl($X, ...)"
+                      - patterns:
+                          - pattern: "$J.jGrowl($X, ...)"
+                          - pattern-inside: |
+                              $J = $D(...);
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "new Element($TAG, {..., html: $X, ...})"
+                      - pattern: 'new Element($TAG, {..., "html": $X, ...})'
+                      - pattern: "new Element(...).set('html', $X)"
+                      - pattern: 'new Element(...).set({..., "html": $X, ...})'
+                      - pattern: "new Element(...).setProperty('html', $X)"
+                      - pattern: 'new Element(...).setProperties({..., "html": $X, ...})'
+                      - pattern: "new Element(...).appendHtml($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "React.createElement($T, {..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+                      - pattern: "React.createFactory($T)({..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$W.setInnerHTMLUnsafe($EL, $X)"
+                      - pattern: "$W.setOuterHTMLUnsafe($EL, $X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: 'new JSDOM($X, {..., runScripts: "dangerously", ...})'
+                  - pattern-either:
+                      - pattern-inside: |
+                          import { JSDOM } from "jsdom";
+                          ...
+                      - pattern-inside: |
+                          const { JSDOM } = require("jsdom");
+                          ...
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$T.sendMail({..., html: $X, ...})"
+                  - pattern-inside: |
+                      $T = $NM.createTransport(...);
+                      ...
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "return $X;"
+                  - pattern-inside: "$J.typeahead(..., {..., templates: {..., suggestion: function (...) {...}, ...}, ...})"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<WebView ... html={$X} ... />"
+                      - pattern: "<WebView ... source={{..., html: $X, ...}} ... />"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: '<$EL ... data-tip={$X} ... data-html="true" ... />'
+                      - pattern: "<$EL ... data-tip={$X} ... data-html={true} ... />"
+                      - pattern: '<$EL ... data-html="true" ... data-tip={$X} ... />'
+                      - pattern: "<$EL ... data-html={true} ... data-tip={$X} ... />"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$E.appendChild($X)"
+                      - pattern: "$E.insertBefore($X, ...)"
+                      - pattern: "$E.insertAdjacentElement($P, $X)"
+                  - pattern-not-inside:
+                      pattern-either:
+                        - pattern: |
+                            $X = document.createElement(...);
+                            ...
+                        - pattern: |
+                            $X = document.createElementNS(...);
+                            ...
+                        - pattern: |
+                            $X = document.createDocumentFragment();
+                            ...
+                  - focus-metavariable: "$X"
+      - requires: XML
+        patterns:
+          - pattern-either:
+              - patterns:
+                  - pattern: "$E.innerHTML = $X"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$E.outerHTML = $X"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$E.innerHTML += $X"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$E.outerHTML += $X"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "document.write(..., $X, ...)"
+                      - pattern: "document.writeln(..., $X, ...)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$W.document.write(..., $X, ...)"
+                      - pattern: "$W.document.writeln(..., $X, ...)"
+                  - metavariable-regex:
+                      metavariable: "$W"
+                      regex: "^(?:window|self|top|parent|globalThis)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$E.insertAdjacentHTML($P, $X, ...)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $D(...) ...>.$M(..., $X, ...)"
+                      - patterns:
+                          - pattern: "$J.$M(..., $X, ...)"
+                          - pattern-inside: |
+                              $J = $D(...);
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "<... $J.$T(...) ...>.$M(..., $X, ...)"
                   - pattern-inside: |
                       $J = $D(...);
                       ...
-          - metavariable-regex:
-              metavariable: "$D"
-              regex: "^(?:\\$|jQuery|cash)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "new Element($TAG, {..., html: $X, ...})"
-              - pattern: 'new Element($TAG, {..., "html": $X, ...})'
-              - pattern: "new Element(...).set('html', $X)"
-              - pattern: 'new Element(...).set({..., "html": $X, ...})'
-              - pattern: "new Element(...).setProperty('html', $X)"
-              - pattern: 'new Element(...).setProperties({..., "html": $X, ...})'
-              - pattern: "new Element(...).appendHtml($X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "React.createElement($T, {..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
-              - pattern: "React.createFactory($T)({..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "$W.setInnerHTMLUnsafe($EL, $X)"
-              - pattern: "$W.setOuterHTMLUnsafe($EL, $X)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: 'new JSDOM($X, {..., runScripts: "dangerously", ...})'
-          - pattern-either:
-              - pattern-inside: |
-                  import { JSDOM } from "jsdom";
-                  ...
-              - pattern-inside: |
-                  const { JSDOM } = require("jsdom");
-                  ...
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$T.sendMail({..., html: $X, ...})"
-          - pattern-inside: |
-              $T = $NM.createTransport(...);
-              ...
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "return $X;"
-          - pattern-inside: "$J.typeahead(..., {..., templates: {..., suggestion: function (...) {...}, ...}, ...})"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "<WebView ... html={$X} ... />"
-              - pattern: "<WebView ... source={{..., html: $X, ...}} ... />"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: '<$EL ... data-tip={$X} ... data-html="true" ... />'
-              - pattern: "<$EL ... data-tip={$X} ... data-html={true} ... />"
-              - pattern: '<$EL ... data-html="true" ... data-tip={$X} ... />'
-              - pattern: "<$EL ... data-html={true} ... data-tip={$X} ... />"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: '$DOM.parseFromString($X, "text/xml")'
-              - pattern: '$DOM.parseFromString($X, "text/html")'
-              - pattern: "$MD.render($X)"
-          - focus-metavariable: "$X"
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$T"
+                      regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $D(...) ...>[$K](..., $X, ...)"
+                      - patterns:
+                          - pattern: "$J[$K](..., $X, ...)"
+                          - pattern-inside: |
+                              $J = $D(...);
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$K"
+                      regex: '(?s).*["''](?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)["''].*'
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $D(...) ...>.$M((...) => $X)"
+                      - pattern: "<... $D(...) ...>.$M(function (...) { ... return $X; })"
+                      - patterns:
+                          - pattern-either:
+                              - pattern: "$J.$M((...) => $X)"
+                              - pattern: "$J.$M(function (...) { ... return $X; })"
+                          - pattern-inside: |
+                              $J = $D(...);
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $J.$T(...) ...>.$M((...) => $X)"
+                      - pattern: "<... $J.$T(...) ...>.$M(function (...) { ... return $X; })"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - metavariable-regex:
+                      metavariable: "$T"
+                      regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... angular.element(...) ...>.$M(..., $X, ...)"
+                      - pattern: "<... angular.element(...) ...>.$M((...) => $X)"
+                      - pattern: "<... angular.element(...) ...>.$M(function (...) { ... return $X; })"
+                      - patterns:
+                          - pattern-either:
+                              - pattern: "$J.$M(..., $X, ...)"
+                              - pattern: "$J.$M((...) => $X)"
+                              - pattern: "$J.$M(function (...) { ... return $X; })"
+                          - pattern-inside: |
+                              $J = angular.element(...);
+                              ...
+                      - patterns:
+                          - pattern-either:
+                              - pattern: "$EL.$M(..., $X, ...)"
+                              - pattern: "$EL.$M((...) => $X)"
+                              - pattern: "$EL.$M(function (...) { ... return $X; })"
+                          - pattern-inside: "{..., link: function ($SCOPE, $EL, ...) {...}, ...}"
+                          - pattern-inside: "$APP.directive(...)"
+                  - metavariable-regex:
+                      metavariable: "$M"
+                      regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... d3.$R(...) ...>.html($X)"
+                      - pattern: "<... d3.$R(...) ...>.html((...) => $X)"
+                      - pattern: "<... d3.$R(...) ...>.html(function (...) { ... return $X; })"
+                      - patterns:
+                          - pattern-either:
+                              - pattern: "$J.html($X)"
+                              - pattern: "$J.html((...) => $X)"
+                              - pattern: "$J.html(function (...) { ... return $X; })"
+                          - pattern-inside: |
+                              $J = <... d3.$R(...) ...>;
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$R"
+                      regex: "^(?:select|selectAll|selection)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$($X)"
+                  - pattern-not-inside: |
+                      $ = (...) => ...;
+                      ...
+                  - pattern-not-inside: |
+                      $ = function (...) {...};
+                      ...
+                  - pattern-not-inside: |
+                      ...
+                      function $(...) {...}
+                      ...
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "jQuery($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "cash($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$R.createContextualFragment($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$SCE.trustAsHtml($X)"
+                      - pattern: "$SCE.trustAsCss($X)"
+                  - metavariable-regex:
+                      metavariable: "$SCE"
+                      regex: "^\\$sce$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$SCE.trustAs($KIND, $X)"
+                  - metavariable-regex:
+                      metavariable: "$SCE"
+                      regex: "^\\$sce$"
+                  - metavariable-regex:
+                      metavariable: "$KIND"
+                      regex: "^\\$sce\\.(?:HTML|CSS)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "angular.element($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "<$C dangerouslySetInnerHTML={{__html: $X}} />"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "{__html: $X}"
+                  - pattern-inside: "<$C dangerouslySetInnerHTML={...} />"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$P.parseFromString($X, ...)"
+                  - pattern-inside: |
+                      $P = new DOMParser();
+                      ...
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "new Handlebars.SafeString($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$D.jGrowl($X, ...)"
+                      - pattern: "<... $D(...) ...>.jGrowl($X, ...)"
+                      - patterns:
+                          - pattern: "$J.jGrowl($X, ...)"
+                          - pattern-inside: |
+                              $J = $D(...);
+                              ...
+                  - metavariable-regex:
+                      metavariable: "$D"
+                      regex: "^(?:\\$|jQuery|cash)$"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "new Element($TAG, {..., html: $X, ...})"
+                      - pattern: 'new Element($TAG, {..., "html": $X, ...})'
+                      - pattern: "new Element(...).set('html', $X)"
+                      - pattern: 'new Element(...).set({..., "html": $X, ...})'
+                      - pattern: "new Element(...).setProperty('html', $X)"
+                      - pattern: 'new Element(...).setProperties({..., "html": $X, ...})'
+                      - pattern: "new Element(...).appendHtml($X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "React.createElement($T, {..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+                      - pattern: "React.createFactory($T)({..., dangerouslySetInnerHTML: {..., __html: $X, ...}, ...})"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$W.setInnerHTMLUnsafe($EL, $X)"
+                      - pattern: "$W.setOuterHTMLUnsafe($EL, $X)"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: 'new JSDOM($X, {..., runScripts: "dangerously", ...})'
+                  - pattern-either:
+                      - pattern-inside: |
+                          import { JSDOM } from "jsdom";
+                          ...
+                      - pattern-inside: |
+                          const { JSDOM } = require("jsdom");
+                          ...
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "$T.sendMail({..., html: $X, ...})"
+                  - pattern-inside: |
+                      $T = $NM.createTransport(...);
+                      ...
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern: "return $X;"
+                  - pattern-inside: "$J.typeahead(..., {..., templates: {..., suggestion: function (...) {...}, ...}, ...})"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<WebView ... html={$X} ... />"
+                      - pattern: "<WebView ... source={{..., html: $X, ...}} ... />"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: '<$EL ... data-tip={$X} ... data-html="true" ... />'
+                      - pattern: "<$EL ... data-tip={$X} ... data-html={true} ... />"
+                      - pattern: '<$EL ... data-html="true" ... data-tip={$X} ... />'
+                      - pattern: "<$EL ... data-html={true} ... data-tip={$X} ... />"
+                  - focus-metavariable: "$X"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$E.appendChild($X)"
+                      - pattern: "$E.insertBefore($X, ...)"
+                      - pattern: "$E.insertAdjacentElement($P, $X)"
+                  - pattern-not-inside:
+                      pattern-either:
+                        - pattern: |
+                            $X = document.createElement(...);
+                            ...
+                        - pattern: |
+                            $X = document.createElementNS(...);
+                            ...
+                        - pattern: |
+                            $X = document.createDocumentFragment();
+                            ...
+                  - focus-metavariable: "$X"
+          - pattern-not-inside:
+              patterns:
+                - pattern: "$D.parseFromString($Q, ...)"
+                - focus-metavariable: "$Q"
     pattern-sanitizers:
       - patterns:
           - pattern: "$F(...)"
@@ -761,26 +1792,66 @@ rules:
       - pattern: "JSON.stringify($X)"
       - pattern: "+$X"
       - pattern: "typeof $X"
+      - pattern: this
+      - patterns:
+          - pattern: "$O.$P"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "(?i).*(html|template).*"
       - patterns:
           - pattern: '"$P" + $X'
+          - pattern-inside: "$D(...)"
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery)$"
           - metavariable-regex:
               metavariable: "$P"
               regex: "^(?!\\s*<).+"
-      - pattern: "DOMPurify.sanitize($X, ...)"
+      - patterns:
+          - pattern: '"$P" + $X'
+          - pattern-inside: |
+              $V = "$P" + $X;
+              ...
+              $D($V);
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery)$"
+          - metavariable-regex:
+              metavariable: "$P"
+              regex: "^(?!\\s*<).+"
       - pattern: "document.createTextNode($X)"
       - pattern: '$X.replace(/[<>&"'']/g, ...)'
       - patterns:
           - pattern: "$X"
-          - pattern-inside: "if ($X.jquery) {...}"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: |
+                        if (typeof $X === "$T") { $...BODY }
+                    - pattern: |
+                        if (typeof $X == "$T") { $...BODY }
+                    - pattern: |
+                        if (typeof $X !== "$T") {...} else { $...BODY }
+                    - pattern: |
+                        if (typeof $X != "$T") {...} else { $...BODY }
+                - metavariable-regex:
+                    metavariable: "$T"
+                    regex: "^(?!string$)"
+                - focus-metavariable: "$...BODY"
       - patterns:
           - pattern: "$X"
-          - pattern-inside: "if (typeof $X === 'object') {...}"
-      - patterns:
-          - pattern: "$X"
-          - pattern-inside: "if (typeof $X !== 'string') {...}"
-      - patterns:
-          - pattern: "$X"
-          - pattern-inside: "if (isElement($X)) {...}"
+          - pattern-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: |
+                        if (typeof $X === "string") {...} else { $...BODY }
+                    - pattern: |
+                        if (typeof $X == "string") {...} else { $...BODY }
+                    - pattern: |
+                        if (typeof $X !== "string") { $...BODY }
+                    - pattern: |
+                        if (typeof $X != "string") { $...BODY }
+                - focus-metavariable: "$...BODY"
       - patterns:
           - pattern-either:
               - pattern: "$X.replace(/$RE/g, ...)"
@@ -810,33 +1881,5 @@ rules:
               regex: '^(?:["''][^"'']*g[^"'']*["'']|[^"''].*)$'
       - pattern: "$X.charCodeAt(...)"
       - pattern: "$X.indexOf(...)"
-      - pattern: "$X.search(...)"
-      - patterns:
-          - pattern: "$E.data"
-          - pattern-inside: "if ($E.origin === $O) {...}"
-      - patterns:
-          - pattern: "$E.data"
-          - pattern-inside: "if ($E.origin == $O) {...}"
-      - patterns:
-          - pattern: "$E.data"
-          - pattern-inside: "if ($E.origin !== $O) { return; } ..."
-      - patterns:
-          - pattern: "$E.data"
-          - pattern-inside: "if ($E.origin != $O) { return; } ..."
-      - patterns:
-          - pattern: "$E.data"
-          - pattern-inside: "if (!$E.origin.startsWith($O)) { return; } ..."
-      - patterns:
-          - pattern: "$E.data"
-          - pattern-inside: "if ($O.includes($E.origin)) {...}"
-      - patterns:
-          - pattern: "$S($X)"
-          - pattern-either:
-              - pattern-inside: |
-                  $S = require("striptags");
-                  ...
-              - pattern-inside: |
-                  import $S from "striptags";
-                  ...
     options:
       interfile: true

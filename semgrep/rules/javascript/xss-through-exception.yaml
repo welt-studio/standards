@@ -62,6 +62,36 @@ rules:
               regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
           - focus-metavariable: "$X"
       - patterns:
+          - pattern: "<... $J.$T(...) ...>.$M(..., $X, ...)"
+          - pattern-inside: |
+              $J = $D(...);
+              ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<... $D(...) ...>[$K](..., $X, ...)"
+              - patterns:
+                  - pattern: "$J[$K](..., $X, ...)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$K"
+              regex: '(?s).*["''](?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)["''].*'
+          - focus-metavariable: "$X"
+      - patterns:
           - pattern-either:
               - pattern: "<... $D(...) ...>.$M((...) => $X)"
               - pattern: "<... $D(...) ...>.$M(function (...) { ... return $X; })"
@@ -75,6 +105,23 @@ rules:
           - metavariable-regex:
               metavariable: "$D"
               regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<... $J.$T(...) ...>.$M((...) => $X)"
+              - pattern: "<... $J.$T(...) ...>.$M(function (...) { ... return $X; })"
+          - pattern-inside: |
+              $J = $D(...);
+              ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
           - metavariable-regex:
               metavariable: "$M"
               regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
@@ -122,6 +169,16 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$($X)"
+          - pattern-not-inside: |
+              $ = (...) => ...;
+              ...
+          - pattern-not-inside: |
+              $ = function (...) {...};
+              ...
+          - pattern-not-inside: |
+              ...
+              function $(...) {...}
+              ...
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "jQuery($X)"

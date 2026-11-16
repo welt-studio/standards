@@ -1,0 +1,1 @@
+"^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"

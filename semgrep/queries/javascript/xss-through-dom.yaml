@@ -10,51 +10,341 @@ rules:
       cwe: "CWE-079: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
       codeql: js/xss-through-dom
     mode: taint
+    # O par fonte e sumidouro que o CodeQL ignora (`isIgnoredSourceSinkPair`): o `src` lido do DOM
+    # não vale para um sumidouro de endereço (`WriteUrlSink`). O rótulo SRC marca a fonte `src`, e o
+    # sumidouro de endereço só aceita o rótulo TEXT.
     pattern-sources:
-      - patterns:
-          - pattern: "$E.value"
-      - patterns:
-          - pattern: "$E.textContent"
-      - patterns:
-          - pattern: "$E.innerText"
-      - patterns:
-          - pattern: "$E.getAttribute(...)"
-      - patterns:
-          - pattern: "$E.val()"
-      - patterns:
-          - pattern: "$E.text()"
-      - patterns:
-          - pattern: "$E.attr($A)"
-          - pattern-not: "$E.attr($A, $B)"
-      - patterns:
-          - pattern: "$E.dataset.$K"
-      - patterns:
-          - pattern: "$E.data($A)"
-      - patterns:
-          - pattern: "$E.prop('value')"
-      - patterns:
-          - pattern: "$E.prop($A)"
-      - patterns:
-          - pattern: "$E.files[0].name"
-      - patterns:
-          - pattern: "$E.elements.$K.value"
-      - patterns:
-          - pattern: "$E.target.value"
-      - patterns:
-          - pattern: "$V.$K"
-          - pattern-inside: "{..., validate: ($V) => {...}, ...}"
-      - patterns:
-          - pattern: "$V.$K"
-          - pattern-inside: "{..., onSubmit: ($V, ...) => {...}, ...}"
-      - patterns:
-          - pattern: "$V.$K"
-          - pattern-inside: "{..., handleSubmit: ($V, ...) => {...}, ...}"
-      - patterns:
-          - pattern: "$V.$K"
-          - pattern-inside: "{..., validate: $V => {...}, ...}"
+      # Propriedade lida de um nó do DOM (`DomTextSource`, `unsafeDomPropertyName`). A escrita
+      # (`el.textContent = ...`, `el.value += ...`) não é leitura: a leitura dentro de uma atribuição
+      # a uma dessas propriedades fica de fora (essa atribuição não é sumidouro de nada).
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "$E.value"
+              - pattern: "$E.textContent"
+              - pattern: "$E.innerText"
+              # `name` é nome de campo em qualquer objeto: só vale num nó do DOM que o arquivo mostra
+              # (de `document.*`, direto ou por variável, ou o alvo de um evento).
+              - patterns:
+                  - pattern: "$E.name"
+                  - pattern-either:
+                      - pattern: "document.$M(...).name"
+                      - pattern: "$EV.target.name"
+                      - pattern: "$EV.currentTarget.name"
+                      - patterns:
+                          - pattern: "$N.name"
+                          - pattern-inside: |
+                              $N = document.$M(...);
+                              ...
+          - pattern-not-inside: |
+              $L.value = ...
+          - pattern-not-inside: |
+              $L.textContent = ...
+          - pattern-not-inside: |
+              $L.innerText = ...
+          - pattern-not-inside: |
+              $L.name = ...
+          - pattern-not-inside: |
+              $L.value += ...
+          - pattern-not-inside: |
+              $L.textContent += ...
+          - pattern-not-inside: |
+              $L.innerText += ...
+          - pattern-not-inside: |
+              $L.name += ...
+      - label: SRC
+        patterns:
+          - pattern: "$E.src"
+          - pattern-not-inside: |
+              $L.src = ...
+          - pattern-not-inside: |
+              $L.src += ...
+      # `getAttribute("data-...")` e os outros nomes do CodeQL (`unsafeAttributeName`), com o nome
+      # literal.
+      - label: TEXT
+        patterns:
+          - pattern: "$E.getAttribute($A)"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: '^["''](?:data-.*|aria-.*|name|value|title|alt)["'']$'
+      # jQuery: `.text()` e `.val()` sem argumento, `.attr("nome")` e `.prop("propriedade")` com o
+      # nome literal do CodeQL. O receptor é um objeto jQuery (`$(...)`, a variável dele ou o
+      # resultado de `find`/`filter`...): o `.text()` de uma `Response` do `fetch` não é do DOM.
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "<... $D(...) ...>.val()"
+              - pattern: "<... $D(...) ...>.text()"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$J.val()"
+                      - pattern: "$J.text()"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $J.$T(...) ...>.val()"
+                      - pattern: "<... $J.$T(...) ...>.text()"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$T"
+                      regex:
+                        "$text": javascript/jquery-chain-method-regex
+          - metavariable-regex:
+              metavariable: "$D"
+              regex:
+                "$text": javascript/jquery-dollar-name-regex
+          # `$("<p>" + ...).text()`: o receptor é HTML montado (`benignJQueryMethod`), não leitura do DOM.
+          - pattern-not:
+              patterns:
+                - pattern: '$D("$H" + ...).$M2(...)'
+                - metavariable-regex:
+                    metavariable: "$H"
+                    regex: "^\\s*<"
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "<... $D(...) ...>.attr($A)"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$J.attr($A)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $J.$T(...) ...>.attr($A)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$T"
+                      regex:
+                        "$text": javascript/jquery-chain-method-regex
+          - metavariable-regex:
+              metavariable: "$D"
+              regex:
+                "$text": javascript/jquery-dollar-name-regex
+          # `$("<p>" + ...).text()`: o receptor é HTML montado (`benignJQueryMethod`), não leitura do DOM.
+          - pattern-not:
+              patterns:
+                - pattern: '$D("$H" + ...).$M2(...)'
+                - metavariable-regex:
+                    metavariable: "$H"
+                    regex: "^\\s*<"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: '^["''](?:data-.*|aria-.*|name|value|title|alt)["'']$'
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "<... $D(...) ...>.prop($A)"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$J.prop($A)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $J.$T(...) ...>.prop($A)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$T"
+                      regex:
+                        "$text": javascript/jquery-chain-method-regex
+          - metavariable-regex:
+              metavariable: "$D"
+              regex:
+                "$text": javascript/jquery-dollar-name-regex
+          # `$("<p>" + ...).text()`: o receptor é HTML montado (`benignJQueryMethod`), não leitura do DOM.
+          - pattern-not:
+              patterns:
+                - pattern: '$D("$H" + ...).$M2(...)'
+                - metavariable-regex:
+                    metavariable: "$H"
+                    regex: "^\\s*<"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: '^["''](?:innerText|textContent|value|name)["'']$'
+      - label: SRC
+        patterns:
+          - pattern-either:
+              - pattern: "<... $D(...) ...>.prop($A)"
+              - patterns:
+                  - pattern-either:
+                      - pattern: "$J.prop($A)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+              - patterns:
+                  - pattern-either:
+                      - pattern: "<... $J.$T(...) ...>.prop($A)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+                  - metavariable-regex:
+                      metavariable: "$T"
+                      regex:
+                        "$text": javascript/jquery-chain-method-regex
+          - metavariable-regex:
+              metavariable: "$D"
+              regex:
+                "$text": javascript/jquery-dollar-name-regex
+          # `$("<p>" + ...).text()`: o receptor é HTML montado (`benignJQueryMethod`), não leitura do DOM.
+          - pattern-not:
+              patterns:
+                - pattern: '$D("$H" + ...).$M2(...)'
+                - metavariable-regex:
+                    metavariable: "$H"
+                    regex: "^\\s*<"
+          - metavariable-regex:
+              metavariable: "$A"
+              regex: '^["'']src["'']$'
+      # Outras leituras do DOM que o formulário e o arquivo escolhido (`FilesSource`) expõem.
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "$E.files"
+              - pattern: "$E.elements.$K.value"
+              - pattern: "$E.target.value"
+          - pattern-not:
+              patterns:
+                - pattern-either:
+                    - pattern: "$L = $Y"
+                    - pattern: "$L += $Y"
+                - focus-metavariable: "$L"
+      # O texto selecionado na página (`SelectionSource`): `getSelection().toString()`, também pela
+      # variável.
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "getSelection().toString()"
+              - pattern: "document.getSelection().toString()"
+              - patterns:
+                  - pattern: "$S.toString()"
+                  - pattern-either:
+                      - pattern-inside: |
+                          $S = getSelection();
+                          ...
+                      - pattern-inside: |
+                          $S = document.getSelection();
+                          ...
+      # Formik (`Formik.Forms`, XssThroughDomCustomizations.qll): os valores do formulário em
+      # `<Formik validate onSubmit>`, `withFormik({validate, handleSubmit})` e
+      # `useFormikContext().values`; e `<Form onSubmit>` do `react-final-form`.
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "<Formik ... validate={($V, ...) => ...} ... />"
+              - pattern: "<Formik ... validate={function ($V, ...) {...}} ... />"
+              - pattern: "<Formik ... onSubmit={($V, ...) => ...} ... />"
+              - pattern: "<Formik ... onSubmit={function ($V, ...) {...}} ... />"
+              - pattern: "withFormik({..., validate: ($V, ...) => ..., ...})"
+              - pattern: "withFormik({..., validate: function ($V, ...) {...}, ...})"
+              - pattern: "withFormik({..., handleSubmit: ($V, ...) => ..., ...})"
+              - pattern: "withFormik({..., handleSubmit: function ($V, ...) {...}, ...})"
+          - pattern-either:
+              - pattern-inside: |
+                  import { ..., Formik, ... } from "formik";
+                  ...
+              - pattern-inside: |
+                  import { ..., withFormik, ... } from "formik";
+                  ...
+          - focus-metavariable: "$V"
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "<Form ... onSubmit={($V, ...) => ...} ... />"
+              - pattern: "<Form ... onSubmit={function ($V, ...) {...}} ... />"
+          - pattern-inside: |
+              import { ..., Form, ... } from "react-final-form";
+              ...
+          - focus-metavariable: "$V"
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "useFormikContext().values"
+              - patterns:
+                  - pattern: "const {..., $V, ...} = useFormikContext();"
+                  - metavariable-regex:
+                      metavariable: "$V"
+                      regex: "^values$"
+                  - focus-metavariable: "$V"
+          - pattern-inside: |
+              import { ..., useFormikContext, ... } from "formik";
+              ...
+      # react-hook-form (`useForm()`): o parâmetro do callback de `handleSubmit(callback)` e o
+      # resultado do `getValues()`.
+      - label: TEXT
+        patterns:
+          - pattern: "getValues()"
+          - pattern-inside: |
+              import { ..., useForm, ... } from "react-hook-form";
+              ...
+          - pattern-inside: |
+              const {..., getValues, ...} = useForm(...);
+              ...
+      - label: TEXT
+        patterns:
+          - pattern-either:
+              - pattern: "handleSubmit(($V, ...) => ...)"
+              - pattern: "handleSubmit(function ($V, ...) {...})"
+          - pattern-inside: |
+              import { ..., useForm, ... } from "react-hook-form";
+              ...
+          - pattern-inside: |
+              const {..., handleSubmit, ...} = useForm(...);
+              ...
+          - focus-metavariable: "$V"
+      - label: TEXT
+        patterns:
+          - pattern: |
+              $CB = ($V, ...) => ...;
+          - pattern-inside: |
+              function $COMP(...) {
+                ...
+                const {..., handleSubmit, ...} = useForm(...);
+                ...
+                $CB = ($V, ...) => ...;
+                ...
+                return <... handleSubmit($CB) ...>;
+              }
+          - pattern-inside: |
+              import { ..., useForm, ... } from "react-hook-form";
+              ...
+          - focus-metavariable: "$V"
     pattern-sinks:
-      - "$model": javascript/dom-xss-sinks
-      - "$model": javascript/dom-node-insertion-sinks
+      - requires: TEXT or SRC
+        patterns:
+          - "$model": javascript/dom-html-and-node-sinks
+          # O sumidouro dentro do receptor de uma fonte (`jQuery(x).attr("data-a")`) é parte da
+          # fonte, não um sumidouro do valor.
+          - pattern-not-inside:
+              patterns:
+                - pattern-either:
+                    - pattern: "$RECV.val()"
+                    - pattern: "$RECV.text()"
+                    - pattern: "$RECV.attr($A)"
+                    - pattern: "$RECV.prop($A)"
+                    - pattern: "$RECV.getAttribute($A)"
+                - focus-metavariable: "$RECV"
+          - pattern-not-inside:
+              patterns:
+                - pattern: "$RECV.$P"
+                - metavariable-regex:
+                    metavariable: "$P"
+                    regex: "^(?:innerText|textContent|value|name|src|files)$"
+                - focus-metavariable: "$RECV"
+      - requires: TEXT
+        pattern-either:
+          - "$model": javascript/url-xss-sinks
+          - "$model": javascript/location-navigation-sinks
     pattern-sanitizers:
       - "$model": javascript/escape-function-sanitizers
       - "$model": javascript/encode-uri-component-x-sanitizer
@@ -72,24 +362,26 @@ rules:
       - "$model": javascript/json-stringify-x-sanitizer
       - pattern: "+$X"
       - pattern: "typeof $X"
+      # O resultado de uma subtração, multiplicação, divisão ou resto é um número.
+      - pattern: "$X - $Y"
+      - pattern: "$X * $Y"
+      - pattern: "$X / $Y"
+      - pattern: "$X % $Y"
+      # O CodeQL não leva o dado pelo construtor (`new Swiper(el, {...})`), a não ser pelos que
+      # modela (`Error` e derivados, `URL`, `URLSearchParams`).
       - patterns:
-          - pattern: '"$P" + $X'
+          - pattern: "new $C(...)"
           - metavariable-regex:
-              metavariable: "$P"
-              regex:
-                "$text": javascript/non-html-string-prefix-regex
-      - "$model": javascript/dom-purify-sanitize-x-sanitizer
+              metavariable: "$C"
+              regex: "^(?!(?:Error|EvalError|RangeError|ReferenceError|SyntaxError|TypeError|URIError|URL|URLSearchParams)$)"
+      - "$model": javascript/jquery-selector-prefix-sanitizers
       - "$model": javascript/dom-text-sanitizers
+      - "$model": javascript/typeof-guard-sanitizers
+      # `UnsafeJQuery::BarrierGuard` (o CodeQL a aplica a esta consulta): o objeto que já é jQuery
+      # (`x.jquery`) e o `isElement(x)`.
       - "$model": javascript/jquery-check-sanitizer
-      - patterns:
-          - pattern: "$X"
-          - pattern-inside: "if (typeof $X === 'object') {...}"
-      - patterns:
-          - pattern: "$X"
-          - pattern-inside: "if (typeof $X !== 'string') {...}"
       - "$model": javascript/is-element-check-sanitizer
       - "$model": javascript/angle-bracket-replacement-sanitizers
       - "$model": javascript/indexof-call
-      - "$model": javascript/message-origin-check-sanitizers
     options:
       interfile: true

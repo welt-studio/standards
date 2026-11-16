@@ -1,84 +1,352 @@
+# Parâmetro de função exportada por um pacote (`getALibraryInputParameter`, PackageExports.qll):
+# todos os parâmetros (`..., $P, ...`), de função, arrow, método e construtor de classe exportada.
+# Só vale nome público (começa por letra ou dígito) e método sem `private`/`protected`. O
+# CodeQL parte do `main` do `package.json`; aqui vale o arquivo que exporta, e a regra exclui
+# teste e fixture por `paths.exclude`. Sem retrocesso: a função exportada pelo nome vale quando
+# a exportação está no mesmo arquivo (as formas `module.exports.nome = f` e `exports.nome = f`, com o
+# mesmo nome da função, e `module.exports = f`). A classe que sai por `exports.nome = Classe` fica de
+# fora, e a que sai num objeto (`module.exports = {Classe}`) também: o contexto de arquivo inteiro com
+# uma propriedade livre ou um membro de objeto estoura o tempo do Semgrep (de 3 s para 10 s).
 - patterns:
-    - pattern-inside: "module.exports.$F = function ($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "module.exports = function (..., $P, ...) {...}"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "module.exports.$F = ($P, ...) => {...}"
-    - pattern: "$P"
+    - pattern: "module.exports.$F = function (..., $P, ...) {...}"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "module.exports = function ($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "exports.$F = function (..., $P, ...) {...}"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "module.exports = ($P, ...) => {...}"
-    - pattern: "$P"
+    - pattern: "module.exports.$F.$G = function (..., $P, ...) {...}"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
+    - metavariable-regex:
+        metavariable: "$G"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "exports.$F = function ($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "module.exports = { ..., $F: function (..., $P, ...) {...}, ... }"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "exports.$F = ($P, ...) => {...}"
-    - pattern: "$P"
+    - pattern: "module.exports.$F = { ..., $G: function (..., $P, ...) {...}, ... }"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
+    - metavariable-regex:
+        metavariable: "$G"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "module.exports.$F.$G = function ($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "module.exports = (..., $P, ...) => ..."
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "$C.prototype.$M = function ($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "module.exports.$F = (..., $P, ...) => ..."
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "export function $F($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "exports.$F = (..., $P, ...) => ..."
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "export default function $F($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "module.exports.$F.$G = (..., $P, ...) => ..."
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
+    - metavariable-regex:
+        metavariable: "$G"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "export default function ($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "module.exports = { ..., $F: (..., $P, ...) => ..., ... }"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "export const $F = ($P, ...) => {...}"
-    - pattern: "$P"
+    - pattern: "module.exports.$F = { ..., $G: (..., $P, ...) => ..., ... }"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
+    - metavariable-regex:
+        metavariable: "$G"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "export const $F = function ($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "export function $F(..., $P, ...) {...}"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "export async function $F($P, ...) {...}"
-    - pattern: "$P"
+    - pattern: "export default function $F(..., $P, ...) {...}"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "class $C { constructor($P, ...) {...} }"
-    - pattern: "$P"
+    - pattern: "export default function (..., $P, ...) {...}"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "class $C { static $M($P, ...) {...} }"
-    - pattern: "$P"
+    - pattern: "export default (..., $P, ...) => ..."
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "class $C { $M($P, ...) {...} }"
-    - pattern: "$P"
+    - pattern: "export const $F = function (..., $P, ...) {...}"
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "module.exports = { $F: function ($P, ...) {...} }"
-    - pattern: "$P"
+    - pattern: "export const $F = (..., $P, ...) => ..."
+    - metavariable-regex:
+        metavariable: "$F"
+        regex: "^[a-zA-Z0-9]"
+    - focus-metavariable: "$P"
+# Função declarada no arquivo e exportada pelo nome (`module.exports = f`, `exports.n = f`,
+# `export { f }`, `export default f`), antes ou depois da declaração. A região começa na
+# declaração ou na exportação: uma região solta no arquivo inteiro (`...` antes e depois) faz o
+# motor Pro varrer o arquivo para cada função e estoura o tempo em código TypeScript comum.
+- patterns:
+    - pattern: "function $F(..., $P, ...) {...}"
+    - pattern-either:
+        - pattern-inside: |
+            function $F(...) {...}
+            ...
+            module.exports = $F;
+        - pattern-inside: |
+            module.exports = $F;
+            ...
+            function $F(...) {...}
+        - pattern-inside: |
+            function $F(...) {...}
+            ...
+            module.exports.$F = $F;
+        - pattern-inside: |
+            module.exports.$F = $F;
+            ...
+            function $F(...) {...}
+        - pattern-inside: |
+            function $F(...) {...}
+            ...
+            exports.$F = $F;
+        - pattern-inside: |
+            exports.$F = $F;
+            ...
+            function $F(...) {...}
+        - pattern-inside: |
+            function $F(...) {...}
+            ...
+            module.exports = {..., $F, ...};
+        - pattern-inside: |
+            module.exports = {..., $F, ...};
+            ...
+            function $F(...) {...}
+        - pattern-inside: |
+            function $F(...) {...}
+            ...
+            export { $F };
+        - pattern-inside: |
+            export { $F };
+            ...
+            function $F(...) {...}
+        - pattern-inside: |
+            function $F(...) {...}
+            ...
+            export default $F;
+        - pattern-inside: |
+            export default $F;
+            ...
+            function $F(...) {...}
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "module.exports = { $F($P, ...) {...} }"
-    - pattern: "$P"
+    - pattern: "const $F = function (..., $P, ...) {...}"
+    - pattern-either:
+        - pattern-inside: |
+            const $F = function (...) {...};
+            ...
+            module.exports = $F;
+        - pattern-inside: |
+            module.exports = $F;
+            ...
+            const $F = function (...) {...};
+        - pattern-inside: |
+            const $F = function (...) {...};
+            ...
+            module.exports.$F = $F;
+        - pattern-inside: |
+            module.exports.$F = $F;
+            ...
+            const $F = function (...) {...};
+        - pattern-inside: |
+            const $F = function (...) {...};
+            ...
+            exports.$F = $F;
+        - pattern-inside: |
+            exports.$F = $F;
+            ...
+            const $F = function (...) {...};
+        - pattern-inside: |
+            const $F = function (...) {...};
+            ...
+            module.exports = {..., $F, ...};
+        - pattern-inside: |
+            module.exports = {..., $F, ...};
+            ...
+            const $F = function (...) {...};
+        - pattern-inside: |
+            const $F = function (...) {...};
+            ...
+            export { $F };
+        - pattern-inside: |
+            export { $F };
+            ...
+            const $F = function (...) {...};
+        - pattern-inside: |
+            const $F = function (...) {...};
+            ...
+            export default $F;
+        - pattern-inside: |
+            export default $F;
+            ...
+            const $F = function (...) {...};
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "module.exports = { $F: ($P, ...) => {...} }"
-    - pattern: "$P"
+    - pattern: "const $F = (..., $P, ...) => ..."
+    - pattern-either:
+        - pattern-inside: |
+            const $F = (...) => $B;
+            ...
+            module.exports = $F;
+        - pattern-inside: |
+            module.exports = $F;
+            ...
+            const $F = (...) => $B;
+        - pattern-inside: |
+            const $F = (...) => $B;
+            ...
+            module.exports.$F = $F;
+        - pattern-inside: |
+            module.exports.$F = $F;
+            ...
+            const $F = (...) => $B;
+        - pattern-inside: |
+            const $F = (...) => $B;
+            ...
+            exports.$F = $F;
+        - pattern-inside: |
+            exports.$F = $F;
+            ...
+            const $F = (...) => $B;
+        - pattern-inside: |
+            const $F = (...) => $B;
+            ...
+            module.exports = {..., $F, ...};
+        - pattern-inside: |
+            module.exports = {..., $F, ...};
+            ...
+            const $F = (...) => $B;
+        - pattern-inside: |
+            const $F = (...) => $B;
+            ...
+            export { $F };
+        - pattern-inside: |
+            export { $F };
+            ...
+            const $F = (...) => $B;
+        - pattern-inside: |
+            const $F = (...) => $B;
+            ...
+            export default $F;
+        - pattern-inside: |
+            export default $F;
+            ...
+            const $F = (...) => $B;
+    - focus-metavariable: "$P"
+# Classe exportada (`export class`, `export default class`, `module.exports = class`, ou pelo
+# nome no mesmo arquivo, depois da declaração: a região começa na própria classe, porque uma região
+# solta no arquivo inteiro (`...` antes e depois) quadruplica o custo do motor Pro): construtor, métodos e métodos estáticos públicos. O CodeQL exclui o
+# método `private`/`protected` e o nome que não começa por letra ou dígito.
+- patterns:
+    - pattern: "class $C { $M(..., $P, ...) {...} }"
+    - pattern-not: |
+        class $C { private $M(...) {...} }
+    - pattern-not: |
+        class $C { protected $M(...) {...} }
+    - pattern-either:
+        - pattern-inside: |
+            export class $C {...}
+        - pattern-inside: |
+            export default class $C {...}
+        - pattern-inside: |
+            module.exports = class $C {...}
+        - pattern-inside: |
+            class $C {...}
+            ...
+            module.exports = $C;
+        - pattern-inside: |
+            class $C {...}
+            ...
+            module.exports.$N = $C;
+        - pattern-inside: |
+            class $C {...}
+            ...
+            exports.$N = $C;
+        - pattern-inside: |
+            class $C {...}
+            ...
+            export { $C };
+        - pattern-inside: |
+            class $C {...}
+            ...
+            export { $C as $N };
+        - pattern-inside: |
+            class $C {...}
+            ...
+            export default $C;
+        - pattern-inside: |
+            class $C {...}
+            ...
+            module.exports = new $C(...);
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"
 - patterns:
-    - pattern-inside: "module.exports = { ..., $F: function ($P, ...) {...}, ... }"
-    - pattern: "$P"
+    - pattern: "class { $M(..., $P, ...) {...} }"
+    - pattern-not: |
+        class { private $M(...) {...} }
+    - pattern-not: |
+        class { protected $M(...) {...} }
+    - pattern-either:
+        - pattern-inside: |
+            module.exports = class {...}
+        - pattern-inside: |
+            export default class {...}
+        - pattern-inside: |
+            module.exports.$N = class {...}
+        - pattern-inside: |
+            exports.$N = class {...}
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^[a-zA-Z0-9]"
+    - focus-metavariable: "$P"
+- patterns:
+    - pattern: "$C.prototype.$M = function (..., $P, ...) {...}"
+    - pattern-inside: |
+        ...
+        module.exports = new $C(...);
+        ...
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^[a-zA-Z0-9]"
     - focus-metavariable: "$P"

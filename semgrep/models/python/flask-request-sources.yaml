@@ -24,20 +24,15 @@
     - metavariable-regex:
         metavariable: "$P"
         regex: "^(?!self$|cls$|request$|response$)"
+# Parâmetros das views do Django registradas (função e classe), reaproveitando os modelos das views.
 - patterns:
-    - pattern-either:
-        - pattern-inside: |
-            def $F(request, ..., $P, ...):
-              ...
-        - pattern-inside: |
-            def $F(self, request, ..., $P, ...):
-              ...
-        - pattern-inside: |
-            async def $F(request, ..., $P, ...):
-              ...
-        - pattern-inside: |
-            async def $F(self, request, ..., $P, ...):
-              ...
+    - "$model": python/django-class-view-parameters
+    - focus-metavariable: "$P"
+    - metavariable-regex:
+        metavariable: "$P"
+        regex: "^(?!self$|cls$|request$|args$|kwargs$)"
+- patterns:
+    - "$model": python/django-function-view-parameters
     - focus-metavariable: "$P"
     - metavariable-regex:
         metavariable: "$P"

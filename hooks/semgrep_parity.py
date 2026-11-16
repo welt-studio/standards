@@ -156,7 +156,24 @@ def run_semgrep(folder: Path, rules: list[Path], *, by_query: bool = True) -> li
     if not result.stdout:
         message = f"o semgrep falhou em {folder.name}: {result.stderr.strip()[-500:]}"
         raise RuntimeError(message)
+    engine_errors = engine_failures(result.stdout)
+    if engine_errors:
+        # O motor que quebra devolve zero achados para a pasta inteira: o silêncio passaria por
+        # "nada a acusar". Erro de nível `error` reprova; aviso (arquivo que não parseia) não.
+        message = f"o motor do semgrep falhou em {folder.name}: {engine_errors[0][:500]}"
+        raise RuntimeError(message)
     return parse_findings(result.stdout, by_query=by_query)
+
+
+def engine_failures(output: str) -> list[str]:
+    """As mensagens dos erros de nível `error` da saída JSON do Semgrep."""
+    document: object = json.loads(output)
+    errors = document.get("errors") if isinstance(document, dict) else None
+    return [
+        str(error.get("message", error.get("type", "")))
+        for error in (errors if isinstance(errors, list) else [])
+        if isinstance(error, dict) and error.get("level") == "error"
+    ]
 
 
 def near(line: int, start: int, end: int) -> bool:

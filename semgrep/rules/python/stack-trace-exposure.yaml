@@ -12,13 +12,16 @@ rules:
         - "CWE-209: Generation of Error Message Containing Sensitive Information"
       codeql: py/stack-trace-exposure
       notes: |-
-        ExceptionInfo.qll: a exceção capturada, o traceback e o sys.exc_info().
-        Como no CodeQL: atributo da exceção (`exc.detail`, `exc.messages`, `e.errors()`) é dado que a
-        exceção carrega de propósito para o cliente, não o texto interno dela. Só o `args` continua.
+        ExceptionInfo.qll: a exceção capturada, as oito funções do `traceback` e o sys.exc_info().
+        Como no CodeQL: atributo da exceção capturada (`exc.detail`, `exc.messages`, `e.errors()`) é
+        dado que a exceção carrega de propósito para o cliente, não o texto interno dela. Só o
+        `args` e o `__traceback__` continuam.
         Flask: o retorno da rota, make_response/jsonify/Response (Flask.qll).
         RestFramework.qll: Response(arg0 | data=) e o `detail` das exceções da API.
-        Django.qll / FastApi.qll / Starlette.qll: o conteúdo das classes de resposta.
+        Django.qll / FastApi.qll: o conteúdo das classes de resposta.
         FastApi.qll (FastApiRequestHandlerReturn): o retorno da rota é o corpo da resposta.
+        Além do CodeQL (decisão do PO): JSONResponse, PlainTextResponse e HTMLResponse do
+        `starlette.responses`, que o Starlette.qll não modela mas expõem a exceção no corpo.
     mode: taint
     options:
       interfile: true
@@ -30,14 +33,39 @@ rules:
               except $T as $E:
                 ...
           - pattern: "$E"
-      - pattern: "traceback.$FMT(...)"
+      - patterns:
+          - pattern: "traceback.$FMT(...)"
+          - metavariable-regex:
+              metavariable: "$FMT"
+              regex: "^(extract_tb|extract_stack|format_list|format_exception_only|format_exception|format_exc|format_tb|format_stack)$"
       - pattern: "sys.exc_info()"
     pattern-sanitizers:
       - patterns:
-          - pattern: "$OBJ.$ATTR"
+          - pattern: "$O.$ATTR"
+          - pattern-not-inside: "$O.$ATTR(...)"
           - metavariable-regex:
               metavariable: "$ATTR"
               regex: "^(?!args$|__traceback__$).+"
+      - patterns:
+          - pattern-inside: |
+              try:
+                ...
+              except $T as $E:
+                ...
+          - pattern: "$E.$ATTR(...)"
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: "^(?!args$|__traceback__$).+"
+    pattern-propagators:
+      - pattern: "$C.append($X)"
+        from: "$X"
+        to: "$C"
+      - pattern: "$C.extend($X)"
+        from: "$X"
+        to: "$C"
+      - pattern: "$C.add($X)"
+        from: "$X"
+        to: "$C"
     pattern-sinks:
       - patterns:
           - pattern-either:
@@ -61,30 +89,67 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
-              - pattern: "Response($X, ...)"
-              - pattern: "Response(..., data=$X, ...)"
-              - pattern: "$M.Response($X, ...)"
-              - pattern: "$M.Response(..., data=$X, ...)"
+              - pattern: "rest_framework.response.Response($X, ...)"
+              - pattern: "rest_framework.response.Response(..., data=$X, ...)"
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
-              - pattern: "$EXC($X, ...)"
-              - pattern: "$EXC(..., detail=$X, ...)"
-              - pattern: "$M.$EXC($X, ...)"
-              - pattern: "$M.$EXC(..., detail=$X, ...)"
+              - pattern: "rest_framework.exceptions.$EXC($X, ...)"
+              - pattern: "rest_framework.exceptions.$EXC(..., detail=$X, ...)"
           - metavariable-regex:
               metavariable: "$EXC"
-              regex: "^(APIException|ValidationError|ParseError|AuthenticationFailed|NotAuthenticated|PermissionDenied|NotFound|MethodNotAllowed|NotAcceptable|UnsupportedMediaType|Throttled)$"
+              regex: "^(APIException|ValidationError|ParseError|AuthenticationFailed|NotAuthenticated|PermissionDenied|NotFound|NotAcceptable)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:
-              - pattern: "$R($X, ...)"
-              - pattern: "$R(..., content=$X, ...)"
-              - pattern: "$M.$R($X, ...)"
-              - pattern: "$M.$R(..., content=$X, ...)"
+              - pattern: "rest_framework.exceptions.$EXC($Z, $X, ...)"
+              - pattern: "rest_framework.exceptions.$EXC(..., detail=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$EXC"
+              regex: "^(MethodNotAllowed|UnsupportedMediaType|Throttled)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "rest_framework.fields.ValidationError($X, ...)"
+              - pattern: "rest_framework.fields.ValidationError(..., detail=$X, ...)"
+              - pattern: "rest_framework.serializers.ValidationError($X, ...)"
+              - pattern: "rest_framework.serializers.ValidationError(..., detail=$X, ...)"
+              - pattern: "rest_framework.validators.ValidationError($X, ...)"
+              - pattern: "rest_framework.validators.ValidationError(..., detail=$X, ...)"
+              - pattern: "rest_framework.pagination.NotFound($X, ...)"
+              - pattern: "rest_framework.pagination.NotFound(..., detail=$X, ...)"
+              - pattern: "rest_framework.parsers.ParseError($X, ...)"
+              - pattern: "rest_framework.parsers.ParseError(..., detail=$X, ...)"
+              - pattern: "rest_framework.renderers.ParseError($X, ...)"
+              - pattern: "rest_framework.renderers.ParseError(..., detail=$X, ...)"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "django.http.$R($X, ...)"
+              - pattern: "django.http.$R(..., content=$X, ...)"
+              - pattern: "django.http.response.$R($X, ...)"
+              - pattern: "django.http.response.$R(..., content=$X, ...)"
           - metavariable-regex:
               metavariable: "$R"
-              regex: "^(HttpResponse\\w*|JsonResponse|StreamingHttpResponse|HTMLResponse|PlainTextResponse|JSONResponse|UJSONResponse|ORJSONResponse)$"
+              regex: "^(HttpResponse\\w*|JsonResponse|StreamingHttpResponse)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "fastapi.Response($X, ...)"
+              - pattern: "fastapi.Response(..., content=$X, ...)"
+              - pattern: "fastapi.responses.$R($X, ...)"
+              - pattern: "fastapi.responses.$R(..., content=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "^(Response|HTMLResponse|PlainTextResponse|JSONResponse|UJSONResponse|ORJSONResponse|StreamingResponse)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "starlette.responses.$R($X, ...)"
+              - pattern: "starlette.responses.$R(..., content=$X, ...)"
+          - metavariable-regex:
+              metavariable: "$R"
+              regex: "^(JSONResponse|PlainTextResponse|HTMLResponse)$"
           - focus-metavariable: "$X"
       - patterns:
           - pattern-inside: |

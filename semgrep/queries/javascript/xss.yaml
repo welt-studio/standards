@@ -16,6 +16,58 @@ rules:
           - "$model": javascript/window-name
           - "$model": javascript/window-message-sources
           - "$model": javascript/message-event-data-sources
+          # Mensagem recebida por um WebSocket de cliente (`ClientWebSocket::ReceiveNode`,
+          # WebSocket.qll): o `data` do evento do `onmessage` ou do `addEventListener("message")` de
+          # uma instância criada por `new WebSocket(...)` (o do navegador), e o primeiro argumento
+          # do `on("message")` quando o `WebSocket` é o do pacote `ws`.
+          - patterns:
+              - pattern: "$EVENT.data"
+              - pattern-either:
+                  - pattern-inside: |
+                      $S.onmessage = function ($EVENT, ...) {...}
+                  - pattern-inside: |
+                      $S.onmessage = ($EVENT, ...) => ...
+                  - pattern-inside: |
+                      $S.addEventListener("message", function ($EVENT, ...) {...})
+                  - pattern-inside: |
+                      $S.addEventListener("message", ($EVENT, ...) => ...)
+              - pattern-inside: |
+                  $S = new WebSocket(...);
+                  ...
+          - patterns:
+              - pattern: "$DATA"
+              - metavariable-regex:
+                  metavariable: "$DATA"
+                  regex: "^data$"
+              - pattern-either:
+                  - pattern-inside: |
+                      $S.onmessage = function ({..., data, ...}) {...}
+                  - pattern-inside: |
+                      $S.onmessage = ({..., data, ...}) => ...
+                  - pattern-inside: |
+                      $S.addEventListener("message", function ({..., data, ...}) {...})
+                  - pattern-inside: |
+                      $S.addEventListener("message", ({..., data, ...}) => ...)
+              - pattern-inside: |
+                  $S = new WebSocket(...);
+                  ...
+          - patterns:
+              - pattern: "$MSG"
+              - pattern-either:
+                  - pattern-inside: |
+                      $S.on("message", function ($MSG, ...) {...})
+                  - pattern-inside: |
+                      $S.on("message", ($MSG, ...) => ...)
+              - pattern-inside: |
+                  $S = new $WS(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: |
+                      $WS = require("ws");
+                      ...
+                  - pattern-inside: |
+                      import $WS from "ws";
+                      ...
           # Roteador do Next.js (`next/router`): `useRouter().query` e, em página embrulhada por
           # `withRouter`, a prop `router`.
           - patterns:
@@ -23,25 +75,15 @@ rules:
                   - pattern: "useRouter().query"
                   - patterns:
                       - pattern: "$R.query"
-                      - pattern-inside: |
-                          $R = useRouter();
-                          ...
-              - pattern-inside: |
-                  import { useRouter } from "next/router";
-                  ...
+                      - "$model": javascript/next-router-hook-binding
+              - "$model": javascript/next-use-router-import
           - patterns:
               - pattern-either:
                   - pattern: "$P.router.query"
                   - patterns:
                       - pattern: "router.query"
-                      - pattern-either:
-                          - pattern-inside: |
-                              function $F({..., router, ...}) {...}
-                          - pattern-inside: |
-                              ({..., router, ...}) => {...}
-              - pattern-inside: |
-                  import { withRouter } from "next/router";
-                  ...
+                      - "$model": javascript/next-router-prop-param
+              - "$model": javascript/next-with-router-import
           # Roteador do `react-router-dom`: `useParams()` e o `params`/`url` do `useRouteMatch()`.
           - patterns:
               - pattern: "useParams()"
@@ -504,113 +546,8 @@ rules:
                 - pattern: document.location.search
                 - pattern: document.location.hash
     pattern-sinks:
-      - patterns:
-          - pattern-either:
-              - pattern: "$($TAG, {..., $ATTR: $X, ...})"
-              - pattern: '$($TAG, {..., "$ATTR": $X, ...})'
-              - pattern: "$J.attr({..., $ATTR: $X, ...})"
-              - pattern: '$J.attr({..., "$ATTR": $X, ...})'
-          - metavariable-regex:
-              metavariable: "$ATTR"
-              regex: "(?i)^(?:action|formaction|href|src|xlink:href|data)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern: "$J.attr($ATTR, $X)"
-          - metavariable-regex:
-              metavariable: "$ATTR"
-              regex: '(?i)^["''](?:action|formaction|href|src|xlink:href|data)["'']$'
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "$E.setAttribute($ATTR, $X)"
-              - pattern: "$E.setAttributeNS($NS, $ATTR, $X)"
-          - metavariable-regex:
-              metavariable: "$ATTR"
-              regex: '(?i)^["''](?:action|formaction|href|src|xlink:href|data)["'']$'
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "navigation.navigate($X, ...)"
-              - pattern: "window.navigation.navigate($X, ...)"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "$H.push($X, ...)"
-              - pattern: "$H.replace($X, ...)"
-          # O histórico do navegador (`createBrowserHistory`); o `createHashHistory` só mexe no
-          # fragmento, que não executa `javascript:`.
-          - pattern-either:
-              - pattern-inside: |
-                  $H = require("history").createBrowserHistory(...);
-                  ...
-              - pattern-inside: |
-                  import { createBrowserHistory } from "history";
-                  ...
-                  $H = createBrowserHistory(...);
-                  ...
-          - focus-metavariable: "$X"
-      # Roteador do Next.js (`next/router`): o `push`/`replace` de `useRouter()` e o da prop `router`
-      # de uma página embrulhada por `withRouter`.
-      - patterns:
-          - pattern-either:
-              - pattern: "useRouter().$M($X, ...)"
-              - patterns:
-                  - pattern: "$R.$M($X, ...)"
-                  - pattern-inside: |
-                      $R = useRouter();
-                      ...
-          - pattern-inside: |
-              import { useRouter } from "next/router";
-              ...
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:push|replace)$"
-          - focus-metavariable: "$X"
-      - patterns:
-          - pattern-either:
-              - pattern: "$P.router.$M($X, ...)"
-              - patterns:
-                  - pattern: "router.$M($X, ...)"
-                  - pattern-either:
-                      - pattern-inside: |
-                          function $F({..., router, ...}) {...}
-                      - pattern-inside: |
-                          ({..., router, ...}) => {...}
-          - pattern-inside: |
-              import { withRouter } from "next/router";
-              ...
-          - metavariable-regex:
-              metavariable: "$M"
-              regex: "^(?:push|replace)$"
-          - focus-metavariable: "$X"
+      - "$model": javascript/url-xss-sinks
       - "$model": javascript/location-navigation-sinks
-      # Atributo de endereço de um elemento HTML (minúsculo) no JSX.
-      - patterns:
-          - pattern-either:
-              - pattern: "<$EL ... href={$X} ... />"
-              - pattern: "<$EL ... src={$X} ... />"
-              - pattern: "<$EL ... action={$X} ... />"
-              - pattern: "<$EL ... formAction={$X} ... />"
-          - metavariable-regex:
-              metavariable: "$EL"
-              regex: "^[a-z]"
-          - focus-metavariable: "$X"
-      # O `<Link href={...}>` do `next/link`.
-      - patterns:
-          - pattern-either:
-              - pattern: "<$LINK ... href={$X} ... />"
-              - pattern: "<$LINK ... src={$X} ... />"
-              - pattern: "<$LINK ... action={$X} ... />"
-              - pattern: "<$LINK ... formAction={$X} ... />"
-          - pattern-inside: |
-              import $LINK from "next/link";
-              ...
-          - focus-metavariable: "$X"
-      # `templateUrl` de uma diretiva do AngularJS.
-      - patterns:
-          - pattern: "{..., templateUrl: $X, ...}"
-          - pattern-inside: "$M.directive(..., function () {...})"
-          - focus-metavariable: "$X"
     pattern-sanitizers:
       - "$model": javascript/escape-function-sanitizers
       - "$model": javascript/encode-uri-component-x-sanitizer

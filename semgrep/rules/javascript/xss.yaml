@@ -692,6 +692,54 @@ rules:
               - pattern-not-inside: |
                   (...) => { ... this.addEventListener("message", ...); ... }
           - patterns:
+              - pattern: "$EVENT.data"
+              - pattern-either:
+                  - pattern-inside: |
+                      $S.onmessage = function ($EVENT, ...) {...}
+                  - pattern-inside: |
+                      $S.onmessage = ($EVENT, ...) => ...
+                  - pattern-inside: |
+                      $S.addEventListener("message", function ($EVENT, ...) {...})
+                  - pattern-inside: |
+                      $S.addEventListener("message", ($EVENT, ...) => ...)
+              - pattern-inside: |
+                  $S = new WebSocket(...);
+                  ...
+          - patterns:
+              - pattern: "$DATA"
+              - metavariable-regex:
+                  metavariable: "$DATA"
+                  regex: "^data$"
+              - pattern-either:
+                  - pattern-inside: |
+                      $S.onmessage = function ({..., data, ...}) {...}
+                  - pattern-inside: |
+                      $S.onmessage = ({..., data, ...}) => ...
+                  - pattern-inside: |
+                      $S.addEventListener("message", function ({..., data, ...}) {...})
+                  - pattern-inside: |
+                      $S.addEventListener("message", ({..., data, ...}) => ...)
+              - pattern-inside: |
+                  $S = new WebSocket(...);
+                  ...
+          - patterns:
+              - pattern: "$MSG"
+              - pattern-either:
+                  - pattern-inside: |
+                      $S.on("message", function ($MSG, ...) {...})
+                  - pattern-inside: |
+                      $S.on("message", ($MSG, ...) => ...)
+              - pattern-inside: |
+                  $S = new $WS(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: |
+                      $WS = require("ws");
+                      ...
+                  - pattern-inside: |
+                      import $WS from "ws";
+                      ...
+          - patterns:
               - pattern-either:
                   - pattern: "useRouter().query"
                   - patterns:
@@ -788,6 +836,36 @@ rules:
               regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
           - focus-metavariable: "$X"
       - patterns:
+          - pattern: "<... $J.$T(...) ...>.$M(..., $X, ...)"
+          - pattern-inside: |
+              $J = $D(...);
+              ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<... $D(...) ...>[$K](..., $X, ...)"
+              - patterns:
+                  - pattern: "$J[$K](..., $X, ...)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$K"
+              regex: '(?s).*["''](?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)["''].*'
+          - focus-metavariable: "$X"
+      - patterns:
           - pattern-either:
               - pattern: "<... $D(...) ...>.$M((...) => $X)"
               - pattern: "<... $D(...) ...>.$M(function (...) { ... return $X; })"
@@ -801,6 +879,23 @@ rules:
           - metavariable-regex:
               metavariable: "$D"
               regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<... $J.$T(...) ...>.$M((...) => $X)"
+              - pattern: "<... $J.$T(...) ...>.$M(function (...) { ... return $X; })"
+          - pattern-inside: |
+              $J = $D(...);
+              ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
           - metavariable-regex:
               metavariable: "$M"
               regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
@@ -848,6 +943,16 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$($X)"
+          - pattern-not-inside: |
+              $ = (...) => ...;
+              ...
+          - pattern-not-inside: |
+              $ = function (...) {...};
+              ...
+          - pattern-not-inside: |
+              ...
+              function $(...) {...}
+              ...
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "jQuery($X)"
@@ -964,6 +1069,17 @@ rules:
               - pattern: "$E.appendChild($X)"
               - pattern: "$E.insertBefore($X, ...)"
               - pattern: "$E.insertAdjacentElement($P, $X)"
+          - pattern-not-inside:
+              pattern-either:
+                - pattern: |
+                    $X = document.createElement(...);
+                    ...
+                - pattern: |
+                    $X = document.createElementNS(...);
+                    ...
+                - pattern: |
+                    $X = document.createDocumentFragment();
+                    ...
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$POL.createHTML($X)"
@@ -1783,6 +1899,36 @@ rules:
               regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
           - focus-metavariable: "$X"
       - patterns:
+          - pattern: "<... $J.$T(...) ...>.$M(..., $X, ...)"
+          - pattern-inside: |
+              $J = $D(...);
+              ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<... $D(...) ...>[$K](..., $X, ...)"
+              - patterns:
+                  - pattern: "$J[$K](..., $X, ...)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$K"
+              regex: '(?s).*["''](?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)["''].*'
+          - focus-metavariable: "$X"
+      - patterns:
           - pattern-either:
               - pattern: "<... $D(...) ...>.$M((...) => $X)"
               - pattern: "<... $D(...) ...>.$M(function (...) { ... return $X; })"
@@ -1796,6 +1942,23 @@ rules:
           - metavariable-regex:
               metavariable: "$D"
               regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<... $J.$T(...) ...>.$M((...) => $X)"
+              - pattern: "<... $J.$T(...) ...>.$M(function (...) { ... return $X; })"
+          - pattern-inside: |
+              $J = $D(...);
+              ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
           - metavariable-regex:
               metavariable: "$M"
               regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
@@ -1843,6 +2006,16 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$($X)"
+          - pattern-not-inside: |
+              $ = (...) => ...;
+              ...
+          - pattern-not-inside: |
+              $ = function (...) {...};
+              ...
+          - pattern-not-inside: |
+              ...
+              function $(...) {...}
+              ...
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "jQuery($X)"
@@ -1959,6 +2132,17 @@ rules:
               - pattern: "$E.appendChild($X)"
               - pattern: "$E.insertBefore($X, ...)"
               - pattern: "$E.insertAdjacentElement($P, $X)"
+          - pattern-not-inside:
+              pattern-either:
+                - pattern: |
+                    $X = document.createElement(...);
+                    ...
+                - pattern: |
+                    $X = document.createElementNS(...);
+                    ...
+                - pattern: |
+                    $X = document.createDocumentFragment();
+                    ...
           - focus-metavariable: "$X"
     pattern-sanitizers:
       - pattern-either:
@@ -3348,6 +3532,54 @@ rules:
               - pattern-not-inside: |
                   (...) => { ... this.addEventListener("message", ...); ... }
           - patterns:
+              - pattern: "$EVENT.data"
+              - pattern-either:
+                  - pattern-inside: |
+                      $S.onmessage = function ($EVENT, ...) {...}
+                  - pattern-inside: |
+                      $S.onmessage = ($EVENT, ...) => ...
+                  - pattern-inside: |
+                      $S.addEventListener("message", function ($EVENT, ...) {...})
+                  - pattern-inside: |
+                      $S.addEventListener("message", ($EVENT, ...) => ...)
+              - pattern-inside: |
+                  $S = new WebSocket(...);
+                  ...
+          - patterns:
+              - pattern: "$DATA"
+              - metavariable-regex:
+                  metavariable: "$DATA"
+                  regex: "^data$"
+              - pattern-either:
+                  - pattern-inside: |
+                      $S.onmessage = function ({..., data, ...}) {...}
+                  - pattern-inside: |
+                      $S.onmessage = ({..., data, ...}) => ...
+                  - pattern-inside: |
+                      $S.addEventListener("message", function ({..., data, ...}) {...})
+                  - pattern-inside: |
+                      $S.addEventListener("message", ({..., data, ...}) => ...)
+              - pattern-inside: |
+                  $S = new WebSocket(...);
+                  ...
+          - patterns:
+              - pattern: "$MSG"
+              - pattern-either:
+                  - pattern-inside: |
+                      $S.on("message", function ($MSG, ...) {...})
+                  - pattern-inside: |
+                      $S.on("message", ($MSG, ...) => ...)
+              - pattern-inside: |
+                  $S = new $WS(...);
+                  ...
+              - pattern-either:
+                  - pattern-inside: |
+                      $WS = require("ws");
+                      ...
+                  - pattern-inside: |
+                      import $WS from "ws";
+                      ...
+          - patterns:
               - pattern-either:
                   - pattern: "useRouter().query"
                   - patterns:
@@ -3481,19 +3713,6 @@ rules:
               metavariable: "$M"
               regex: "^(?:push|replace)$"
           - focus-metavariable: "$X"
-      - pattern: "location = $X"
-      - pattern: "location.href = $X"
-      - pattern: "location.assign($X)"
-      - pattern: "location.replace($X)"
-      - patterns:
-          - pattern-either:
-              - pattern: "$W.location = $X"
-              - pattern: "$W.location.href = $X"
-              - pattern: "$W.location.assign($X)"
-              - pattern: "$W.location.replace($X)"
-          - metavariable-regex:
-              metavariable: "$W"
-              regex: "^(?:window|self|top|document|globalThis)$"
       - patterns:
           - pattern-either:
               - pattern: "<$EL ... href={$X} ... />"
@@ -3518,6 +3737,69 @@ rules:
           - pattern: "{..., templateUrl: $X, ...}"
           - pattern-inside: "$M.directive(..., function () {...})"
           - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.$ATTR = $X"
+              - pattern: "$E.$ATTR += $X"
+          - pattern-inside: |
+              $E = document.$M(...);
+              ...
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: "^(?:action|formaction|href|src|data)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:createElement|createElementNS|getElementById|querySelector|elementFromPoint)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "$E.$ATTR = $X"
+              - pattern: "$E.$ATTR += $X"
+          - pattern-inside: |
+              $E = document.$C(...)[$I];
+              ...
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: "^(?:action|formaction|href|src|data)$"
+          - metavariable-regex:
+              metavariable: "$C"
+              regex: "^(?:querySelectorAll|getElementsByClassName|getElementsByTagName|getElementsByName)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "document.$M(...).$ATTR = $X"
+              - pattern: "document.$M(...).$ATTR += $X"
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: "^(?:action|formaction|href|src|data)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:createElement|createElementNS|getElementById|querySelector|elementFromPoint)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "document.$C(...)[$I].$ATTR = $X"
+              - pattern: "document.$C(...)[$I].$ATTR += $X"
+          - metavariable-regex:
+              metavariable: "$ATTR"
+              regex: "^(?:action|formaction|href|src|data)$"
+          - metavariable-regex:
+              metavariable: "$C"
+              regex: "^(?:querySelectorAll|getElementsByClassName|getElementsByTagName|getElementsByName)$"
+          - focus-metavariable: "$X"
+      - pattern: "location = $X"
+      - pattern: "location.href = $X"
+      - pattern: "location.assign($X)"
+      - pattern: "location.replace($X)"
+      - patterns:
+          - pattern-either:
+              - pattern: "$W.location = $X"
+              - pattern: "$W.location.href = $X"
+              - pattern: "$W.location.assign($X)"
+              - pattern: "$W.location.replace($X)"
+          - metavariable-regex:
+              metavariable: "$W"
+              regex: "^(?:window|self|top|document|globalThis)$"
     pattern-sanitizers:
       - patterns:
           - pattern: "$F(...)"
@@ -4041,6 +4323,36 @@ rules:
               regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
           - focus-metavariable: "$X"
       - patterns:
+          - pattern: "<... $J.$T(...) ...>.$M(..., $X, ...)"
+          - pattern-inside: |
+              $J = $D(...);
+              ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<... $D(...) ...>[$K](..., $X, ...)"
+              - patterns:
+                  - pattern: "$J[$K](..., $X, ...)"
+                  - pattern-inside: |
+                      $J = $D(...);
+                      ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$K"
+              regex: '(?s).*["''](?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)["''].*'
+          - focus-metavariable: "$X"
+      - patterns:
           - pattern-either:
               - pattern: "<... $D(...) ...>.$M((...) => $X)"
               - pattern: "<... $D(...) ...>.$M(function (...) { ... return $X; })"
@@ -4054,6 +4366,23 @@ rules:
           - metavariable-regex:
               metavariable: "$D"
               regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$M"
+              regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
+          - focus-metavariable: "$X"
+      - patterns:
+          - pattern-either:
+              - pattern: "<... $J.$T(...) ...>.$M((...) => $X)"
+              - pattern: "<... $J.$T(...) ...>.$M(function (...) { ... return $X; })"
+          - pattern-inside: |
+              $J = $D(...);
+              ...
+          - metavariable-regex:
+              metavariable: "$D"
+              regex: "^(?:\\$|jQuery|cash)$"
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?:add|addBack|andSelf|children|clone|closest|contents|end|eq|filter|find|first|has|last|next|nextAll|nextUntil|not|offsetParent|parent|parents|parentsUntil|prev|prevAll|prevUntil|siblings|slice)$"
           - metavariable-regex:
               metavariable: "$M"
               regex: "^(?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)$"
@@ -4101,6 +4430,16 @@ rules:
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "$($X)"
+          - pattern-not-inside: |
+              $ = (...) => ...;
+              ...
+          - pattern-not-inside: |
+              $ = function (...) {...};
+              ...
+          - pattern-not-inside: |
+              ...
+              function $(...) {...}
+              ...
           - focus-metavariable: "$X"
       - patterns:
           - pattern: "jQuery($X)"
@@ -4217,6 +4556,17 @@ rules:
               - pattern: "$E.appendChild($X)"
               - pattern: "$E.insertBefore($X, ...)"
               - pattern: "$E.insertAdjacentElement($P, $X)"
+          - pattern-not-inside:
+              pattern-either:
+                - pattern: |
+                    $X = document.createElement(...);
+                    ...
+                - pattern: |
+                    $X = document.createElementNS(...);
+                    ...
+                - pattern: |
+                    $X = document.createDocumentFragment();
+                    ...
           - focus-metavariable: "$X"
       - patterns:
           - pattern-either:

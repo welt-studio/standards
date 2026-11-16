@@ -2276,7 +2276,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2297,7 +2297,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2318,7 +2318,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2339,7 +2339,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2362,7 +2362,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -2389,7 +2389,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2416,7 +2416,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2443,7 +2443,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2470,7 +2470,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2499,7 +2499,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -2532,7 +2532,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2565,7 +2565,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2598,7 +2598,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2631,7 +2631,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2666,7 +2666,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -2705,7 +2705,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2721,7 +2721,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2737,7 +2737,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2753,7 +2753,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2769,7 +2769,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2785,7 +2785,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2801,7 +2801,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2818,7 +2818,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -2846,7 +2846,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2858,7 +2858,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2870,7 +2870,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2882,7 +2882,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2894,7 +2894,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2906,7 +2906,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -2918,7 +2918,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -2932,7 +2932,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -2980,7 +2980,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -3087,7 +3087,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -3194,7 +3194,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -3301,7 +3301,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -3384,7 +3384,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -3468,7 +3468,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -3551,7 +3551,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -3635,7 +3635,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -3718,7 +3718,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -3838,7 +3838,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -3884,7 +3884,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -3930,7 +3930,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -3976,7 +3976,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -4022,7 +4022,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -4068,7 +4068,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -4114,7 +4114,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -4162,7 +4162,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -4797,7 +4797,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -4853,7 +4853,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -4909,7 +4909,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -4965,7 +4965,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -5023,7 +5023,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -5082,7 +5082,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -5140,7 +5140,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -5199,7 +5199,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -5257,7 +5257,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -5346,7 +5346,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -5413,7 +5413,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -5480,7 +5480,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -5547,7 +5547,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -5614,7 +5614,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -5681,7 +5681,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -5748,7 +5748,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -5817,7 +5817,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -8163,7 +8163,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8184,7 +8184,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8205,7 +8205,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8226,7 +8226,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8249,7 +8249,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -8276,7 +8276,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8303,7 +8303,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8330,7 +8330,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8357,7 +8357,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8386,7 +8386,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -8419,7 +8419,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8452,7 +8452,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8485,7 +8485,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8518,7 +8518,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8553,7 +8553,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -8592,7 +8592,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8608,7 +8608,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8624,7 +8624,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8640,7 +8640,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8656,7 +8656,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8672,7 +8672,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8688,7 +8688,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8705,7 +8705,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -8733,7 +8733,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8745,7 +8745,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8757,7 +8757,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8769,7 +8769,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8781,7 +8781,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8793,7 +8793,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -8805,7 +8805,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8819,7 +8819,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -8867,7 +8867,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -8974,7 +8974,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -9081,7 +9081,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -9188,7 +9188,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -9271,7 +9271,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -9355,7 +9355,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -9438,7 +9438,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -9522,7 +9522,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -9605,7 +9605,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -9725,7 +9725,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -9771,7 +9771,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -9817,7 +9817,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -9863,7 +9863,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -9909,7 +9909,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -9955,7 +9955,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -10001,7 +10001,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -10049,7 +10049,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -10684,7 +10684,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -10740,7 +10740,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -10796,7 +10796,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -10852,7 +10852,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -10910,7 +10910,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -10969,7 +10969,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -11027,7 +11027,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -11086,7 +11086,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -11144,7 +11144,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -11233,7 +11233,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -11300,7 +11300,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -11367,7 +11367,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -11434,7 +11434,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -11503,7 +11503,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -11573,7 +11573,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -11642,7 +11642,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -11712,7 +11712,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -11781,7 +11781,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -14127,7 +14127,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14148,7 +14148,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14169,7 +14169,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14190,7 +14190,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14213,7 +14213,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -14240,7 +14240,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14267,7 +14267,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14294,7 +14294,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14321,7 +14321,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14350,7 +14350,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -14383,7 +14383,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14416,7 +14416,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14449,7 +14449,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14482,7 +14482,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14517,7 +14517,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -14556,7 +14556,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14572,7 +14572,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14588,7 +14588,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14604,7 +14604,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14620,7 +14620,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14636,7 +14636,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14652,7 +14652,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14669,7 +14669,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -14697,7 +14697,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14709,7 +14709,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14721,7 +14721,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14733,7 +14733,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14745,7 +14745,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14757,7 +14757,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -14769,7 +14769,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14783,7 +14783,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -14831,7 +14831,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -14938,7 +14938,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -15045,7 +15045,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -15152,7 +15152,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -15235,7 +15235,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -15319,7 +15319,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -15402,7 +15402,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -15486,7 +15486,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -15569,7 +15569,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -15689,7 +15689,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -15735,7 +15735,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -15781,7 +15781,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -15827,7 +15827,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -15873,7 +15873,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -15919,7 +15919,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -15965,7 +15965,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -16013,7 +16013,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -16714,7 +16714,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -16770,7 +16770,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -16826,7 +16826,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -16882,7 +16882,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -16940,7 +16940,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -16999,7 +16999,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -17057,7 +17057,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -17116,7 +17116,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -17174,7 +17174,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -17236,7 +17236,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -17302,7 +17302,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -17368,7 +17368,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -17434,7 +17434,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -17502,7 +17502,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -17571,7 +17571,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -17639,7 +17639,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -17708,7 +17708,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -17776,7 +17776,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -17875,7 +17875,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -17942,7 +17942,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -18009,7 +18009,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -18076,7 +18076,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -18143,7 +18143,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -18210,7 +18210,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -18277,7 +18277,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -18346,7 +18346,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -20692,7 +20692,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -20713,7 +20713,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -20734,7 +20734,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -20755,7 +20755,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -20778,7 +20778,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -20805,7 +20805,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -20832,7 +20832,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -20859,7 +20859,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -20886,7 +20886,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -20915,7 +20915,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -20948,7 +20948,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -20981,7 +20981,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -21014,7 +21014,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -21047,7 +21047,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -21082,7 +21082,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -21121,7 +21121,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21137,7 +21137,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21153,7 +21153,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21169,7 +21169,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21185,7 +21185,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21201,7 +21201,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21217,7 +21217,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -21234,7 +21234,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -21262,7 +21262,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21274,7 +21274,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21286,7 +21286,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21298,7 +21298,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21310,7 +21310,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21322,7 +21322,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21334,7 +21334,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -21348,7 +21348,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -21396,7 +21396,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -21503,7 +21503,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -21610,7 +21610,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -21717,7 +21717,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21800,7 +21800,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -21884,7 +21884,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -21967,7 +21967,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -22051,7 +22051,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22134,7 +22134,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -22254,7 +22254,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22300,7 +22300,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22346,7 +22346,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22392,7 +22392,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22438,7 +22438,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22484,7 +22484,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22530,7 +22530,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -22578,7 +22578,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -22751,7 +22751,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22797,7 +22797,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22843,7 +22843,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22889,7 +22889,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22935,7 +22935,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -22981,7 +22981,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23027,7 +23027,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -23075,7 +23075,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -23148,7 +23148,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23160,7 +23160,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23172,7 +23172,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23184,7 +23184,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23196,7 +23196,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23208,7 +23208,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23220,7 +23220,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -23234,7 +23234,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -23279,7 +23279,7 @@ rules:
                     - pattern: "if ($C) $T"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -23346,7 +23346,7 @@ rules:
                     - pattern: "$C && $KR"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -23413,7 +23413,7 @@ rules:
                     - pattern: "$C ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -23480,7 +23480,7 @@ rules:
                     - pattern: "if ($P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23549,7 +23549,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -23619,7 +23619,7 @@ rules:
                     - pattern: "if ($P || $K1) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23688,7 +23688,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -23758,7 +23758,7 @@ rules:
                     - pattern: "if ($K1 || $P) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23827,7 +23827,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"
@@ -23907,7 +23907,7 @@ rules:
                     - pattern: "if ($P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23919,7 +23919,7 @@ rules:
                     - pattern: "if ($P && $K1) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23931,7 +23931,7 @@ rules:
                     - pattern: "if ($K1 && $P) $T"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23943,7 +23943,7 @@ rules:
                     - pattern: "$P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23955,7 +23955,7 @@ rules:
                     - pattern: "$K1 && $P && $KR"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23967,7 +23967,7 @@ rules:
                     - pattern: "$P ? $KT : $KE"
                     - metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - metavariable-pattern:
                         metavariable: "$P"
                         patterns:
@@ -23979,7 +23979,7 @@ rules:
                     - pattern: "if ($C) {...} else $E"
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-pattern:
                         metavariable: "$C"
                         patterns:
@@ -23993,7 +23993,7 @@ rules:
                         $...REST
                     - metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - metavariable-regex:
                         metavariable: "$T"
                         regex: "(?s)^\\s*\\{?(?:[^{}]*[;\\n])?\\s*(?:return|throw)\\b[^{};]*;?(?:\\s*//[^\\n]*)*\\s*\\}?\\s*$"

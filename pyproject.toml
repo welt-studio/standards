@@ -64,9 +64,10 @@ known_first_party = [
 # `semgrep_files.py` e `semgrep_pending.py` deles) rodam só neste repo, não são hooks publicados.
 # Os hooks dos projetos continuam só com a stdlib.
 per_rule_ignores = { DEP004 = ["yaml"] }
-# Os testes do CodeQL copiados (`semgrep/test/vendor/`) importam os frameworks que testam (Flask,
-# Django...): são alvo das regras, não código deste repo.
-extend_exclude = ["semgrep/test/vendor"]
+# Os testes do CodeQL copiados (`semgrep/test/vendor/`) e os testes próprios das regras
+# (`semgrep/test/own/`) importam os frameworks que testam (Flask, Django...): são alvo das regras,
+# não código deste repo.
+extend_exclude = ["semgrep/test/vendor", "semgrep/test/own"]
 
 [tool.pytest.ini_options]
 strict = true

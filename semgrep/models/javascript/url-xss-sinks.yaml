@@ -1,0 +1,155 @@
+# Sumidouros de endereço (`isXssSink` do `ClientSideUrlRedirect::Sink`, que o `DomBasedXss::Sink`
+# inclui): atributo `href`/`src`/`action`/`formaction`/`data`/`xlink:href` por jQuery, `setAttribute`
+# e JSX, navegação por histórico e roteador, o `templateUrl` do AngularJS e a escrita da propriedade
+# num nó do DOM. A troca da localização fica em `location-navigation-sinks`.
+- patterns:
+    - pattern-either:
+        - pattern: "$($TAG, {..., $ATTR: $X, ...})"
+        - pattern: '$($TAG, {..., "$ATTR": $X, ...})'
+        - pattern: "$J.attr({..., $ATTR: $X, ...})"
+        - pattern: '$J.attr({..., "$ATTR": $X, ...})'
+    - metavariable-regex:
+        metavariable: "$ATTR"
+        regex: "(?i)^(?:action|formaction|href|src|xlink:href|data)$"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "$J.attr($ATTR, $X)"
+    - metavariable-regex:
+        metavariable: "$ATTR"
+        regex: '(?i)^["''](?:action|formaction|href|src|xlink:href|data)["'']$'
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "$E.setAttribute($ATTR, $X)"
+        - pattern: "$E.setAttributeNS($NS, $ATTR, $X)"
+    - metavariable-regex:
+        metavariable: "$ATTR"
+        regex: '(?i)^["''](?:action|formaction|href|src|xlink:href|data)["'']$'
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "navigation.navigate($X, ...)"
+        - pattern: "window.navigation.navigate($X, ...)"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "$H.push($X, ...)"
+        - pattern: "$H.replace($X, ...)"
+    # O histórico do navegador (`createBrowserHistory`); o `createHashHistory` só mexe no
+    # fragmento, que não executa `javascript:`.
+    - pattern-either:
+        - pattern-inside: |
+            $H = require("history").createBrowserHistory(...);
+            ...
+        - pattern-inside: |
+            import { createBrowserHistory } from "history";
+            ...
+            $H = createBrowserHistory(...);
+            ...
+    - focus-metavariable: "$X"
+# Roteador do Next.js (`next/router`): o `push`/`replace` de `useRouter()` e o da prop `router`
+# de uma página embrulhada por `withRouter`.
+- patterns:
+    - pattern-either:
+        - pattern: "useRouter().$M($X, ...)"
+        - patterns:
+            - pattern: "$R.$M($X, ...)"
+            - "$model": javascript/next-router-hook-binding
+    - "$model": javascript/next-use-router-import
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:push|replace)$"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "$P.router.$M($X, ...)"
+        - patterns:
+            - pattern: "router.$M($X, ...)"
+            - "$model": javascript/next-router-prop-param
+    - "$model": javascript/next-with-router-import
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:push|replace)$"
+    - focus-metavariable: "$X"
+# Atributo de endereço de um elemento HTML (minúsculo) no JSX.
+- patterns:
+    - pattern-either:
+        - pattern: "<$EL ... href={$X} ... />"
+        - pattern: "<$EL ... src={$X} ... />"
+        - pattern: "<$EL ... action={$X} ... />"
+        - pattern: "<$EL ... formAction={$X} ... />"
+    - metavariable-regex:
+        metavariable: "$EL"
+        regex: "^[a-z]"
+    - focus-metavariable: "$X"
+# O `<Link href={...}>` do `next/link`.
+- patterns:
+    - pattern-either:
+        - pattern: "<$LINK ... href={$X} ... />"
+        - pattern: "<$LINK ... src={$X} ... />"
+        - pattern: "<$LINK ... action={$X} ... />"
+        - pattern: "<$LINK ... formAction={$X} ... />"
+    - pattern-inside: |
+        import $LINK from "next/link";
+        ...
+    - focus-metavariable: "$X"
+# `templateUrl` de uma diretiva do AngularJS.
+- patterns:
+    - pattern: "{..., templateUrl: $X, ...}"
+    - pattern-inside: "$M.directive(..., function () {...})"
+    - focus-metavariable: "$X"
+# Escrita de `href`/`src`/`action`/`formaction`/`data` num nó do DOM (`AttributeWriteUrlSink`, o
+# `DomPropertyWrite` com `interpretsValueAsJavaScriptUrl`, que também vale para `+=`). O nó vem de
+# `document.createElement`/`getElementById`/`querySelector` (ou um item de `getElementsBy...`/
+# `querySelectorAll`), direto ou por uma variável do mesmo escopo: `config.src = ...` num objeto
+# qualquer não é um nó do DOM, e o Semgrep não tem o tipo do receptor.
+- patterns:
+    - pattern-either:
+        - pattern: "$E.$ATTR = $X"
+        - pattern: "$E.$ATTR += $X"
+    - pattern-inside: |
+        $E = document.$M(...);
+        ...
+    - metavariable-regex:
+        metavariable: "$ATTR"
+        regex: "^(?:action|formaction|href|src|data)$"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:createElement|createElementNS|getElementById|querySelector|elementFromPoint)$"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "$E.$ATTR = $X"
+        - pattern: "$E.$ATTR += $X"
+    - pattern-inside: |
+        $E = document.$C(...)[$I];
+        ...
+    - metavariable-regex:
+        metavariable: "$ATTR"
+        regex: "^(?:action|formaction|href|src|data)$"
+    - metavariable-regex:
+        metavariable: "$C"
+        regex: "^(?:querySelectorAll|getElementsByClassName|getElementsByTagName|getElementsByName)$"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "document.$M(...).$ATTR = $X"
+        - pattern: "document.$M(...).$ATTR += $X"
+    - metavariable-regex:
+        metavariable: "$ATTR"
+        regex: "^(?:action|formaction|href|src|data)$"
+    - metavariable-regex:
+        metavariable: "$M"
+        regex: "^(?:createElement|createElementNS|getElementById|querySelector|elementFromPoint)$"
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "document.$C(...)[$I].$ATTR = $X"
+        - pattern: "document.$C(...)[$I].$ATTR += $X"
+    - metavariable-regex:
+        metavariable: "$ATTR"
+        regex: "^(?:action|formaction|href|src|data)$"
+    - metavariable-regex:
+        metavariable: "$C"
+        regex: "^(?:querySelectorAll|getElementsByClassName|getElementsByTagName|getElementsByName)$"
+    - focus-metavariable: "$X"

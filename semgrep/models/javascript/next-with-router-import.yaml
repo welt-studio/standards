@@ -1,0 +1,4 @@
+# O `withRouter` importado do `next/router`: a página embrulhada recebe a prop `router`.
+- pattern-inside: |
+    import { withRouter } from "next/router";
+    ...

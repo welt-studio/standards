@@ -11,129 +11,114 @@ rules:
       codeql: js/incorrect-suffix-check
     patterns:
       - pattern-either:
-          - pattern: "$X.indexOf($Y) === $X.length - $Y.length"
-          - pattern: "$X.indexOf($Y) === $X.length - $Y.length - 1"
-          - pattern: "$X.indexOf($P + $Y) === $X.length - $Y.length - 1"
-          - pattern: "$X.indexOf($Y) === $X.length - ($Y.length + 1)"
-          - pattern: "$X.indexOf($P + $Y) === $X.length - ($Y.length + 1)"
-          - pattern: "$X.indexOf($Y) == $X.length - $Y.length"
-          - pattern: "$X.indexOf($Y) == $X.length - $Y.length - 1"
-          - pattern: "$X.indexOf($P + $Y) == $X.length - $Y.length - 1"
-          - pattern: "$X.indexOf($Y) == $X.length - ($Y.length + 1)"
-          - pattern: "$X.indexOf($P + $Y) == $X.length - ($Y.length + 1)"
-          - pattern: "$X.lastIndexOf($Y) === $X.length - $Y.length"
-          - pattern: "$X.lastIndexOf($Y) === $X.length - $Y.length - 1"
-          - pattern: "$X.lastIndexOf($P + $Y) === $X.length - $Y.length - 1"
-          - pattern: "$X.lastIndexOf($Y) === $X.length - ($Y.length + 1)"
-          - pattern: "$X.lastIndexOf($P + $Y) === $X.length - ($Y.length + 1)"
-          - pattern: "$X.lastIndexOf($Y) == $X.length - $Y.length"
-          - pattern: "$X.lastIndexOf($Y) == $X.length - $Y.length - 1"
-          - pattern: "$X.lastIndexOf($P + $Y) == $X.length - $Y.length - 1"
-          - pattern: "$X.lastIndexOf($Y) == $X.length - ($Y.length + 1)"
-          - pattern: "$X.lastIndexOf($P + $Y) == $X.length - ($Y.length + 1)"
-      - pattern-not-inside: "$X.length >= $Y.length && ..."
-      - pattern-not-inside: "$X.length > $Y.length && ..."
-      - pattern-not-inside: "$X.length >= $N && ..."
-      - pattern-not-inside: "$X.length > $N && ..."
-      - pattern-not-inside: "$X.indexOf($Z) !== -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) != -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) >= 0 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) > -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) > 0 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) !== -1 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) >= 0 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) > -1 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) > 0 && ..."
-      - pattern-not-inside: "$J !== -1 && ..."
-      - pattern-not-inside: "$J >= 0 && ..."
-      - pattern-not-inside: "$J > -1 && ..."
-      - pattern-not-inside: "$J > 0 && ..."
-      - pattern-not-inside: "!($J < 0) && ..."
-      - pattern-not-inside: "!($J <= -1) && ..."
-      - pattern-not-inside: "!($X.indexOf($Z) < 0) && ..."
-      - pattern-not-inside: "!($X.indexOf($Z) <= -1) && ..."
-      - pattern-not-inside: "$J === -1 || ... && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) === -1 || ..."
-      - pattern-not-inside: "$X.indexOf($Z) === -1 || ..."
-  - id: welt-js-incorrect-suffix-check-literal
-    languages:
-      - javascript
-      - typescript
-    severity: WARNING
-    message: "Esta verificação de sufixo não compara os comprimentos, então não trata indexOf retornando -1."
-    metadata:
-      category: security
-      cwe: "CWE-020: Improper Input Validation"
-      codeql: js/incorrect-suffix-check
-    patterns:
-      - pattern-either:
-          - pattern: '$X.indexOf("$S") === $X.length - $N'
-          - pattern: '$X.lastIndexOf("$S") === $X.length - $N'
-      - metavariable-comparison:
-          metavariable: "$N"
-          comparison: "$N > 1"
-      - pattern-not-inside: "$X.length >= $Y.length && ..."
-      - pattern-not-inside: "$X.length > $Y.length && ..."
-      - pattern-not-inside: "$X.length >= $N && ..."
-      - pattern-not-inside: "$X.length > $N && ..."
-      - pattern-not-inside: "$X.indexOf($Z) !== -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) != -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) >= 0 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) > -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) > 0 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) !== -1 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) >= 0 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) > -1 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) > 0 && ..."
-      - pattern-not-inside: "$J !== -1 && ..."
-      - pattern-not-inside: "$J >= 0 && ..."
-      - pattern-not-inside: "$J > -1 && ..."
-      - pattern-not-inside: "$J > 0 && ..."
-      - pattern-not-inside: "!($J < 0) && ..."
-      - pattern-not-inside: "!($J <= -1) && ..."
-      - pattern-not-inside: "!($X.indexOf($Z) < 0) && ..."
-      - pattern-not-inside: "!($X.indexOf($Z) <= -1) && ..."
-      - pattern-not-inside: "$J === -1 || ... && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) === -1 || ..."
-      - pattern-not-inside: "$X.indexOf($Z) === -1 || ..."
-  - id: welt-js-incorrect-suffix-check-literal-length
-    languages:
-      - javascript
-      - typescript
-    severity: WARNING
-    message: "Esta verificação de sufixo não compara os comprimentos, então não trata indexOf retornando -1."
-    metadata:
-      category: security
-      cwe: "CWE-020: Improper Input Validation"
-      codeql: js/incorrect-suffix-check
-    patterns:
-      - pattern-either:
-          - pattern: '$X.indexOf("$S") === $X.length - "$S".length'
-          - pattern: '$X.lastIndexOf("$S") === $X.length - "$S".length'
-      - pattern-not-inside: "$X.length >= $Y.length && ..."
-      - pattern-not-inside: "$X.length > $Y.length && ..."
-      - pattern-not-inside: "$X.length >= $N && ..."
-      - pattern-not-inside: "$X.length > $N && ..."
-      - pattern-not-inside: "$X.indexOf($Z) !== -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) != -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) >= 0 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) > -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) > 0 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) !== -1 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) >= 0 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) > -1 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) > 0 && ..."
-      - pattern-not-inside: "$J !== -1 && ..."
-      - pattern-not-inside: "$J >= 0 && ..."
-      - pattern-not-inside: "$J > -1 && ..."
-      - pattern-not-inside: "$J > 0 && ..."
-      - pattern-not-inside: "!($J < 0) && ..."
-      - pattern-not-inside: "!($J <= -1) && ..."
-      - pattern-not-inside: "!($X.indexOf($Z) < 0) && ..."
-      - pattern-not-inside: "!($X.indexOf($Z) <= -1) && ..."
-      - pattern-not-inside: "$J === -1 || ... && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) === -1 || ..."
-      - pattern-not-inside: "$X.indexOf($Z) === -1 || ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - $Y.length"
+                  - pattern: "$X.$M($ARG) == $X.length - $Y.length"
+                  - pattern: "$X.$M($ARG) !== $X.length - $Y.length"
+                  - pattern: "$X.$M($ARG) != $X.length - $Y.length"
+                  - pattern: "$X.length - $Y.length === $X.$M($ARG)"
+                  - pattern: "$X.length - $Y.length == $X.$M($ARG)"
+                  - pattern: "$X.length - $Y.length !== $X.$M($ARG)"
+                  - pattern: "$X.length - $Y.length != $X.$M($ARG)"
+                  - pattern: "$X.$M($ARG) === $X.length - $Y.length - 1"
+                  - pattern: "$X.$M($ARG) == $X.length - $Y.length - 1"
+                  - pattern: "$X.$M($ARG) !== $X.length - $Y.length - 1"
+                  - pattern: "$X.$M($ARG) != $X.length - $Y.length - 1"
+                  - pattern: "$X.length - $Y.length - 1 === $X.$M($ARG)"
+                  - pattern: "$X.length - $Y.length - 1 == $X.$M($ARG)"
+                  - pattern: "$X.length - $Y.length - 1 !== $X.$M($ARG)"
+                  - pattern: "$X.length - $Y.length - 1 != $X.$M($ARG)"
+                  - pattern: "$X.$M($ARG) === $X.length - ($Y.length + 1)"
+                  - pattern: "$X.$M($ARG) == $X.length - ($Y.length + 1)"
+                  - pattern: "$X.$M($ARG) !== $X.length - ($Y.length + 1)"
+                  - pattern: "$X.$M($ARG) != $X.length - ($Y.length + 1)"
+                  - pattern: "$X.length - ($Y.length + 1) === $X.$M($ARG)"
+                  - pattern: "$X.length - ($Y.length + 1) == $X.$M($ARG)"
+                  - pattern: "$X.length - ($Y.length + 1) !== $X.$M($ARG)"
+                  - pattern: "$X.length - ($Y.length + 1) != $X.$M($ARG)"
+                  - pattern: "$X.$M($ARG) === $X.length - 1 - $Y.length"
+                  - pattern: "$X.$M($ARG) == $X.length - 1 - $Y.length"
+                  - pattern: "$X.$M($ARG) !== $X.length - 1 - $Y.length"
+                  - pattern: "$X.$M($ARG) != $X.length - 1 - $Y.length"
+                  - pattern: "$X.length - 1 - $Y.length === $X.$M($ARG)"
+                  - pattern: "$X.length - 1 - $Y.length == $X.$M($ARG)"
+                  - pattern: "$X.length - 1 - $Y.length !== $X.$M($ARG)"
+                  - pattern: "$X.length - 1 - $Y.length != $X.$M($ARG)"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $D"
+                  - pattern: "$X.$M($ARG) == $D"
+                  - pattern: "$X.$M($ARG) !== $D"
+                  - pattern: "$X.$M($ARG) != $D"
+                  - pattern: "$D === $X.$M($ARG)"
+                  - pattern: "$D == $X.$M($ARG)"
+                  - pattern: "$D !== $X.$M($ARG)"
+                  - pattern: "$D != $X.$M($ARG)"
+              - pattern-either:
+                  - pattern-inside: |
+                      $D = $X.length - $Y.length;
+                      ...
+                  - pattern-inside: |
+                      $D = $X.length - $Y.length - 1;
+                      ...
+                  - pattern-inside: |
+                      $D = $X.length - ($Y.length + 1);
+                      ...
+                  - pattern-inside: |
+                      $D = $X.length - 1 - $Y.length;
+                      ...
+              - &delta_checks
+                pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$D >= $Z && ..."
+                    - pattern: "$D > $Z && ..."
+                    - pattern: "$Z <= $D && ..."
+                    - pattern: "$Z < $D && ..."
+      - &method_regex
+        metavariable-regex:
+          metavariable: "$M"
+          regex: "^(?:indexOf|lastIndexOf)$"
+      # O argumento não é um literal de um caractere (`x.indexOf("/") === x.length - 1` só falha
+      # com a string vazia, e o CodeQL o ignora) e não começa por parêntese.
+      - &arg_regex
+        metavariable-regex:
+          metavariable: "$ARG"
+          regex: "(?s)^(?!\\()(?![\"'`](?:[^\"'`\\\\]|\\\\.)[\"'`]$)"
+      # O comprimento subtraído é o do argumento (ou da parte variável de uma concatenação).
+      - &arg_relation
+        metavariable-pattern:
+          metavariable: "$ARG"
+          pattern-either:
+            - pattern: "$Y"
+            - pattern: "$P + $Y"
+            - pattern: "$Y + $P"
+      # Verificações de `-1` e de `>= 0` da MESMA chamada (mesmo receptor, método e argumento).
+      - &call_checks
+        pattern-not-inside:
+          pattern-either:
+            - pattern: "$X.$M($ARG) !== -1 && ..."
+            - pattern: "$X.$M($ARG) != -1 && ..."
+            - pattern: "$X.$M($ARG) >= 0 && ..."
+            - pattern: "$X.$M($ARG) > -1 && ..."
+            - pattern: "$X.$M($ARG) > 0 && ..."
+            - pattern: "0 <= $X.$M($ARG) && ..."
+            - pattern: "0 < $X.$M($ARG) && ..."
+            - pattern: "-1 < $X.$M($ARG) && ..."
+            - pattern: "!($X.$M($ARG) < 0) && ..."
+            - pattern: "!($X.$M($ARG) <= -1) && ..."
+            - pattern: "$X.$M($ARG) === -1 || ..."
+            - pattern: "$X.$M($ARG) == -1 || ..."
+            - pattern: "$X.$M($ARG) < 0 || ..."
+            - pattern: "$X.$M($ARG) <= -1 || ..."
+      # Comparação entre os comprimentos do receptor e do argumento.
+      - &length_checks
+        pattern-not-inside:
+          pattern-either:
+            - pattern: "$X.length >= $Y.length && ..."
+            - pattern: "$X.length > $Y.length && ..."
+            - pattern: "$Y.length <= $X.length && ..."
+            - pattern: "$Y.length < $X.length && ..."
   - id: welt-js-incorrect-suffix-check-variable
     languages:
       - javascript
@@ -146,35 +131,464 @@ rules:
       codeql: js/incorrect-suffix-check
     patterns:
       - pattern-either:
-          - pattern: "$I === $X.length - $Y.length - 1"
-          - pattern: "$I === $X.length - $Y.length"
-          - pattern: "$I === $X.length - ($Y.length + 1)"
-          - pattern: "$I === $D"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$I === $X.length - $Y.length"
+                  - pattern: "$I == $X.length - $Y.length"
+                  - pattern: "$I !== $X.length - $Y.length"
+                  - pattern: "$I != $X.length - $Y.length"
+                  - pattern: "$X.length - $Y.length === $I"
+                  - pattern: "$X.length - $Y.length == $I"
+                  - pattern: "$X.length - $Y.length !== $I"
+                  - pattern: "$X.length - $Y.length != $I"
+                  - pattern: "$I === $X.length - $Y.length - 1"
+                  - pattern: "$I == $X.length - $Y.length - 1"
+                  - pattern: "$I !== $X.length - $Y.length - 1"
+                  - pattern: "$I != $X.length - $Y.length - 1"
+                  - pattern: "$X.length - $Y.length - 1 === $I"
+                  - pattern: "$X.length - $Y.length - 1 == $I"
+                  - pattern: "$X.length - $Y.length - 1 !== $I"
+                  - pattern: "$X.length - $Y.length - 1 != $I"
+                  - pattern: "$I === $X.length - ($Y.length + 1)"
+                  - pattern: "$I == $X.length - ($Y.length + 1)"
+                  - pattern: "$I !== $X.length - ($Y.length + 1)"
+                  - pattern: "$I != $X.length - ($Y.length + 1)"
+                  - pattern: "$X.length - ($Y.length + 1) === $I"
+                  - pattern: "$X.length - ($Y.length + 1) == $I"
+                  - pattern: "$X.length - ($Y.length + 1) !== $I"
+                  - pattern: "$X.length - ($Y.length + 1) != $I"
+                  - pattern: "$I === $X.length - 1 - $Y.length"
+                  - pattern: "$I == $X.length - 1 - $Y.length"
+                  - pattern: "$I !== $X.length - 1 - $Y.length"
+                  - pattern: "$I != $X.length - 1 - $Y.length"
+                  - pattern: "$X.length - 1 - $Y.length === $I"
+                  - pattern: "$X.length - 1 - $Y.length == $I"
+                  - pattern: "$X.length - 1 - $Y.length !== $I"
+                  - pattern: "$X.length - 1 - $Y.length != $I"
+          - patterns:
+              - pattern-either:
+                  - pattern: "$I === $D"
+                  - pattern: "$I == $D"
+                  - pattern: "$I !== $D"
+                  - pattern: "$I != $D"
+                  - pattern: "$D === $I"
+                  - pattern: "$D == $I"
+                  - pattern: "$D !== $I"
+                  - pattern: "$D != $I"
+              - pattern-either:
+                  - pattern-inside: |
+                      $D = $X.length - $Y.length;
+                      ...
+                  - pattern-inside: |
+                      $D = $X.length - $Y.length - 1;
+                      ...
+                  - pattern-inside: |
+                      $D = $X.length - ($Y.length + 1);
+                      ...
+                  - pattern-inside: |
+                      $D = $X.length - 1 - $Y.length;
+                      ...
+              - *delta_checks
+      - pattern-inside: |
+          $I = $X.$M($ARG);
+          ...
+      - *method_regex
+      - *arg_regex
+      - *arg_relation
+      - *call_checks
+      - *length_checks
+      # Verificações de `-1` e de `>= 0` da própria variável.
+      - pattern-not-inside:
+          pattern-either:
+            - pattern: "$I !== -1 && ..."
+            - pattern: "$I != -1 && ..."
+            - pattern: "$I >= 0 && ..."
+            - pattern: "$I > -1 && ..."
+            - pattern: "$I > 0 && ..."
+            - pattern: "0 <= $I && ..."
+            - pattern: "0 < $I && ..."
+            - pattern: "-1 < $I && ..."
+            - pattern: "!($I < 0) && ..."
+            - pattern: "!($I <= -1) && ..."
+            - pattern: "$I === -1 || ..."
+            - pattern: "$I == -1 || ..."
+            - pattern: "$I < 0 || ..."
+            - pattern: "$I <= -1 || ..."
+  - id: welt-js-incorrect-suffix-check-literal
+    languages:
+      - javascript
+      - typescript
+    severity: WARNING
+    message: "Esta verificação de sufixo não compara os comprimentos, então não trata indexOf retornando -1."
+    metadata:
+      category: security
+      cwe: "CWE-020: Improper Input Validation"
+      codeql: js/incorrect-suffix-check
+    patterns:
+      # Um bloco por tamanho de literal (2 a 20 caracteres): o `metavariable-comparison` não calcula o
+      # comprimento do texto, então o número tem de aparecer no padrão e na regex do literal. Literal
+      # de um caractere o CodeQL ignora; de mais de 20, a regra não pega.
       - pattern-either:
-          - pattern-inside: "$I = $X.indexOf($Y); ..."
-          - pattern-inside: "$I = $X.lastIndexOf($Y); ..."
-          - pattern-inside: "$D = $X.length - $Y.length; ..."
-      - pattern-not-inside: "$X.length >= $Y.length && ..."
-      - pattern-not-inside: "$X.length > $Y.length && ..."
-      - pattern-not-inside: "$X.length >= $N && ..."
-      - pattern-not-inside: "$X.length > $N && ..."
-      - pattern-not-inside: "$X.indexOf($Z) !== -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) != -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) >= 0 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) > -1 && ..."
-      - pattern-not-inside: "$X.indexOf($Z) > 0 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) !== -1 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) >= 0 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) > -1 && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) > 0 && ..."
-      - pattern-not-inside: "$J !== -1 && ..."
-      - pattern-not-inside: "$J >= 0 && ..."
-      - pattern-not-inside: "$J > -1 && ..."
-      - pattern-not-inside: "$J > 0 && ..."
-      - pattern-not-inside: "!($J < 0) && ..."
-      - pattern-not-inside: "!($J <= -1) && ..."
-      - pattern-not-inside: "!($X.indexOf($Z) < 0) && ..."
-      - pattern-not-inside: "!($X.indexOf($Z) <= -1) && ..."
-      - pattern-not-inside: "$J === -1 || ... && ..."
-      - pattern-not-inside: "$X.lastIndexOf($Z) === -1 || ..."
-      - pattern-not-inside: "$X.indexOf($Z) === -1 || ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 2"
+                  - pattern: "$X.$M($ARG) == $X.length - 2"
+                  - pattern: "$X.$M($ARG) !== $X.length - 2"
+                  - pattern: "$X.$M($ARG) != $X.length - 2"
+                  - pattern: "$X.length - 2 === $X.$M($ARG)"
+                  - pattern: "$X.length - 2 == $X.$M($ARG)"
+                  - pattern: "$X.length - 2 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 2 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){2}\"|'(?:[^'\\\\]|\\\\.){2}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 2 && ..."
+                    - pattern: "$X.length > 2 && ..."
+                    - pattern: "2 <= $X.length && ..."
+                    - pattern: "2 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 3"
+                  - pattern: "$X.$M($ARG) == $X.length - 3"
+                  - pattern: "$X.$M($ARG) !== $X.length - 3"
+                  - pattern: "$X.$M($ARG) != $X.length - 3"
+                  - pattern: "$X.length - 3 === $X.$M($ARG)"
+                  - pattern: "$X.length - 3 == $X.$M($ARG)"
+                  - pattern: "$X.length - 3 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 3 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){3}\"|'(?:[^'\\\\]|\\\\.){3}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 3 && ..."
+                    - pattern: "$X.length > 3 && ..."
+                    - pattern: "3 <= $X.length && ..."
+                    - pattern: "3 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 4"
+                  - pattern: "$X.$M($ARG) == $X.length - 4"
+                  - pattern: "$X.$M($ARG) !== $X.length - 4"
+                  - pattern: "$X.$M($ARG) != $X.length - 4"
+                  - pattern: "$X.length - 4 === $X.$M($ARG)"
+                  - pattern: "$X.length - 4 == $X.$M($ARG)"
+                  - pattern: "$X.length - 4 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 4 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){4}\"|'(?:[^'\\\\]|\\\\.){4}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 4 && ..."
+                    - pattern: "$X.length > 4 && ..."
+                    - pattern: "4 <= $X.length && ..."
+                    - pattern: "4 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 5"
+                  - pattern: "$X.$M($ARG) == $X.length - 5"
+                  - pattern: "$X.$M($ARG) !== $X.length - 5"
+                  - pattern: "$X.$M($ARG) != $X.length - 5"
+                  - pattern: "$X.length - 5 === $X.$M($ARG)"
+                  - pattern: "$X.length - 5 == $X.$M($ARG)"
+                  - pattern: "$X.length - 5 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 5 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){5}\"|'(?:[^'\\\\]|\\\\.){5}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 5 && ..."
+                    - pattern: "$X.length > 5 && ..."
+                    - pattern: "5 <= $X.length && ..."
+                    - pattern: "5 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 6"
+                  - pattern: "$X.$M($ARG) == $X.length - 6"
+                  - pattern: "$X.$M($ARG) !== $X.length - 6"
+                  - pattern: "$X.$M($ARG) != $X.length - 6"
+                  - pattern: "$X.length - 6 === $X.$M($ARG)"
+                  - pattern: "$X.length - 6 == $X.$M($ARG)"
+                  - pattern: "$X.length - 6 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 6 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){6}\"|'(?:[^'\\\\]|\\\\.){6}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 6 && ..."
+                    - pattern: "$X.length > 6 && ..."
+                    - pattern: "6 <= $X.length && ..."
+                    - pattern: "6 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 7"
+                  - pattern: "$X.$M($ARG) == $X.length - 7"
+                  - pattern: "$X.$M($ARG) !== $X.length - 7"
+                  - pattern: "$X.$M($ARG) != $X.length - 7"
+                  - pattern: "$X.length - 7 === $X.$M($ARG)"
+                  - pattern: "$X.length - 7 == $X.$M($ARG)"
+                  - pattern: "$X.length - 7 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 7 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){7}\"|'(?:[^'\\\\]|\\\\.){7}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 7 && ..."
+                    - pattern: "$X.length > 7 && ..."
+                    - pattern: "7 <= $X.length && ..."
+                    - pattern: "7 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 8"
+                  - pattern: "$X.$M($ARG) == $X.length - 8"
+                  - pattern: "$X.$M($ARG) !== $X.length - 8"
+                  - pattern: "$X.$M($ARG) != $X.length - 8"
+                  - pattern: "$X.length - 8 === $X.$M($ARG)"
+                  - pattern: "$X.length - 8 == $X.$M($ARG)"
+                  - pattern: "$X.length - 8 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 8 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){8}\"|'(?:[^'\\\\]|\\\\.){8}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 8 && ..."
+                    - pattern: "$X.length > 8 && ..."
+                    - pattern: "8 <= $X.length && ..."
+                    - pattern: "8 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 9"
+                  - pattern: "$X.$M($ARG) == $X.length - 9"
+                  - pattern: "$X.$M($ARG) !== $X.length - 9"
+                  - pattern: "$X.$M($ARG) != $X.length - 9"
+                  - pattern: "$X.length - 9 === $X.$M($ARG)"
+                  - pattern: "$X.length - 9 == $X.$M($ARG)"
+                  - pattern: "$X.length - 9 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 9 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){9}\"|'(?:[^'\\\\]|\\\\.){9}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 9 && ..."
+                    - pattern: "$X.length > 9 && ..."
+                    - pattern: "9 <= $X.length && ..."
+                    - pattern: "9 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 10"
+                  - pattern: "$X.$M($ARG) == $X.length - 10"
+                  - pattern: "$X.$M($ARG) !== $X.length - 10"
+                  - pattern: "$X.$M($ARG) != $X.length - 10"
+                  - pattern: "$X.length - 10 === $X.$M($ARG)"
+                  - pattern: "$X.length - 10 == $X.$M($ARG)"
+                  - pattern: "$X.length - 10 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 10 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){10}\"|'(?:[^'\\\\]|\\\\.){10}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 10 && ..."
+                    - pattern: "$X.length > 10 && ..."
+                    - pattern: "10 <= $X.length && ..."
+                    - pattern: "10 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 11"
+                  - pattern: "$X.$M($ARG) == $X.length - 11"
+                  - pattern: "$X.$M($ARG) !== $X.length - 11"
+                  - pattern: "$X.$M($ARG) != $X.length - 11"
+                  - pattern: "$X.length - 11 === $X.$M($ARG)"
+                  - pattern: "$X.length - 11 == $X.$M($ARG)"
+                  - pattern: "$X.length - 11 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 11 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){11}\"|'(?:[^'\\\\]|\\\\.){11}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 11 && ..."
+                    - pattern: "$X.length > 11 && ..."
+                    - pattern: "11 <= $X.length && ..."
+                    - pattern: "11 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 12"
+                  - pattern: "$X.$M($ARG) == $X.length - 12"
+                  - pattern: "$X.$M($ARG) !== $X.length - 12"
+                  - pattern: "$X.$M($ARG) != $X.length - 12"
+                  - pattern: "$X.length - 12 === $X.$M($ARG)"
+                  - pattern: "$X.length - 12 == $X.$M($ARG)"
+                  - pattern: "$X.length - 12 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 12 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){12}\"|'(?:[^'\\\\]|\\\\.){12}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 12 && ..."
+                    - pattern: "$X.length > 12 && ..."
+                    - pattern: "12 <= $X.length && ..."
+                    - pattern: "12 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 13"
+                  - pattern: "$X.$M($ARG) == $X.length - 13"
+                  - pattern: "$X.$M($ARG) !== $X.length - 13"
+                  - pattern: "$X.$M($ARG) != $X.length - 13"
+                  - pattern: "$X.length - 13 === $X.$M($ARG)"
+                  - pattern: "$X.length - 13 == $X.$M($ARG)"
+                  - pattern: "$X.length - 13 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 13 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){13}\"|'(?:[^'\\\\]|\\\\.){13}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 13 && ..."
+                    - pattern: "$X.length > 13 && ..."
+                    - pattern: "13 <= $X.length && ..."
+                    - pattern: "13 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 14"
+                  - pattern: "$X.$M($ARG) == $X.length - 14"
+                  - pattern: "$X.$M($ARG) !== $X.length - 14"
+                  - pattern: "$X.$M($ARG) != $X.length - 14"
+                  - pattern: "$X.length - 14 === $X.$M($ARG)"
+                  - pattern: "$X.length - 14 == $X.$M($ARG)"
+                  - pattern: "$X.length - 14 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 14 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){14}\"|'(?:[^'\\\\]|\\\\.){14}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 14 && ..."
+                    - pattern: "$X.length > 14 && ..."
+                    - pattern: "14 <= $X.length && ..."
+                    - pattern: "14 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 15"
+                  - pattern: "$X.$M($ARG) == $X.length - 15"
+                  - pattern: "$X.$M($ARG) !== $X.length - 15"
+                  - pattern: "$X.$M($ARG) != $X.length - 15"
+                  - pattern: "$X.length - 15 === $X.$M($ARG)"
+                  - pattern: "$X.length - 15 == $X.$M($ARG)"
+                  - pattern: "$X.length - 15 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 15 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){15}\"|'(?:[^'\\\\]|\\\\.){15}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 15 && ..."
+                    - pattern: "$X.length > 15 && ..."
+                    - pattern: "15 <= $X.length && ..."
+                    - pattern: "15 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 16"
+                  - pattern: "$X.$M($ARG) == $X.length - 16"
+                  - pattern: "$X.$M($ARG) !== $X.length - 16"
+                  - pattern: "$X.$M($ARG) != $X.length - 16"
+                  - pattern: "$X.length - 16 === $X.$M($ARG)"
+                  - pattern: "$X.length - 16 == $X.$M($ARG)"
+                  - pattern: "$X.length - 16 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 16 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){16}\"|'(?:[^'\\\\]|\\\\.){16}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 16 && ..."
+                    - pattern: "$X.length > 16 && ..."
+                    - pattern: "16 <= $X.length && ..."
+                    - pattern: "16 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 17"
+                  - pattern: "$X.$M($ARG) == $X.length - 17"
+                  - pattern: "$X.$M($ARG) !== $X.length - 17"
+                  - pattern: "$X.$M($ARG) != $X.length - 17"
+                  - pattern: "$X.length - 17 === $X.$M($ARG)"
+                  - pattern: "$X.length - 17 == $X.$M($ARG)"
+                  - pattern: "$X.length - 17 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 17 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){17}\"|'(?:[^'\\\\]|\\\\.){17}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 17 && ..."
+                    - pattern: "$X.length > 17 && ..."
+                    - pattern: "17 <= $X.length && ..."
+                    - pattern: "17 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 18"
+                  - pattern: "$X.$M($ARG) == $X.length - 18"
+                  - pattern: "$X.$M($ARG) !== $X.length - 18"
+                  - pattern: "$X.$M($ARG) != $X.length - 18"
+                  - pattern: "$X.length - 18 === $X.$M($ARG)"
+                  - pattern: "$X.length - 18 == $X.$M($ARG)"
+                  - pattern: "$X.length - 18 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 18 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){18}\"|'(?:[^'\\\\]|\\\\.){18}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 18 && ..."
+                    - pattern: "$X.length > 18 && ..."
+                    - pattern: "18 <= $X.length && ..."
+                    - pattern: "18 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 19"
+                  - pattern: "$X.$M($ARG) == $X.length - 19"
+                  - pattern: "$X.$M($ARG) !== $X.length - 19"
+                  - pattern: "$X.$M($ARG) != $X.length - 19"
+                  - pattern: "$X.length - 19 === $X.$M($ARG)"
+                  - pattern: "$X.length - 19 == $X.$M($ARG)"
+                  - pattern: "$X.length - 19 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 19 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){19}\"|'(?:[^'\\\\]|\\\\.){19}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 19 && ..."
+                    - pattern: "$X.length > 19 && ..."
+                    - pattern: "19 <= $X.length && ..."
+                    - pattern: "19 < $X.length && ..."
+          - patterns:
+              - pattern-either:
+                  - pattern: "$X.$M($ARG) === $X.length - 20"
+                  - pattern: "$X.$M($ARG) == $X.length - 20"
+                  - pattern: "$X.$M($ARG) !== $X.length - 20"
+                  - pattern: "$X.$M($ARG) != $X.length - 20"
+                  - pattern: "$X.length - 20 === $X.$M($ARG)"
+                  - pattern: "$X.length - 20 == $X.$M($ARG)"
+                  - pattern: "$X.length - 20 !== $X.$M($ARG)"
+                  - pattern: "$X.length - 20 != $X.$M($ARG)"
+              - metavariable-regex:
+                  metavariable: "$ARG"
+                  regex: "^(?:\"(?:[^\"\\\\]|\\\\.){20}\"|'(?:[^'\\\\]|\\\\.){20}')$"
+              - pattern-not-inside:
+                  pattern-either:
+                    - pattern: "$X.length >= 20 && ..."
+                    - pattern: "$X.length > 20 && ..."
+                    - pattern: "20 <= $X.length && ..."
+                    - pattern: "20 < $X.length && ..."
+      - *method_regex
+      - *call_checks

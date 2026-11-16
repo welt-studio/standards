@@ -1,1 +1,9 @@
+# `exact`: limpa só o valor convertido, não o sumidouro de dentro. O motor não leva o `exact` pela
+# atribuição, então a variável que recebeu o resultado é limpa à parte.
 - pattern: "uuid.UUID(...)"
+  exact: true
+- patterns:
+    - pattern-inside: |
+        $Y = uuid.UUID(...)
+        ...
+    - pattern: "$Y"

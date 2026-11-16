@@ -50,8 +50,7 @@ rules:
     # destino (por isso fica de fora).
     pattern-sinks: &sinks
       - patterns:
-          - pattern-either:
-              - "$model": javascript/fs-path-sinks
+          - "$model": javascript/fs-path-sink-expression
           - metavariable-regex:
               metavariable: "$M"
               regex: "^(?!realpath(?:Sync)?$)"
@@ -498,7 +497,7 @@ rules:
                     - &f_c_no_or_or_negation
                       metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())"
                     - &g_member_eq_true_cond
                       metavariable-pattern:
                         metavariable: "$C"
@@ -532,7 +531,7 @@ rules:
                     - &f_c_no_and_or_negation
                       metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())"
                     - &g_member_eq_false_cond
                       metavariable-pattern:
                         metavariable: "$C"
@@ -569,7 +568,7 @@ rules:
                     - &f_c_or2
                       metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*$"
                     - &g_member_eq_or2_true_cond
                       metavariable-pattern:
                         metavariable: "$C"
@@ -608,7 +607,7 @@ rules:
                     - &f_c_and2
                       metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*$"
                     - &g_member_eq_or2_false_cond
                       metavariable-pattern:
                         metavariable: "$C"
@@ -641,7 +640,7 @@ rules:
                     - &f_c_or3
                       metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:&&|!\\s*\\())[^|]*\\|\\|[^|]*\\|\\|[^|]*$"
                     - &g_member_eq_or3_true_cond
                       metavariable-pattern:
                         metavariable: "$C"
@@ -679,7 +678,7 @@ rules:
                     - &f_c_and3
                       metavariable-regex:
                         metavariable: "$C"
-                        regex: "(?s)^(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
+                        regex: "(?s)^(?!\\()(?!.*(?:\\|\\||!\\s*\\())[^&]*&&[^&]*&&[^&]*$"
                     - &g_member_eq_or3_false_cond
                       metavariable-pattern:
                         metavariable: "$C"
@@ -714,7 +713,7 @@ rules:
                     - &f_p_true_term
                       metavariable-regex:
                         metavariable: "$P"
-                        regex: "(?s)^(?!\\s*!|.*(?:\\|\\||&&))"
+                        regex: "(?s)^(?!\\(|\\s*!|.*(?:\\|\\||&&))"
                     - &g_member_array_true_match
                       metavariable-pattern:
                         metavariable: "$P"
@@ -1179,8 +1178,7 @@ rules:
       # outros estados o taint não passa por ele.
       - &k_realpath
         patterns:
-          - pattern-either:
-              - "$model": javascript/fs-path-sinks
+          - "$model": javascript/fs-path-sink-expression
           - metavariable-regex:
               metavariable: "$M"
               regex: "^realpath(?:Sync)?$"

@@ -6,6 +6,9 @@ motor Pro sobre cada pasta de teste do CodeQL e reprovam o que fugir do `semgrep
 """
 
 import json
+import shutil
+import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -59,6 +62,25 @@ def test_parse_findings_by_codeql_metadata() -> None:
         }
     )
     assert semgrep_parity.parse_findings(output) == [Finding("js/xss", "a.js", 3, 4)]
+
+
+def test_engine_failures_only_count_errors() -> None:
+    output = json.dumps(
+        {
+            "results": [],
+            "errors": [
+                {"level": "warn", "message": "Syntax error at line 3"},
+                {"level": "error", "message": "Uncaught exn in Pro_scan.scan"},
+                {"level": "error", "type": "SemgrepError"},
+                "junk",
+            ],
+        }
+    )
+    assert semgrep_parity.engine_failures(output) == [
+        "Uncaught exn in Pro_scan.scan",
+        "SemgrepError",
+    ]
+    assert semgrep_parity.engine_failures("[]") == []
 
 
 def test_compare_with_one_line_of_tolerance() -> None:
@@ -171,8 +193,50 @@ def test_parity_with_codeql(folder: str) -> None:
     assert semgrep_parity.problems(folder, result, pending) == []
 
 
+# Limites cuja reprodução é um aborto do motor Pro, não uma linha que ele deixa de pegar: o
+# `run_semgrep` levanta erro de motor, então `test_limit_still_holds` não os mede. Cada um tem o
+# teste próprio abaixo, que exige o aborto.
+ENGINE_ABORT_LIMITS = frozenset({"pro-engine-nested-comparison-crash"})
+
+
 def _limits() -> list[str]:
-    return sorted(semgrep_pending.load_limits(semgrep_pending.LIMITS.read_text(encoding="utf-8")))
+    limits = semgrep_pending.load_limits(semgrep_pending.LIMITS.read_text(encoding="utf-8"))
+    return sorted(name for name in limits if name not in ENGINE_ABORT_LIMITS)
+
+
+def _engine_errors(folder: Path, *, pro: bool) -> list[str]:
+    """As mensagens de erro de nível `error` do motor, ao rodar a regra da pasta sobre o alvo dela
+    (copiado para fora do repo, onde o ignore padrão do Semgrep não cobre a pasta `test/`)."""
+    semgrep = shutil.which("semgrep")
+    assert semgrep is not None, "semgrep não encontrado: rode pelo ambiente do standards (`uv run`)"
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / folder.name
+        shutil.copytree(folder, target)
+        result = subprocess.run(  # noqa: S603 - o semgrep do ambiente, com a regra do standards
+            [semgrep, "scan", *(["--pro"] if pro else []), "--metrics=off", "--quiet", "--json",
+             "--disable-version-check", "--config", "rule.yaml", "target.js"],
+            capture_output=True, text=True, check=False, cwd=target,
+        )  # fmt: skip
+    assert result.stdout, f"o semgrep não devolveu JSON: {result.stderr.strip()[-500:]}"
+    document: object = json.loads(result.stdout)
+    errors = document.get("errors", []) if isinstance(document, dict) else []
+    return [
+        str(error.get("message", ""))
+        for error in errors
+        if isinstance(error, dict) and error.get("level") == "error"
+    ]
+
+
+@pytest.mark.semgrep
+@pytest.mark.timeout(300)
+def test_pro_engine_nested_comparison_crash_still_aborts() -> None:
+    """O limite `pro-engine-nested-comparison-crash`: o motor Pro aborta com erro interno na
+    condição que começa por operando entre parênteses, e o motor aberto não. Se o Pro parar de
+    abortar, o limite caiu: tire-o do `limits.json` e a regra pode voltar à forma simples."""
+    folder = semgrep_pending.LIMITS_DIR / "pro-engine-nested-comparison-crash"
+    pro = _engine_errors(folder, pro=True)
+    assert any("Invalid_argument" in message for message in pro), pro
+    assert _engine_errors(folder, pro=False) == []
 
 
 @pytest.mark.semgrep

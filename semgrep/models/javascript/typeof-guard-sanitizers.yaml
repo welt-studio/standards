@@ -1,0 +1,35 @@
+# `TypeTestGuard` (isStringTypeGuard, TaintTracking.qll): o teste do `typeof x` barra o valor onde
+# ele deixa de poder ser uma string, nas duas polaridades. Etiqueta que não é `string`
+# (`typeof x === "object"`): barra no ramo em que o teste vale (`===`) e no `else` do `!==`.
+# Etiqueta `string`: barra no `else` do `=== "string"` e no ramo do `!== "string"`.
+- patterns:
+    - pattern: "$X"
+    - pattern-inside:
+        patterns:
+          - pattern-either:
+              - pattern: |
+                  if (typeof $X === "$T") { $...BODY }
+              - pattern: |
+                  if (typeof $X == "$T") { $...BODY }
+              - pattern: |
+                  if (typeof $X !== "$T") {...} else { $...BODY }
+              - pattern: |
+                  if (typeof $X != "$T") {...} else { $...BODY }
+          - metavariable-regex:
+              metavariable: "$T"
+              regex: "^(?!string$)"
+          - focus-metavariable: "$...BODY"
+- patterns:
+    - pattern: "$X"
+    - pattern-inside:
+        patterns:
+          - pattern-either:
+              - pattern: |
+                  if (typeof $X === "string") {...} else { $...BODY }
+              - pattern: |
+                  if (typeof $X == "string") {...} else { $...BODY }
+              - pattern: |
+                  if (typeof $X !== "string") { $...BODY }
+              - pattern: |
+                  if (typeof $X != "string") { $...BODY }
+          - focus-metavariable: "$...BODY"

@@ -95,6 +95,43 @@ Coisas que surgem no meio do caminho e não podem se perder: dúvidas, decisões
 - **Próximo passo**: levantar o que os 4 repos usam hoje (`Cargo.toml` `[lints]`, `clippy.toml`,
   `rust-toolchain.toml`) e propor a base.
 
+### [Segurança] Propagação das regras Python igual à do CodeQL
+
+- [ ] `2026-11-15`
+- **Contexto**: na fase 3 da paridade (alertas reais dos 19 repos), o `py/path-injection` com o motor
+  Pro deu uns 35 achados a mais em dois repos. O Semgrep passa a contaminação por
+  qualquer chamada que não conhece (banco, cache, `asyncio.to_thread`, método de objeto); o CodeQL
+  só por passos modelados.
+- **Item**: redesenhar a propagação das regras Python: `taint_assume_safe_functions: true` mais
+  `pattern-propagators` explícitos para os passos do CodeQL (`TaintTrackingPrivate.qll`:
+  concatenação, f-string, `%`, `str()`, métodos de string, contêineres, `await`). Ficou fora do
+  lote 3 por ser trabalho grande.
+- **Próximo passo**: medir numa consulta só (`py/path-injection`) o efeito nos testes do CodeQL e nos
+  19 repos antes de estender.
+
+### [Segurança] Publicar as regras do Semgrep para os projetos: travas da CI
+
+- [ ] `2026-11-15`
+- **Contexto**: o motor Pro do Semgrep (proprietário) aborta num formato de código
+  (`(i % 2 === 0) === flip ? a : b`, guarda do `js/path-injection`), reproduzido em 1.184.0 e
+  1.185.0; quando aborta, a varredura do repo inteiro volta sem achados. Contornado na regra e
+  registrado como limite; o PO não quer abrir issue. Na fase 3 a varredura também entrou em código
+  de terceiro dentro dos repos (o bundle de um tema comprado).
+- **Item**: quando as regras forem publicadas para os projetos:
+  - a CI deles tem de reprovar com erro de motor (nível `error` no JSON), como a paridade do
+    standards já faz;
+  - o estouro de tempo por arquivo também sai como nível `error` ("Timeout during interfile
+    analysis"). Na fase 3 (2026-11-15) deu 15 casos em 3 repos, quase todos no
+    `js/html-constructed-from-input`, em código gerado, bundle de terceiro e alguns arquivos
+    próprios de um repo. O arquivo estourado fica sem varredura naquela regra. Antes
+    de publicar: deixar a regra mais rápida ou a trava separar o aborto do motor do estouro de
+    tempo;
+  - excluir da varredura o código de terceiro dentro do repo;
+  - decisão do PO (2026-11-15): as pastas `tests/` ficam fora da varredura (ignore padrão do
+    Semgrep), embora o CodeQL as varra. As 4 perdas do `py/incomplete-url-substring-sanitization`
+    nos alertas reais são todas em teste.
+- **Próximo passo**: no desenho do hook ou workflow de publicação, incluir as três coisas.
+
 ## Tarefas soltas
 
 ### [Release] Atualizar a `feat/security` a partir da `main`, com o ESLint indo para a 4.8.0

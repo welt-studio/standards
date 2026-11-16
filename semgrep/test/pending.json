@@ -277,20 +277,15 @@
   },
   "js/html-constructed-from-input": {
     "missing": [
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/jquery-plugin.js:12",
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/lib2/index.ts:18",
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:105",
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:111",
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:90",
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:99"
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:90"
     ],
+    "limited": {
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:12": "xml-parsed-at-the-sink"
+    },
     "extra": [
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:37",
+      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:16",
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:70",
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:76",
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:83",
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:85",
-      "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/main.js:94",
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/typed.ts:18",
       "javascript/query-tests/Security/CWE-079/UnsafeHtmlConstruction/typed.ts:8"
     ]
@@ -841,11 +836,11 @@
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:100",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:102",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:108",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:131",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:149",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:161",
-      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:173",
-      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:277",
-      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:281",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:20",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:27",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:325",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:351",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:417",
@@ -878,17 +873,15 @@
     "extra": [
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:117",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:126",
-      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:135",
-      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:138",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:171",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:179",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:193",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:202",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:210",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:264",
-      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:272",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:311",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:318",
+      "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:336",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:345",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:409",
       "javascript/query-tests/Security/CWE-078/UnsafeShellCommandConstruction/lib/lib.js:485",
@@ -1016,8 +1009,7 @@
       "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:30",
       "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:36",
       "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:48",
-      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:52",
-      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:68"
+      "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:52"
     ],
     "extra": [
       "javascript/query-tests/Security/CWE-079/UnsafeJQueryPlugin/unsafe-jquery-plugin.js:141",
@@ -1125,19 +1117,7 @@
   "js/xss-through-dom": {
     "missing": [
       "javascript/query-tests/Security/CWE-079/XssThroughDom/angular.ts:33",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:12",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:35",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:45",
       "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:72",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:9",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/forms.js:93",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:109",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:115",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:122",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:131",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:132",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:140",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:141",
       "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:150",
       "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:155",
       "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:64",
@@ -1147,14 +1127,7 @@
     "extra": [
       "javascript/query-tests/Security/CWE-079/XssThroughDom/angular.ts:24",
       "javascript/query-tests/Security/CWE-079/XssThroughDom/angular.ts:25",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:159",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:36",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:43",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:47",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:59",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:66",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:68",
-      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:84"
+      "javascript/query-tests/Security/CWE-079/XssThroughDom/xss-through-dom.js:68"
     ]
   },
   "js/xss-through-exception": {
@@ -1178,13 +1151,12 @@
     ]
   },
   "js/zipslip": {
-    "missing": ["javascript/query-tests/Security/CWE-022/ZipSlip/TarSlipBad.js:9"],
     "extra": [
+      "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipBad.js:53",
       "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipGood.js:10",
       "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipGood.js:16",
       "javascript/query-tests/Security/CWE-022/ZipSlip/ZipSlipGood.js:29"
-    ],
-    "overfit": ["fileName"]
+    ]
   },
   "py/bad-tag-filter": {
     "missing": [
@@ -1230,7 +1202,6 @@
   },
   "py/http-response-splitting": {
     "extra": [
-      "python/query-tests/Security/CWE-113-HeaderInjection/Tests1/extra_response_headers.py:30",
       "python/query-tests/Security/CWE-113-HeaderInjection/Tests2-with-wsgi-validator/wsgiref_tests.py:12"
     ]
   },
@@ -1259,14 +1230,11 @@
     ]
   },
   "py/path-injection": {
-    "missing": [
-      "python/query-tests/Security/CWE-022-PathInjection/test.py:33",
-      "python/query-tests/Security/CWE-022-PathInjection/test.py:49"
-    ],
     "extra": [
-      "python/query-tests/Security/CWE-022-PathInjection/flask_path_injection.py:13",
-      "python/query-tests/Security/CWE-022-PathInjection/path_injection.py:140",
-      "python/query-tests/Security/CWE-022-PathInjection/path_injection.py:55"
+      "python/query-tests/Security/CWE-022-PathInjection/test.py:41",
+      "python/query-tests/Security/CWE-022-PathInjection/test_chaining.py:23",
+      "python/query-tests/Security/CWE-022-PathInjection/test_chaining.py:32",
+      "python/query-tests/Security/CWE-022-PathInjection/test_chaining.py:45"
     ],
     "overfit": ["UUID", "uuid"]
   },

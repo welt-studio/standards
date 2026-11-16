@@ -1,0 +1,4 @@
+# A variável que guarda o `useRouter()` do `next/router`.
+- pattern-inside: |
+    $R = useRouter();
+    ...

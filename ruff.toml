@@ -4,3 +4,24 @@ extend = "ruff-base.toml"
 # Os scripts dos hooks se importam pelo nome (o pre-commit executa o arquivo solto): o código
 # próprio é o de `hooks/`, e o dos ajudantes dos testes (`tests/gitrepo.py`).
 src = ["hooks", "tests"]
+
+# Os testes próprios das regras do Semgrep (`semgrep/test/own/`) são código vulnerável de propósito,
+# escrito como o de um projeto qualquer (sem anotação, `except Exception`, `open` com caminho
+# montado) para as regras acusarem; a marca `$ Alert[...]` aponta a linha exata. As famílias de
+# regra que esse código fere de propósito ficam desligadas só ali; as protegidas (`TID251`,
+# `PGH004`) continuam.
+[lint.extend-per-file-ignores]
+"semgrep/test/own/**" = [
+    "ANN",
+    "ARG",
+    "B",
+    "BLE",
+    "E501",
+    "EM",
+    "N",
+    "PTH",
+    "RET",
+    "S",
+    "T20",
+    "TRY",
+]

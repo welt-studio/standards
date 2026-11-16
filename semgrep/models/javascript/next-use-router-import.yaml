@@ -1,0 +1,4 @@
+# O `useRouter` importado do `next/router`.
+- pattern-inside: |
+    import { useRouter } from "next/router";
+    ...

@@ -30,9 +30,10 @@
     - focus-metavariable: "$X"
 # Métodos do jQuery que leem a string como HTML (`JQuery::MethodCall.interpretsArgumentAsHtml` do
 # CodeQL): o receptor é um objeto jQuery, isto é, o resultado de `$(...)`, `jQuery(...)` ou
-# `cash(...)` (com ou sem encadeamento) ou uma variável atribuída dele. O `append`/`prepend`/
-# `after`/`before` do DOM nativo (`document.body.append(...)`) e o do cheerio inserem texto ou
-# outro objeto, então um receptor qualquer não serve.
+# `cash(...)` (com ou sem encadeamento) ou uma variável atribuída dele, e o resultado dos métodos
+# que devolvem jQuery (`find`, `filter`, `children`...) sobre ela. O `append`/`prepend`/`after`/
+# `before` do DOM nativo (`document.body.append(...)`) e o do cheerio inserem texto ou outro
+# objeto, então um receptor qualquer não serve.
 - patterns:
     - pattern-either:
         - pattern: "<... $D(...) ...>.$M(..., $X, ...)"
@@ -43,11 +44,48 @@
                 ...
     - metavariable-regex:
         metavariable: "$D"
-        regex: '^(?:\$|jQuery|cash)$'
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
     - metavariable-regex:
         metavariable: "$M"
         regex:
           "$text": javascript/jquery-html-method-regex
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern: "<... $J.$T(...) ...>.$M(..., $X, ...)"
+    - pattern-inside: |
+        $J = $D(...);
+        ...
+    - metavariable-regex:
+        metavariable: "$D"
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
+    - metavariable-regex:
+        metavariable: "$T"
+        regex:
+          "$text": javascript/jquery-chain-method-regex
+    - metavariable-regex:
+        metavariable: "$M"
+        regex:
+          "$text": javascript/jquery-html-method-regex
+    - focus-metavariable: "$X"
+# O nome do método calculado (`base[html ? "html" : "text"](valor)`): a regex olha os nomes entre
+# aspas na expressão.
+- patterns:
+    - pattern-either:
+        - pattern: "<... $D(...) ...>[$K](..., $X, ...)"
+        - patterns:
+            - pattern: "$J[$K](..., $X, ...)"
+            - pattern-inside: |
+                $J = $D(...);
+                ...
+    - metavariable-regex:
+        metavariable: "$D"
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
+    - metavariable-regex:
+        metavariable: "$K"
+        regex: '(?s).*["''](?:html|append|prepend|after|before|wrap|wrapAll|wrapInner|replaceWith|appendTo|prependTo|insertAfter|insertBefore)["''].*'
     - focus-metavariable: "$X"
 # Os mesmos métodos com callback que devolve o HTML (`.html(d => ...)`, `.replaceWith(function () {...})`).
 - patterns:
@@ -63,7 +101,28 @@
                 ...
     - metavariable-regex:
         metavariable: "$D"
-        regex: '^(?:\$|jQuery|cash)$'
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
+    - metavariable-regex:
+        metavariable: "$M"
+        regex:
+          "$text": javascript/jquery-html-method-regex
+    - focus-metavariable: "$X"
+- patterns:
+    - pattern-either:
+        - pattern: "<... $J.$T(...) ...>.$M((...) => $X)"
+        - pattern: "<... $J.$T(...) ...>.$M(function (...) { ... return $X; })"
+    - pattern-inside: |
+        $J = $D(...);
+        ...
+    - metavariable-regex:
+        metavariable: "$D"
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
+    - metavariable-regex:
+        metavariable: "$T"
+        regex:
+          "$text": javascript/jquery-chain-method-regex
     - metavariable-regex:
         metavariable: "$M"
         regex:
@@ -114,8 +173,20 @@
         metavariable: "$R"
         regex: "^(?:select|selectAll|selection)$"
     - focus-metavariable: "$X"
+# `$($X)`: o `$` é o do jQuery (global, de `require` ou de `import`); uma função local de mesmo nome
+# (`const $ = (id) => document.getElementById(id)`, `function $(id) {...}`) não é.
 - patterns:
     - pattern: "$($X)"
+    - pattern-not-inside: |
+        $ = (...) => ...;
+        ...
+    - pattern-not-inside: |
+        $ = function (...) {...};
+        ...
+    - pattern-not-inside: |
+        ...
+        function $(...) {...}
+        ...
     - focus-metavariable: "$X"
 - patterns:
     - "$model": javascript/jquery-call
@@ -177,7 +248,8 @@
                 ...
     - metavariable-regex:
         metavariable: "$D"
-        regex: '^(?:\$|jQuery|cash)$'
+        regex:
+          "$text": javascript/jquery-dollar-name-regex
     - focus-metavariable: "$X"
 # MooTools: a opção/propriedade `html` do Element e o appendHtml.
 - patterns:
