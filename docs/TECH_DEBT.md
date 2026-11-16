@@ -1,5 +1,52 @@
 # Débitos Técnicos
 
+## Segurança
+
+### [ESLint] `minimatch` 10 vulnerável no pacote do ESLint (GHSA-g3hv-75wg-m249)
+
+- [ ] **Severidade**: Média · `2026-11-16`
+- **Arquivos**: `package.json`, `eslint/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`
+- **Descrição**: o `minimatch` < 11.0.1 tem negação de serviço por glob (alerta moderado no
+  `main`). O risco é baixo: o atacante precisa controlar o padrão de glob, e no lint quem escreve os
+  padrões somos nós. Cinco pacotes puxam o 10.2.6:
+  - `eslint` 10.12.0: corrigido na 10.15.0 (2026-11-13);
+  - `@eslint/config-array` 0.23.5: corrigido na 0.23.6 (2026-11-13);
+  - `@typescript-eslint/typescript-estree` 8.72.0: corrigido na 8.73.0 (2026-11-16);
+  - `eslint-plugin-import-x` 4.17.1: corrigido na 4.18.1 (2026-11-09);
+  - `eslint-plugin-jsx-a11y-x` 0.2.0: sem correção (a última versão é de maio e ainda pede
+    `^10.2.5`).
+
+  Decisão do PO (`2026-11-16`): esperar as versões completarem os 7 dias da política, sem exceção de
+  idade.
+
+- **Sugestão**: a partir de `2026-11-23`, quando o `typescript-eslint` 8.73.0 completa 7 dias:
+  1. subir `eslint`, `typescript-eslint` e `eslint-plugin-import-x`;
+  2. no `eslint-plugin-jsx-a11y-x`, `overrides` do pnpm com faixa fechada
+     (`eslint-plugin-jsx-a11y-x>minimatch: 11.0.5`), com o teste do pacote verde;
+  3. publicar a `eslint-v6.0.1` e conferir no GitHub que o alerta fechou.
+
+### [Renovate] Alertas do Dependabot e Renovate: repensar quem avisa e quem corrige
+
+- [ ] **Severidade**: Baixa · `2026-11-16`
+- **Arquivos**: `renovate/default.json5` (`vulnerabilityAlerts`, `osvVulnerabilityAlerts`),
+  configuração de segurança dos repos no GitHub
+- **Descrição**: hoje são duas peças.
+  - **Alertas do Dependabot**, ligados nos repos: detectam a falha (inclusive em dependência
+    indireta) e o GitHub avisa no `git push`.
+  - **Renovate**: abre os PRs. As atualizações do Dependabot estão desligadas: sem
+    `dependabot.yml`, e `automated-security-fixes` desligado.
+
+  O Renovate lê os alertas do GitHub pelo `vulnerabilityAlerts`, mas não abriu PR para o `minimatch`
+  (débito acima): a correção é major numa dependência indireta, fora da faixa dos pacotes que a
+  pedem. O OSV do Renovate confere só dependência direta. A falha ficou visível só pelo aviso do
+  GitHub, e o PO quer repensar a divisão entre os dois (`2026-11-16`).
+
+- **Sugestão**: levantar com o PO:
+  - se os alertas do Dependabot ficam como a fonte de detecção;
+  - como uma falha indireta sem PR do Renovate vira trabalho: por exemplo, a auditoria semanal
+    (`pnpm audit`) também no standards, ou uma regra do Renovate para `overrides`;
+  - se alguma peça sobra.
+
 ## Produção / Infra
 
 ### [Renovate] `rustsec/audit-check` fora do Renovate, preso num commit do `main`
