@@ -10,8 +10,9 @@ Coisas que surgem no meio do caminho e não podem se perder: dúvidas, decisões
 - **Contexto**: o assessment gratuito do GitHub achou vulnerabilidades em 15 dos 25 repos. O Code
   Security, que roda o CodeQL, custa US$30 por mês e não fica, por decisão do PO. As 143 consultas da
   suíte padrão do CodeQL (Python 41, JS/TS 85, Actions 17) foram portadas para regras do Semgrep Pro.
-  As regras, o medidor e a tabela de paridade estão no `wip/codeql-port.tar.gz` da branch
-  `feat/security`.
+  As regras ficam em `semgrep/` (gerador, testes do CodeQL e testes próprios). O medidor dos alertas
+  reais e os alertas ficam fora do repo, que é público: eles dizem onde estão as vulnerabilidades
+  dos repos privados.
 - **Item**: o primeiro porte ficou raso. Ele acertou 73% dos testes do próprio CodeQL e 62 dos 79
   alertas reais em 4 repos. Python e Actions ficaram perto do CodeQL; o JS/TS, longe.
   - **Diagnóstico de 2026-11-13.** Foram sorteadas 100 perdas, 20 de cada uma das 5 consultas grandes
@@ -161,7 +162,7 @@ Coisas que surgem no meio do caminho e não podem se perder: dúvidas, decisões
 - **Item**: atualizar a branch a partir da `main` e resolver o conflito no `eslint/package.json` e
   no README: a versão vai para 4.8.0 e ficam as duas seções do README.
   - O rebase precisa de árvore limpa, e o `docs/TECH_DEBT.md` tem alteração pendente do PO.
-  - Antes de publicar, decidir o destino do `wip/codeql-port.tar.gz`, que não deve ir para a
-    `main`.
+  - O `wip/codeql-port.tar.gz` (o primeiro porte) saiu da história da branch antes do primeiro
+    push (2026-11-16). Ele tinha nomes dos repos privados e contagens de alerta por consulta.
   - Ao publicar, criar as tags `eslint-v4.8.0`, `security-v1.0.0` e `gitignore-v1.0.0`.
 - **Próximo passo**: com o `TECH_DEBT.md` resolvido, `git rebase main` na `feat/security`.
