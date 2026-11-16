@@ -99,7 +99,18 @@
     `./index.css`;
   - na v6, todo CSS fica numa camada (`css/use-layers`).
 
-  O que a v4 aceitava reprova.
+  O que a v4 aceitava reprova. Os 6 projetos que usam o pacote, com a tag de hoje:
+
+  | Projeto                           | Tag             |
+  | --------------------------------- | --------------- |
+  | comichub                          | `eslint-v4.7.1` |
+  | welt-studio (pelo `catalog`)      | `eslint-v4.7.1` |
+  | flowbit (`frontend/`)             | `eslint-v4.7.1` |
+  | pg-studio                         | `eslint-v4.6.0` |
+  | nebulai                           | `eslint-v4.6.0` |
+  | shapeshifter-studio (`frontend/`) | `eslint-v4.6.0` |
+
+  O que já se sabe de cada um:
   - **welt-studio**: os apps importam o `@fontsource` no `main.tsx`. O Tailwind está declarado no
     `packages/ui` e no `packages/vite-config`, não nos apps, então o Knip dos apps não lê o
     `@import` do CSS.
@@ -117,7 +128,10 @@
   Por projeto:
   - **welt-studio**: os `@import` das fontes vão para o CSS do `packages/ui`, onde o Tailwind é
     declarado.
-  - **ComicHub**: descartar o contorno.
+  - **ComicHub**: descartar o contorno. As instruções foram mandadas à sessão do projeto em
+    `2026-11-16`.
+  - **flowbit, pg-studio, nebulai e shapeshifter-studio**: conferir se há CSS de pacote no
+    `main.tsx` e o que o `index.css` tem fora de camada.
 
 ## DX (Developer Experience)
 
