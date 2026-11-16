@@ -69,62 +69,41 @@ const architectureRules = {
 // busca, loader e guarda. O limite trava a tela de voltar para a rota (decisão do PO, 2026-10-27).
 const ROUTE_MAX_LINES = 60;
 
-// CSS só pelo `main.tsx` (decisão do PO, 2026-11-12). O nosso entra pelo `./index.css`, a porta do
-// CSS global, que puxa os outros por `@import`. O de pacote (as fontes do `@fontsource`) entra por
-// `import` no `main.tsx`, antes do `./index.css`, como a documentação do Fontsource e do Vite mostra:
-// por `@import` no CSS, o Knip não vê a dependência, porque só lê CSS pelo plugin do Tailwind. O ESLint
-// não lê o CSS, mas lê o `import` de CSS do TS, e é por ele que a regra é travada.
+// CSS só pelo `src/index.css` (decisão do PO, 2026-11-16, que revoga a de 2026-11-12). O CSS tem uma
+// porta: o `main.tsx` importa só o `./index.css`, e o nosso CSS e o de pacote entram nele por
+// `@import`. A cascata e o `@layer` moram nessa porta: só pelo `@import` do CSS o pacote que define
+// classe entra numa camada (`layer(base)`) e não vence as utilities do Tailwind. O Knip lê esse
+// `@import` pelo plugin do Tailwind, ligado no workspace que declara `tailwindcss` (ou
+// `@tailwindcss/vite`); sem ele, acusa o pacote como sem uso. O ESLint não lê o CSS, mas lê o `import`
+// de CSS do TS, e é por ele que a regra é travada.
 // O `.css` com ou sem o sufixo de query do Vite (`?inline`, `?url`, `?raw`): o sufixo muda o que o
 // import devolve, não o fato de ser CSS.
 const CSS_IMPORT = "\\.css(\\?.*)?$";
+const CSS_OUTSIDE_MAIN_MESSAGE =
+  'CSS não se importa no TS: o nosso e o de pacote entram por `@import` no `src/index.css` (ex.: `@import "pacote/x.css" layer(base);`).';
+const CSS_IN_MAIN_MESSAGE =
+  'O `main.tsx` importa só o `./index.css`: o CSS de pacote vai para ele por `@import` (ex.: `@import "pacote/x.css" layer(base);`, sem `layer()` se só tem `@font-face`).';
 // `import()` de CSS: o `no-restricted-imports` só vê o import estático.
 const dynamicCssImport = {
-  selector: "ImportExpression[source.value=/\\.css(\\?|$)/]",
-  message:
-    "CSS entra só por `import` estático no `main.tsx`: o nosso por `@import` no `src/index.css`.",
+  selector: `ImportExpression[source.value=/${CSS_IMPORT}/]`,
+  message: CSS_OUTSIDE_MAIN_MESSAGE,
 };
 const cssOutsideMainRules = {
   "no-restricted-imports": [
     "error",
-    {
-      patterns: [
-        {
-          regex: CSS_IMPORT,
-          message:
-            "CSS entra só pelo `main.tsx`: o nosso por `@import` no `src/index.css`, o de pacote por `import` no `main.tsx`.",
-        },
-      ],
-    },
+    { patterns: [{ regex: CSS_IMPORT, message: CSS_OUTSIDE_MAIN_MESSAGE }] },
   ],
   "no-restricted-syntax": ["error", dynamicCssImport],
 };
 const cssInMainRules = {
   "no-restricted-imports": [
     "error",
+    // Qualquer CSS que não seja o `./index.css`, inclusive o de pacote.
     {
-      patterns: [
-        {
-          // Relativo ou por alias, e não o `./index.css`: o nosso CSS entra por `@import` nele.
-          regex: "^(?!\\./index\\.css$)(\\.|@/).*\\.css(\\?.*)?$",
-          message:
-            "O nosso CSS entra por `@import` no `src/index.css`; o `main.tsx` só importa o `./index.css` e o CSS de pacote.",
-        },
-      ],
+      patterns: [{ regex: `^(?!\\./index\\.css$).*${CSS_IMPORT}`, message: CSS_IN_MAIN_MESSAGE }],
     },
   ],
-  // O `./index.css` por último: o CSS de pacote vem antes, e o nosso, carregado depois, prevalece na
-  // cascata. Depois dele, nenhum import só de efeito (CSS de pacote também entra assim) e nenhum import
-  // de CSS, nem com binding (`import url from "pacote/x.css?url"`).
-  "no-restricted-syntax": [
-    "error",
-    dynamicCssImport,
-    {
-      selector:
-        "ImportDeclaration[source.value='./index.css'] ~ ImportDeclaration:matches([specifiers.length=0], [source.value=/\\.css(\\?|$)/])",
-      message:
-        "O `./index.css` é o último import de CSS do `main.tsx`: o CSS de pacote vem antes dele.",
-    },
-  ],
+  "no-restricted-syntax": ["error", dynamicCssImport],
 };
 
 // O boundaries resolve os imports pelo `import/resolver` legado (do `eslint-module-utils`), não pelo

@@ -164,24 +164,32 @@ const MAIN = join("apps", "web", "src", "main.tsx");
 const MAIN_CASES = [
   ['import "./theme.css";\nimport "./index.css";\n', ["no-restricted-imports"]],
   ['import "@/styles/theme.css";\nimport "./index.css";\n', ["no-restricted-imports"]],
-  ['import "./index.css";\nimport "@fontsource/inter/400.css";\n', ["no-restricted-syntax"]],
-  ['import "./index.css";\nimport "@fontsource/inter";\n', ["no-restricted-syntax"]],
+  // O CSS de pacote entra por `@import` no `src/index.css`: no `main.tsx`, antes ou depois do
+  // `./index.css`, reprova.
+  ['import "@fontsource/inter/400.css";\nimport "./index.css";\n', ["no-restricted-imports"]],
+  ['import "./index.css";\nimport "material-symbols/outlined.css";\n', ["no-restricted-imports"]],
   [
     'import raw from "./tema.css?inline";\nimport "./index.css";\nexport { raw };\n',
     ["no-restricted-imports"],
   ],
   [
     'import "./index.css";\nimport url from "@fontsource/inter/400.css?url";\nexport { url };\n',
-    ["no-restricted-syntax"],
+    ["no-restricted-imports"],
   ],
   [
     'import "./index.css";\nexport const load = () => import("@fontsource/inter");\nexport const theme = () => import("./b.css");\n',
     ["no-restricted-syntax"],
   ],
-  ['import "@fontsource/inter";\nimport "@fontsource/inter/700.css";\nimport "./index.css";\n', []],
+  // Só o `./index.css` passa: outra grafia do mesmo arquivo, ou ele com query, reprova.
+  ['import "./index.css?inline";\n', ["no-restricted-imports"]],
+  ['import "@/index.css";\n', ["no-restricted-imports"]],
+  ['import "../src/index.css";\n', ["no-restricted-imports"]],
+  // Fica de fora o pacote sem a extensão: pelo nome, não dá para saber se ele é CSS.
+  ['import "@fontsource/inter";\nimport "./index.css";\n', []],
+  ['import "./index.css";\n', []],
 ];
 
-test("o main.tsx só importa CSS de pacote e, por último, o ./index.css", async () => {
+test("o main.tsx só importa o ./index.css", async () => {
   const eslint = new ESLint();
   for (const [code, expected] of MAIN_CASES) {
     const [result] = await eslint.lintText(code, { filePath: join(project, MAIN) });

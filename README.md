@@ -101,8 +101,12 @@ Pacote em `eslint/`, instalado por tag do git (o repositório é público, entã
 precisa de token: máquina, CI e build Docker baixam como qualquer pacote):
 
 ```json
-"@welt-studio/eslint-config": "github:welt-studio/standards#eslint-v4.3.2&path:/eslint"
+"@welt-studio/eslint-config": "github:welt-studio/standards#eslint-v5.0.0&path:/eslint"
 ```
+
+A v5 quebra o CSS da v4: o `main.tsx` importa só o `./index.css`, e o CSS de pacote (as fontes do
+`@fontsource`, por exemplo) sai do `main.tsx` e entra por `@import` no `src/index.css` (ver "CSS só
+pelo `src/index.css`").
 
 O lockfile guarda o commit exato da tag. Atualizar um projeto é trocar a tag e rodar `pnpm install`;
 o Renovate abre esse PR sozinho quando sai uma tag nova, já com o lockfile (ver "Renovate").
@@ -169,8 +173,8 @@ e as rotas são as rotas por arquivo do TanStack Router, finas como no
 
 ```
 src/
-  main.tsx                 # monta o app; importa o CSS de pacote (fontes) e, por último, o index.css
-  index.css                # o nosso CSS global (tema): uma porta de entrada, que importa os outros
+  main.tsx                 # monta o app; importa o index.css
+  index.css                # a porta de todo CSS: o nosso (tema) e o de pacote entram por @import
   entry-server.tsx         # só com prerender SSR (`vite build --ssr`)
   vite-env.d.ts
   app/                     # providers, instância do router, layout global, error boundary
@@ -194,31 +198,41 @@ src/
 - **Pasta ou arquivo de `src/` fora da lista reprova** (`boundaries/no-unknown-files`): a estrutura
   é a mesma em todos os apps. Na raiz de `src/` só ficam os arquivos de entrada da tabela e o
   `index.css`; `App.tsx` e `router.tsx` moram em `app/`.
-- **CSS só pelo `main.tsx`** (decisão do PO, 2026-11-12). O nosso CSS tem uma porta, o
-  `src/index.css`, como no bulletproof: tema e outros arquivos nossos entram nele por `@import`. Ele
-  é parte da entrada, não de uma camada; `assets/` é para arquivo estático (imagem, fonte). O CSS de
-  pacote (as fontes do `@fontsource`) entra por `import` no `main.tsx`, antes do `./index.css`, como
-  a documentação do Fontsource e do Vite mostra. Por `@import` no CSS, o Knip não vê a dependência e
-  a acusa como sem uso, porque ele só lê CSS pelo plugin do Tailwind.
+- **CSS só pelo `src/index.css`** (decisão do PO, 2026-11-16, que revoga a de 2026-11-12). O CSS
+  tem uma porta, como no bulletproof: o `main.tsx` importa só o `./index.css`, e o nosso CSS (tema e
+  outros arquivos) e o de pacote entram nele por `@import`. Ele é parte da entrada, não de uma
+  camada; `assets/` é para arquivo estático (imagem, fonte). A cascata e o `@layer` moram nessa
+  porta. O CSS de pacote que define classe (o `material-symbols`, por exemplo) entra com
+  `layer(base)`; fora de layer, ele vence as utilities do Tailwind e trava o `text-*` e o `hidden`
+  no elemento. O que só declara `@font-face` (o `@fontsource`) pode entrar sem layer.
 
-  ```tsx
-  // src/main.tsx
-  import "@fontsource/inter/400.css";
-  import "./index.css";
+  ```css
+  /* src/index.css */
+  @import "tailwindcss";
+  @import "@fontsource/inter/400.css";
+  @import "material-symbols/outlined.css" layer(base);
   ```
+
+  O `@import "tailwindcss"` vem primeiro: ele declara a ordem das camadas
+  (`theme, base, components, utilities`), e a camada que aparece primeiro fica antes na cascata.
+
+  Nada confere o `layer()` hoje: o ESLint não lê CSS (ver `docs/TECH_DEBT.md`).
+
+  O Knip vê a dependência puxada por `@import` pelo plugin do Tailwind, que só liga no workspace
+  cujo `package.json` declara `tailwindcss` (ou `@tailwindcss/vite`). Sem isso, ele acusa o pacote
+  como sem uso e a CI reprova. Num monorepo em que o Tailwind mora num pacote compartilhado, o CSS de
+  pacote vai para o CSS desse pacote.
 
   O ESLint não lê o CSS, mas lê o `import` de CSS do TS, e é por ele que a regra é travada:
   - `import` de `.css` fora do `main.tsx` reprova (`no-restricted-imports`);
-  - no `main.tsx`, CSS relativo ou por `@/` que não seja o `./index.css` reprova
-    (`no-restricted-imports`);
-  - import só de efeito depois do `./index.css` reprova (`no-restricted-syntax`): o CSS de pacote vem
-    antes, e o nosso prevalece na cascata.
+  - no `main.tsx`, qualquer CSS que não seja o `./index.css` reprova, inclusive o de pacote
+    (`no-restricted-imports`).
 
   O `.css` conta com ou sem o sufixo de query do Vite (`?inline`, `?url`, `?raw`), e o `import()` de
   CSS reprova em qualquer arquivo (`no-restricted-syntax`).
 
-  Fica de fora o pacote importado sem a extensão (`import "@fontsource/inter"`) num arquivo que não
-  é o `main.tsx`. Pelo nome, não dá para saber se ele é CSS.
+  Fica de fora o pacote importado sem a extensão (`import "@fontsource/inter"`). Pelo nome, não dá
+  para saber se ele é CSS.
 
 - **Rota fina:** arquivo em `src/routes/` tem no máximo 60 linhas. Ele só declara o `createFileRoute`
   (parâmetros, busca com zod, loader, guarda) e o componente vem da feature.
