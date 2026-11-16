@@ -120,8 +120,7 @@ repos:
         entry: pnpm run lint:files --fix
         language: system
         # O `identify` do pre-commit marca `.tsx` como `tsx` e `.jsx` como `jsx`, não `ts`/`javascript`.
-        # O `css` porque o padrão linta o CSS (`css/use-layers`).
-        types_or: [javascript, jsx, ts, tsx, css]
+        types_or: [javascript, jsx, ts, tsx]
         exclude: ^eslint/test/fixture/
       - id: type-check
         name: TypeScript Check

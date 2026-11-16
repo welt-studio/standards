@@ -73,7 +73,6 @@ const COVERED_RULES = new Set([
   "@typescript-eslint/unbound-method",
   "vitest/unbound-method",
   "vitest/expect-expect",
-  "css/use-layers",
 ]);
 
 // O que cada arquivo do fixture deve reprovar; arquivo fora daqui não reprova nenhuma das regras.
@@ -209,24 +208,6 @@ async function assertCases(file, cases) {
 }
 
 test("o main.tsx só importa o ./index.css", () => assertCases(MAIN, MAIN_CASES));
-
-// Todo CSS numa camada: os casos são textos lintados no lugar do `index.css`.
-const INDEX_CSS = join("apps", "web", "src", "index.css");
-const CSS_CASES = [
-  // CSS de pacote sem `layer()` vence as utilities do Tailwind.
-  ['@import "material-symbols/outlined.css";\n', ["css/use-layers"]],
-  // O atalho `@import "tailwindcss"` não tem `layer()`: entra a forma expandida.
-  ['@import "tailwindcss";\n', ["css/use-layers"]],
-  // O nosso CSS de regras também fica numa camada.
-  [".icon {\n  font-size: 24px;\n}\n", ["css/use-layers"]],
-  ["@layer {\n  a {\n    color: red;\n  }\n}\n", ["css/use-layers"]],
-  // Arquivo nosso com `@theme` entra com `layer()`; o `@theme` fica no topo do arquivo dele.
-  ['@import "./theme.css" layer(theme);\n', []],
-  ["@theme {\n  --color-brand: oklch(0.6 0.2 250);\n}\n", []],
-  ['@plugin "@tailwindcss/typography";\n', []],
-];
-
-test("todo CSS fica numa camada", () => assertCases(INDEX_CSS, CSS_CASES));
 
 test("o que o git ignora fica fora do lint", async () => {
   // O caso só vale se o git de fato ignora o arquivo (o `check-ignore` sai com erro se não ignora).

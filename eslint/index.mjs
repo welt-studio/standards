@@ -33,7 +33,6 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 import { architectureConfigs } from "./architecture.mjs";
-import { cssConfigs } from "./css.mjs";
 import { testFiles, toolConfigFiles, unitTestFiles } from "./files.mjs";
 import { i18nConfigs } from "./i18n.mjs";
 import versionedIgnores from "./ignores.json" with { type: "json" };
@@ -543,8 +542,6 @@ export function weltConfig({
     },
     ...unitTestConfigs,
     { name: "welt/tests", files: testFiles, rules: testRelaxedRules },
-    // O CSS tem linguagem própria (`css/css`); as configs acima são todas só de JS e TS.
-    ...cssConfigs,
     // Prettier por último: formata como regra e desliga o que conflita com ele.
     { ...prettierRecommended, files: formatted },
     // O `eslint-config-prettier` desliga `curly`, mas na forma `all` ela não conflita com o Prettier

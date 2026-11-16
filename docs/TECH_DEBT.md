@@ -90,16 +90,16 @@
      "Dockerfiles agree with packageManager" do `frontend.yml`, que o `pnpm-base` substitui;
   5. ao fim, tirar o gerenciador regex do `uvx` do preset, se nenhum projeto o usar mais.
 
-### [ESLint] Projetos ainda no CSS da v4 (migração para a `eslint-v6.0.0`)
+### [ESLint] Projetos ainda no CSS da v4 (migração para a `eslint-v6.1.0`)
 
 - [ ] **Severidade**: Média · `2026-11-16`
-- **Arquivos**: nos projetos, `src/main.tsx` e `src/index.css` dos frontends, `.pre-commit-config.yaml`
-- **Descrição**: decisões do PO de `2026-11-16`:
-  - na v5, todo CSS de pacote entra por `@import` no `src/index.css`, e o `main.tsx` importa só o
-    `./index.css`;
-  - na v6, todo CSS fica numa camada (`css/use-layers`).
+- **Arquivos**: nos projetos, `src/main.tsx` e `src/index.css` dos frontends
+- **Descrição**: na v5 (decisão do PO, `2026-11-16`), todo CSS de pacote entra por `@import` no
+  `src/index.css`, e o `main.tsx` importa só o `./index.css`. O que a v4 aceitava reprova. A
+  v6.0.0 lintava o CSS e não serve. A v6.1.0 tira esse lint e tem as mesmas regras da v5; é para
+  ela que se sobe.
 
-  O que a v4 aceitava reprova. Os 6 projetos que usam o pacote, com a tag de hoje:
+  Os 6 projetos que usam o pacote, com a tag de hoje:
 
   | Projeto                           | Tag             |
   | --------------------------------- | --------------- |
@@ -114,24 +114,55 @@
   - **welt-studio**: os apps importam o `@fontsource` no `main.tsx`. O Tailwind está declarado no
     `packages/ui` e no `packages/vite-config`, não nos apps, então o Knip dos apps não lê o
     `@import` do CSS.
-  - **ComicHub**: tem um contorno no working tree, sem commit, que é o débito do item 2 da
-    Adequação. Ele copia os valores do `material-symbols` e precisa de um script próprio para se
-    manter.
+  - **ComicHub**: tem no working tree, sem commit, a migração para a v6.0.0, que é o débito do item 2
+    da Adequação.
 
-- **Sugestão**: em cada frontend, ao subir para a v6:
-  1. o CSS de pacote sai do `main.tsx` e entra por `@import ... layer(base)` no `index.css`;
-  2. o `@import "tailwindcss"` vira a forma expandida (README, "Todo CSS numa camada de cascata");
-  3. o nosso CSS de regras (`:root`, `.dark`, `body`) entra em `@layer base`, e todo `@import`
-     ganha `layer()`;
-  4. o hook do ESLint ganha `css` no `types_or`.
+- **Sugestão**: em cada frontend, ao subir para a v6.1.0:
+  1. o CSS de pacote sai do `main.tsx` e entra por `@import` no `index.css`;
+  2. o que define classe entra com `layer(base)`.
+
+  O nosso CSS não muda.
 
   Por projeto:
   - **welt-studio**: os `@import` das fontes vão para o CSS do `packages/ui`, onde o Tailwind é
     declarado.
-  - **ComicHub**: descartar o contorno. As instruções foram mandadas à sessão do projeto em
-    `2026-11-16`.
+  - **ComicHub**: o `@import "material-symbols/outlined.css" layer(base)` fica, e o resto da
+    migração para a v6.0.0 volta atrás: a forma expandida do Tailwind, o nosso CSS em
+    `@layer base` e o `css` no `types_or`. As instruções foram mandadas à sessão do projeto.
   - **flowbit, pg-studio, nebulai e shapeshifter-studio**: conferir se há CSS de pacote no
-    `main.tsx` e o que o `index.css` tem fora de camada.
+    `main.tsx`.
+
+### [CSS] CSS de pacote sem `layer()` sem trava mecânica (risco aceito)
+
+- [ ] **Severidade**: Baixa · `2026-11-16`
+- **Arquivos**: `README.md` (seção "CSS só pelo `src/index.css`")
+- **Descrição**: o CSS de pacote que define classe entra por `@import` no `src/index.css` com
+  `layer(base)`. A regra está só escrita: se o `layer()` faltar, as classes do pacote vencem as
+  utilities do Tailwind (`text-*`, `hidden`) sem aviso. Foi o defeito do `material-symbols` no
+  ComicHub, o único caso nos 6 projetos.
+
+  Decisão do PO (`2026-11-16`): **risco aceito**, sem trava, porque o custo passa do valor.
+  - **Tentativa no fonte (v6.0.0):** `css/use-layers` do `@eslint/css`. Não serve:
+    - o leitor do Tailwind (`tailwind-csstree` 0.4.2) quebra em `@apply px-3.5`, em
+      `left-1/2`, em `bg-white/[0.02]` e no `@keyframes` dentro de `@theme`;
+    - pacotes feitos de diretivas do Tailwind (`tw-animate-css`, `shadcn/tailwind.css`,
+      `@welt/ui/globals.css`) não aceitam `layer()`, porque o Tailwind proíbe `@utility`,
+      `@custom-variant`, `@source` e `@plugin` dentro de camada.
+
+    O Stylelint e o Biome (`useLayeredStyles`) conferem o fonte e têm o mesmo limite.
+
+  - **Caminho que funciona, provado nos 6 projetos (11 `index.css` compilados):** conferir o CSS
+    gerado pelo build. O resultado é CSS padrão, e um leitor comum acha regra de estilo fora de
+    `@layer`.
+    - Pega o pacote sem `layer()`.
+    - O `tw-animate-css` sai dentro de `@layer utilities`, sem exceção.
+    - Custo: um plugin do Vite publicado pelo standards, mais a migração do nosso CSS (`:root`,
+      `body`, `.dark`) para camada nos 5 projetos que o têm fora, o que não corrige defeito
+      nenhum.
+
+- **Sugestão**: retomar se o defeito voltar a acontecer. A versão estreita seria o plugin pelo CSS
+  compilado reprovando só a regra que veio de `node_modules`, pelo mapa de origem, sem exigir que o
+  nosso CSS mude.
 
 ## DX (Developer Experience)
 
