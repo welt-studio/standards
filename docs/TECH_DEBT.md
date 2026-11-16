@@ -43,38 +43,34 @@
      "Dockerfiles agree with packageManager" do `frontend.yml`, que o `pnpm-base` substitui;
   5. ao fim, tirar o gerenciador regex do `uvx` do preset, se nenhum projeto o usar mais.
 
-### [ESLint] Projetos ainda no CSS de pacote pelo `main.tsx` (migração para a `eslint-v5.0.0`)
+### [ESLint] Projetos ainda no CSS da v4 (migração para a `eslint-v6.0.0`)
 
 - [ ] **Severidade**: Média · `2026-11-16`
-- **Arquivos**: nos projetos, `src/main.tsx` e `src/index.css` dos frontends
-- **Descrição**: na v5 (decisão do PO, `2026-11-16`), todo CSS de pacote entra por `@import` no
-  `src/index.css`, e o `main.tsx` importa só o `./index.css`. O que a v4 aceitava reprova na v5.
+- **Arquivos**: nos projetos, `src/main.tsx` e `src/index.css` dos frontends, `.pre-commit-config.yaml`
+- **Descrição**: decisões do PO de `2026-11-16`:
+  - na v5, todo CSS de pacote entra por `@import` no `src/index.css`, e o `main.tsx` importa só o
+    `./index.css`;
+  - na v6, todo CSS fica numa camada (`css/use-layers`).
+
+  O que a v4 aceitava reprova.
   - **welt-studio**: os apps importam o `@fontsource` no `main.tsx`. O Tailwind está declarado no
     `packages/ui` e no `packages/vite-config`, não nos apps, então o Knip dos apps não lê o
     `@import` do CSS.
   - **ComicHub**: tem um contorno no working tree, sem commit, que é o débito do item 2 da
     Adequação. Ele copia os valores do `material-symbols` e precisa de um script próprio para se
     manter.
-- **Sugestão**:
-  - **welt-studio**: levar os `@import` das fontes para o CSS do `packages/ui`, onde o Tailwind é
-    declarado, e subir para a v5.
-  - **ComicHub**: descartar o contorno, voltar ao `@import` do `material-symbols` com
-    `layer(base)` no `index.css` e subir para a v5.
-  - Os outros frontends: conferir se têm CSS de pacote no `main.tsx` antes de subir.
 
-### [CSS] `layer()` do CSS de pacote que define classe sem trava mecânica
+- **Sugestão**: em cada frontend, ao subir para a v6:
+  1. o CSS de pacote sai do `main.tsx` e entra por `@import ... layer(base)` no `index.css`;
+  2. o `@import "tailwindcss"` vira a forma expandida (README, "Todo CSS numa camada de cascata");
+  3. o nosso CSS de regras (`:root`, `.dark`, `body`) entra em `@layer base`, e todo `@import`
+     ganha `layer()`;
+  4. o hook do ESLint ganha `css` no `types_or`.
 
-- [ ] **Severidade**: Média · `2026-11-16`
-- **Arquivos**: `README.md` (seção "CSS só pelo `src/index.css`")
-- **Descrição**: na v5, o CSS de pacote que define classe entra por `@import` no `src/index.css` com
-  `layer(base)`. A regra está só escrita: o ESLint não lê CSS, e nada reprova um `@import` de pacote
-  sem `layer()`. Se o `layer()` faltar, as classes do pacote vencem as utilities do Tailwind
-  (`text-*`, `hidden`) sem nenhum aviso: é o bug que o ComicHub teve com o `material-symbols`. A v4
-  também não tinha trava, e nem deixava usar o `layer()`.
-- **Sugestão**: decisão do PO sobre um lint de CSS no padrão, o Stylelint, que é ferramenta nova.
-  Uma opção é a regra própria `at-rule` sobre `@import`: reprovar o `@import` de pacote que define
-  classe e não tem `layer()`. Pelo nome, não dá para saber se o pacote define classe; ou a regra
-  exige `layer()` em todo `@import` de pacote, ou ela lê o CSS importado.
+  Por projeto:
+  - **welt-studio**: os `@import` das fontes vão para o CSS do `packages/ui`, onde o Tailwind é
+    declarado.
+  - **ComicHub**: descartar o contorno.
 
 ## DX (Developer Experience)
 

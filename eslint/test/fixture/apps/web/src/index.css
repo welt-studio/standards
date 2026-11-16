@@ -1,0 +1,27 @@
+/* O CSS do jeito do padrão passa: tudo numa camada, e a diretiva do Tailwind no topo. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "material-symbols/outlined.css" layer(base);
+
+@source "./";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand: oklch(0.6 0.2 250);
+}
+
+@utility content-auto {
+  content-visibility: auto;
+}
+
+@layer base {
+  :root {
+    --background: white;
+  }
+
+  body {
+    background: var(--background);
+  }
+}

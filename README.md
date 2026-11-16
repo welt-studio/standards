@@ -101,12 +101,13 @@ Pacote em `eslint/`, instalado por tag do git (o repositório é público, entã
 precisa de token: máquina, CI e build Docker baixam como qualquer pacote):
 
 ```json
-"@welt-studio/eslint-config": "github:welt-studio/standards#eslint-v5.0.0&path:/eslint"
+"@welt-studio/eslint-config": "github:welt-studio/standards#eslint-v6.0.0&path:/eslint"
 ```
 
 A v5 quebra o CSS da v4: o `main.tsx` importa só o `./index.css`, e o CSS de pacote (as fontes do
-`@fontsource`, por exemplo) sai do `main.tsx` e entra por `@import` no `src/index.css` (ver "CSS só
-pelo `src/index.css`").
+`@fontsource`, por exemplo) sai do `main.tsx` e entra por `@import` no `src/index.css`. A v6 passa
+a lintar o CSS: todo CSS fica numa camada, e o `@import "tailwindcss"` vira a forma expandida (ver
+"CSS só pelo `src/index.css`"). O hook do ESLint ganha `css` no `types_or`.
 
 O lockfile guarda o commit exato da tag. Atualizar um projeto é trocar a tag e rodar `pnpm install`;
 o Renovate abre esse PR sozinho quando sai uma tag nova, já com o lockfile (ver "Renovate").
@@ -201,29 +202,48 @@ src/
 - **CSS só pelo `src/index.css`** (decisão do PO, 2026-11-16, que revoga a de 2026-11-12). O CSS
   tem uma porta, como no bulletproof: o `main.tsx` importa só o `./index.css`, e o nosso CSS (tema e
   outros arquivos) e o de pacote entram nele por `@import`. Ele é parte da entrada, não de uma
-  camada; `assets/` é para arquivo estático (imagem, fonte). A cascata e o `@layer` moram nessa
-  porta. O CSS de pacote que define classe (o `material-symbols`, por exemplo) entra com
-  `layer(base)`; fora de layer, ele vence as utilities do Tailwind e trava o `text-*` e o `hidden`
-  no elemento. O que só declara `@font-face` (o `@fontsource`) pode entrar sem layer.
+  camada; `assets/` é para arquivo estático (imagem, fonte).
+
+- **Todo CSS numa camada de cascata** (decisão do PO, 2026-11-16), travado pela regra
+  `css/use-layers` do [`@eslint/css`](https://github.com/eslint/css) (o ESLint linta os `*.css`). A
+  ordem das camadas decide a cascata, e não o conteúdo de cada pacote: o CSS de pacote fora de
+  camada vence as utilities do Tailwind sem aviso (o `material-symbols` travou todo ícone em 24px no
+  ComicHub). A regra reprova `@import` sem `layer()`, regra de CSS fora de `@layer` e camada sem
+  nome. As diretivas do Tailwind (`@theme`, `@utility`, `@custom-variant`, `@source`, `@plugin`)
+  não são regra e ficam no topo; o parser as entende pelo
+  [`tailwind-csstree`](https://github.com/humanwhocodes/tailwind-csstree).
 
   ```css
   /* src/index.css */
-  @import "tailwindcss";
-  @import "@fontsource/inter/400.css";
+  @layer theme, base, components, utilities;
+  @import "tailwindcss/theme.css" layer(theme);
+  @import "tailwindcss/preflight.css" layer(base);
+  @import "tailwindcss/utilities.css" layer(utilities);
+  @import "@fontsource/inter/400.css" layer(base);
   @import "material-symbols/outlined.css" layer(base);
+  @import "./theme.css" layer(theme);
+
+  @custom-variant dark (&:where(.dark, .dark *));
+
+  @layer base {
+    :root {
+      --background: white;
+    }
+  }
   ```
 
-  O `@import "tailwindcss"` vem primeiro: ele declara a ordem das camadas
-  (`theme, base, components, utilities`), e a camada que aparece primeiro fica antes na cascata.
-
-  Nada confere o `layer()` hoje: o ESLint não lê CSS (ver `docs/TECH_DEBT.md`).
+  - O `@import "tailwindcss"` não tem `layer()`; entra a forma expandida da
+    [documentação do Tailwind](https://tailwindcss.com/docs/preflight#disabling-preflight), que gera
+    o mesmo CSS (conferido no Tailwind 4.3.3).
+  - Arquivo nosso com `@theme` entra com `layer(theme)`, e o `@theme` fica no topo dele.
+  - O nosso CSS de regras (`:root`, `.dark`, `body`) fica em `@layer base`.
 
   O Knip vê a dependência puxada por `@import` pelo plugin do Tailwind, que só liga no workspace
   cujo `package.json` declara `tailwindcss` (ou `@tailwindcss/vite`). Sem isso, ele acusa o pacote
   como sem uso e a CI reprova. Num monorepo em que o Tailwind mora num pacote compartilhado, o CSS de
   pacote vai para o CSS desse pacote.
 
-  O ESLint não lê o CSS, mas lê o `import` de CSS do TS, e é por ele que a regra é travada:
+  A porta única é travada pelo `import` de CSS do TS:
   - `import` de `.css` fora do `main.tsx` reprova (`no-restricted-imports`);
   - no `main.tsx`, qualquer CSS que não seja o `./index.css` reprova, inclusive o de pacote
     (`no-restricted-imports`).

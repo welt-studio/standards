@@ -2,6 +2,23 @@
 
 ## Arquitetura / Design
 
+### [CSS] `layer()` do CSS de pacote que define classe sem trava mecânica
+
+- [x] **Severidade**: Média · `2026-11-16`
+- **Arquivos**: `README.md` (seção "CSS só pelo `src/index.css`")
+- **Descrição**: na v5, o CSS de pacote que define classe entra por `@import` no `src/index.css` com
+  `layer(base)`. A regra está só escrita: o ESLint não lê CSS, e nada reprova um `@import` de pacote
+  sem `layer()`. Se o `layer()` faltar, as classes do pacote vencem as utilities do Tailwind
+  (`text-*`, `hidden`) sem nenhum aviso: é o bug que o ComicHub teve com o `material-symbols`. A v4
+  também não tinha trava, e nem deixava usar o `layer()`.
+- **Sugestão**: decisão do PO sobre um lint de CSS no padrão, o Stylelint, que é ferramenta nova.
+  Uma opção é a regra própria `at-rule` sobre `@import`: reprovar o `@import` de pacote que define
+  classe e não tem `layer()`. Pelo nome, não dá para saber se o pacote define classe; ou a regra
+  exige `layer()` em todo `@import` de pacote, ou ela lê o CSS importado.
+- **Resolvido**: `2026-11-16` — o ESLint passa a lintar o CSS pelo `@eslint/css` (com o
+  `tailwind-csstree` para as diretivas do Tailwind), e a regra oficial `css/use-layers` reprova
+  `@import` sem `layer()`, regra fora de `@layer` e camada sem nome (`eslint-v6.0.0`).
+
 ### [Renovate] Regras de regex que existem só por causa do comichub e do nebulai
 
 - [x] **Severidade**: Baixa · `2026-10-28`
