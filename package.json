@@ -22,7 +22,6 @@
     "lint:files": "eslint --max-warnings=0 --no-warn-ignored",
     "type-check": "tsc --noEmit",
     "duplication": "jscpd -c .jscpd.json .",
-    "duplication:semantic": "jscpd -c .jscpd-semantic.json -o /tmp/jscpd-semantic/standards .",
     "knip": "knip --no-progress --include files,dependencies,unlisted,unresolved,binaries,duplicates"
   },
   "devDependencies": {

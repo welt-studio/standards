@@ -16,7 +16,7 @@ repos:
   - repo: local
     hooks:
       # As cópias do padrão na raiz (`ruff-base.toml`, `pyright-base.json`, `.prettierignore`,
-      # `.jscpd*.json`), regeradas dos arquivos deste repo. Não se editam: o hook desfaz.
+      # `.jscpd.json`), regeradas dos arquivos deste repo. Não se editam: o hook desfaz.
       - id: ruff-base
         name: ruff-base (padrão Ruff da Welt Studio)
         entry: hooks/check_ruff.py
@@ -156,7 +156,7 @@ repos:
         name: Pytest (hooks)
         entry: uv run pytest -q
         language: system
-        files: (\.(py|md|ya?ml)|pyproject\.toml|uv\.lock|ignores\.json|/ignore|/base\.(json|toml)|semantic\.json)$
+        files: (\.(py|md|ya?ml)|pyproject\.toml|uv\.lock|ignores\.json|/ignore|/base\.(json|toml))$
         pass_filenames: false
         stages: [pre-push]
       - id: package-tests

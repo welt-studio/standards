@@ -52,23 +52,9 @@ PRETTIER_ONLY = [
     # Templates Jinja/Django, que o Prettier estragaria.
     "**/templates/**/*.html",
 ]
-# O relatório semântico não olha os testes.
-SEMANTIC_ONLY = [
-    "**/tests/**",
-    "**/__tests__/**",
-    "**/test/**",
-    "**/e2e/**",
-    "**/*.test.*",
-    "**/*.spec.*",
-    "**/test_*.py",
-    "**/conftest.py",
-    "**/tests.rs",
-]
-
 TOOLS = {
     "prettier/ignore": (prettier_ignores, PRETTIER_ONLY),
     "jscpd/base.json": (lambda: jscpd_ignores("base.json"), []),
-    "jscpd/semantic.json": (lambda: jscpd_ignores("semantic.json"), SEMANTIC_ONLY),
     "ruff/base.toml": (ruff_ignores, []),
     # A mesma leitura que o hook `pyright-base` faz da base (JSONC).
     "pyright/base.json": (check_pyright.base_ignores, []),

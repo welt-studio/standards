@@ -21,21 +21,18 @@ from pathlib import Path
 # A raiz deste repo, onde estão os padrões (`ruff/`, `pyright/`, ...); o script mora em `hooks/`.
 ROOT = Path(__file__).resolve().parent.parent
 
-# Padrão: as cópias, cada uma (arquivo do padrão neste repo, nome da cópia no projeto, marca de
-# comentário). Sem marca (`None`), o formato não aceita comentário nem chave a mais (o JSON do
+# Padrão: a cópia de cada ferramenta (arquivo do padrão neste repo, nome da cópia no projeto, marca
+# de comentário). Sem marca (`None`), o formato não aceita comentário nem chave a mais (o JSON do
 # jscpd avisa campo desconhecido a cada execução): a cópia sai sem o aviso de "gerado", que fica no
 # comentário do hook no `.pre-commit-config.yaml` do projeto.
-BASES: dict[str, tuple[tuple[str, str, str | None], ...]] = {
-    "ruff": (("ruff/base.toml", "ruff-base.toml", "#"),),
-    "pyright": (("pyright/base.json", "pyright-base.json", "//"),),
-    "prettier": (("prettier/ignore", ".prettierignore", "#"),),
-    "jscpd": (
-        ("jscpd/base.json", ".jscpd.json", None),
-        ("jscpd/semantic.json", ".jscpd-semantic.json", None),
-    ),
+BASES: dict[str, tuple[str, str, str | None]] = {
+    "ruff": ("ruff/base.toml", "ruff-base.toml", "#"),
+    "pyright": ("pyright/base.json", "pyright-base.json", "//"),
+    "prettier": ("prettier/ignore", ".prettierignore", "#"),
+    "jscpd": ("jscpd/base.json", ".jscpd.json", None),
     # O `.python-version` vai na pasta do pacote Python, onde o uv o procura. Sem cabeçalho: não é
     # garantido que cada leitor do arquivo pule comentário.
-    "python": (("python/.python-version", ".python-version", None),),
+    "python": ("python/.python-version", ".python-version", None),
 }
 
 
@@ -46,8 +43,8 @@ def hook_id(name: str) -> str:
 
 
 def copy_name(name: str) -> str:
-    """O nome da (primeira) cópia de `name` no projeto (`ruff` → `ruff-base.toml`)."""
-    return BASES[name][0][1]
+    """O nome da cópia de `name` no projeto (`ruff` → `ruff-base.toml`)."""
+    return BASES[name][1]
 
 
 def header(name: str, source: str, comment: str) -> str:
@@ -86,11 +83,8 @@ def main(args: list[str]) -> int:
     if not folder.is_dir():
         sys.stderr.write(f"{hook_id(name)}: a pasta {folder} (args do hook) não existe\n")
         return 1
-    # Todas as cópias são conferidas, mesmo depois da primeira que divergir.
-    written = [
-        sync(name, source, folder / target, comment) for source, target, comment in BASES[name]
-    ]
-    return 1 if any(written) else 0
+    source, target, comment = BASES[name]
+    return 1 if sync(name, source, folder / target, comment) else 0
 
 
 if __name__ == "__main__":

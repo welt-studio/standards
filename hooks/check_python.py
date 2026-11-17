@@ -51,7 +51,7 @@ PYTHON_IMAGE = re.compile(
 
 def standard_version() -> str:
     """A versão do Python do padrão (`3.14.8`)."""
-    source = sync_base.BASES[TOOL][0][0]
+    source = sync_base.BASES[TOOL][0]
     return (sync_base.ROOT / source).read_text(encoding="utf-8").strip()
 
 

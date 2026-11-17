@@ -132,6 +132,37 @@
   - **flowbit, pg-studio, nebulai e shapeshifter-studio**: conferir se há CSS de pacote no
     `main.tsx`.
 
+### [jscpd] Projetos ainda com o relatório semântico (migração para a `jscpd-v2.0.0`)
+
+- [ ] **Severidade**: Baixa · `2026-11-17`
+- **Arquivos**: nos projetos, `.pre-commit-config.yaml` (`rev` do `jscpd-base`), `.jscpd-semantic.json`
+  e o `package.json` que tem o script `duplication:semantic`
+- **Descrição**: decisão do PO (`2026-11-17`): sai o relatório semântico do jscpd, que rodava um
+  modelo de embeddings sobre o código. A `jscpd-v2.0.0` deixa de gerar o `.jscpd-semantic.json`, mas
+  não apaga a cópia que já está no projeto (o PO decidiu sem código de limpeza no hook, que só
+  serviria uma vez): sem a limpeza, a cópia fica órfã, e o script `duplication:semantic`, que também
+  sai só a mão, continua lendo uma config que o hook não atualiza mais. A cópia só fica inofensiva
+  depois que o script sai; nada trava a limpeza além deste item. Os 6 projetos estão na
+  `jscpd-v1.0.3`:
+
+  | Projeto             | Onde está o script      |
+  | ------------------- | ----------------------- |
+  | comichub            | `package.json`          |
+  | welt-studio         | `package.json`          |
+  | flowbit             | `frontend/package.json` |
+  | pg-studio           | `package.json`          |
+  | nebulai             | `package.json`          |
+  | shapeshifter-studio | `frontend/package.json` |
+
+  O shapeshifter-studio também tem o `backend/tests/test_jscpd_config.py`, que compara as duas
+  configs.
+
+- **Sugestão**: em cada projeto, ao subir o `rev` do `jscpd-base` para a `jscpd-v2.0.0`:
+  1. apagar o `.jscpd-semantic.json`;
+  2. tirar o script `duplication:semantic`;
+  3. tirar a menção ao relatório no comentário do hook no `.pre-commit-config.yaml`;
+  4. no shapeshifter-studio, tirar do teste a comparação com o `.jscpd-semantic.json`.
+
 ### [CSS] CSS de pacote sem `layer()` sem trava mecânica (risco aceito)
 
 - [ ] **Severidade**: Baixa · `2026-11-16`

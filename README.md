@@ -9,7 +9,7 @@ uma vez para todos os projetos.
 O standards segue o padrão que publica, com os mesmos hooks dos projetos
 (`.pre-commit-config.yaml`); os hooks `*-base` rodam os scripts deste working tree, e
 as cópias que eles geram na raiz (`ruff-base.toml`, `pyright-base.json`, `.prettierignore`,
-`.jscpd*.json`) não se editam.
+`.jscpd.json`) não se editam.
 
 | Parte                                       | Onde                                                                                                                                    |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -257,11 +257,11 @@ O que está no git e não é nosso para lintar, formatar ou acusar — saída de
 `**/migrations/**`, `**/alembic/versions/**`) e código de terceiros (`**/vendor/**`, `**/*.min.js`,
 `.mjs`, `.cjs` e `.css`) — é uma lista só para todas as ferramentas, declarada em
 `eslint/ignores.json`. Ela mora no pacote de ESLint porque ele a lê em runtime, e o projeto instala
-só a pasta `eslint/`. O Prettier (`prettier/ignore`), o jscpd (`jscpd/*.json`), o Ruff
+só a pasta `eslint/`. O Prettier (`prettier/ignore`), o jscpd (`jscpd/base.json`), o Ruff
 (`extend-exclude`) e o Pyright (`ignore`) leem a lista em arquivo próprio, no formato deles: o
 `tests/test_ignores.py` reprova se alguma divergir da declaração (fora o que é só de uma
-ferramenta, como os lockfiles do Prettier e os testes do relatório semântico do jscpd). Padrão novo
-entra no `ignores.json` e em cada cópia, numa tag de cada pacote.
+ferramenta, como os lockfiles do Prettier). Padrão novo entra no `ignores.json` e em cada cópia,
+numa tag de cada pacote.
 
 ### Publicar uma versão
 
@@ -604,24 +604,27 @@ entraria em `dist/`, artefatos e pastas ignoradas mais abaixo.
 ## jscpd: `jscpd/` pelo hook `jscpd-base`
 
 O jscpd não herda config de pacote, então o padrão chega como cópia, pelo mesmo `hooks/sync_base.py`: o
-hook `jscpd-base` mantém na raiz do projeto o `.jscpd.json` (a trava) e o `.jscpd-semantic.json` (o
-relatório semântico). O JSON do jscpd não aceita comentário nem chave a mais (avisa campo
-desconhecido a cada execução), então a cópia sai sem o aviso de "gerado, não edite": ele fica no
+hook `jscpd-base` mantém na raiz do projeto o `.jscpd.json` (a trava). O JSON do jscpd não aceita
+comentário nem chave a mais (avisa campo desconhecido a cada execução), então a cópia sai sem o
+aviso de "gerado, não edite": ele fica no
 comentário do bloco do hook no `.pre-commit-config.yaml` do projeto, e o hook desfaz qualquer
 edição da cópia.
 
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/welt-studio/standards
-  rev: jscpd-v1.0.2
+  rev: jscpd-v2.0.0
   hooks:
     - id: jscpd-base
 ```
 
-| Arquivo                            | O que fixa                                                                                                                                                                                                                                                                                        |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.jscpd.json` (trava)              | Python, TS/TSX, JS/JSX e Rust, no repo inteiro; qualquer clone reprova (`exitCode` 1). Fora: o que o git ignora (o jscpd lê o `.gitignore`), migrations, `*.gen.ts`, `vendor/` e `*.min.*`. Linhas de import (TS/JS e Python) não contam: dois arquivos com os mesmos imports não duplicam lógica |
-| `.jscpd-semantic.json` (relatório) | código que faz a mesma coisa escrito diferente, fora dos testes; não reprova. O projeto passa a pasta do relatório com `-o`                                                                                                                                                                       |
+A `jscpd-v2.0.0` tirou o relatório semântico (`.jscpd-semantic.json`), que rodava um modelo de
+embeddings sobre o código (decisão do PO, `2026-11-17`). Ao subir o `rev`, o projeto apaga a cópia
+velha e o script que a usava: o hook só mantém o que gera, e não apaga a cópia que deixou de gerar.
+
+| Arquivo               | O que fixa                                                                                                                                                                                                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.jscpd.json` (trava) | Python, TS/TSX, JS/JSX e Rust, no repo inteiro; qualquer clone reprova (`exitCode` 1). Fora: o que o git ignora (o jscpd lê o `.gitignore`), migrations, `*.gen.ts`, `vendor/` e `*.min.*`. Linhas de import (TS/JS e Python) não contam: dois arquivos com os mesmos imports não duplicam lógica |
 
 O hook da trava é o mesmo em todo projeto, sobre o repo inteiro (`pass_filenames: false`: a cópia
 que importa é a de uma função que já existe em outro arquivo):

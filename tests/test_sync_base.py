@@ -38,18 +38,6 @@ def test_copy_equal_to_the_standard_passes(tmp_path: Path) -> None:
 def test_format_without_comments_gets_no_header(tmp_path: Path) -> None:
     assert sync_base.main(["jscpd", str(tmp_path)]) == 1
     assert (tmp_path / ".jscpd.json").read_text(encoding="utf-8") == standard("jscpd/base.json")
-    semantic = (tmp_path / ".jscpd-semantic.json").read_text(encoding="utf-8")
-    assert semantic == standard("jscpd/semantic.json")
-
-
-def test_every_copy_is_checked_after_the_first_divergence(tmp_path: Path) -> None:
-    sync_base.main(["jscpd", str(tmp_path)])
-    (tmp_path / ".jscpd.json").write_text("{}\n", encoding="utf-8")
-    (tmp_path / ".jscpd-semantic.json").write_text("{}\n", encoding="utf-8")
-    assert sync_base.main(["jscpd", str(tmp_path)]) == 1
-    assert (tmp_path / ".jscpd-semantic.json").read_text(encoding="utf-8") == standard(
-        "jscpd/semantic.json"
-    )
 
 
 def test_copy_goes_to_the_project_root_without_folder(
