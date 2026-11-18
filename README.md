@@ -312,8 +312,8 @@ Renovate abre em cada projeto o PR que sobe o `rev` do `python-base`. O hook ree
 `.python-version`, e a CI do projeto testa no Python novo. A tag segue o Python: patch do Python
 (3.14.8 → 3.14.9) é minor da tag, e minor do Python (3.14 → 3.15) é major da tag. Assim, o PR dos
 projetos sai separado ("cada major no seu") e passa pela decisão do PO, que é o caso do `torch`.
-Esse PR ainda espera aprovação, como todos. O merge automático dele volta com o dos outros, quando
-a CI dos projetos montar a imagem Docker no PR.
+O PR de patch do Python (minor da tag) faz merge sozinho com a CI verde, como os outros patch e
+minor; o de minor do Python (major da tag) espera o PO.
 
 ## Ruff: `ruff/base.toml` pelo hook `ruff-base`
 
@@ -395,12 +395,12 @@ o Ruff.
    padrão passa a usar uma regra que a versão mínima atual não conhece.
 2. Commit e tag `ruff-vX.Y.Z` no mesmo commit, push da tag.
 3. O Renovate troca o `rev` dos hooks `ruff-base`, `ruff` e `ruff-format` em cada projeto, no PR
-   mensal.
+   semanal.
 
 ### Subir o Ruff num projeto
 
 É só o projeto: o pin `ruff==` do `pyproject.toml` e o `uv.lock`, sem tag aqui, e o Renovate faz
-isso no PR mensal. O Ruff novo pode mudar o resultado do lint ou do format (as versões minor
+isso no PR semanal. O Ruff novo pode mudar o resultado do lint ou do format (as versões minor
 promovem regras e mudam o estilo estável), e isso aparece na CI do próprio PR.
 
 ## Renovate: `renovate/default.json5`
@@ -419,16 +419,16 @@ de terceiros recebe o código:
 
 O preset é lido do `main`, sem tag: mudar a política aqui vale para todos no merge.
 
-| Regra            | O que faz                                                                                                                                                                                                                                                                                         |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Calendário       | uma rodada por mês, na madrugada do dia 1 (`America/Sao_Paulo`), com a manutenção do lockfile junto                                                                                                                                                                                               |
-| Idade mínima     | a versão mais nova com pelo menos 7 dias de publicada; sem data no registro, fica retida. A trava do pnpm (`minimumReleaseAge` do `pnpm-workspace.yaml`) continua na instalação                                                                                                                   |
-| Agrupamento      | um PR por projeto com tudo que não é major; cada major no seu                                                                                                                                                                                                                                     |
-| Merge            | todo PR espera a aprovação do PO. O merge automático está desligado até a CI dos projetos montar as imagens Docker em PR e testar o que cada PR muda (o motivo e como religar estão no preset)                                                                                                    |
-| PR separado      | majors, minor do Python (depende de wheel do `torch`), major de Node e pnpm, e cada um dos pacotes deste repo (`@welt-studio/eslint-config`, `tsconfig`, `prettier-config` e `vitest-config`), com o lockfile                                                                                     |
-| Segurança        | correção de vulnerabilidade (alerta do GitHub) abre PR na hora, fora do calendário e sem a idade mínima, todas num PR só por projeto (correções que dependem umas das outras resolvem o lockfile juntas). Correção do npm com menos de 7 dias ainda precisa do `minimumReleaseAgeExclude` do pnpm |
-| Actions          | fixadas por SHA, com a versão num comentário                                                                                                                                                                                                                                                      |
-| Fora do Renovate | os `overrides` do pnpm (correção de vulnerabilidade com faixa fechada) e o `rustsec/audit-check`, preso no commit do `main` até sair release em Node 24                                                                                                                                           |
+| Regra            | O que faz                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Calendário       | uma rodada por semana, na madrugada de segunda (`America/Sao_Paulo`), com a manutenção do lockfile junto. O runner roda todo dia às 03:00; nos outros dias ele só faz merge e corrige vulnerabilidade                                                                                                                                                                                                             |
+| Idade mínima     | a versão mais nova com pelo menos 7 dias de publicada; sem data no registro, fica retida. A trava do pnpm (`minimumReleaseAge` do `pnpm-workspace.yaml`) continua na instalação                                                                                                                                                                                                                                   |
+| Agrupamento      | um PR por projeto com tudo que não é major; cada major no seu                                                                                                                                                                                                                                                                                                                                                     |
+| Merge            | patch, minor, lockfile e correção de segurança fazem merge sozinhos, pelo próprio Renovate (não o nativo do GitHub), só com todos os checks verdes. Major e os PRs separados abaixo esperam o PO                                                                                                                                                                                                                  |
+| PR separado      | majors, minor do Python (depende de wheel do `torch`), major de Node e pnpm, e cada um dos pacotes deste repo (`@welt-studio/eslint-config`, `tsconfig`, `prettier-config` e `vitest-config`), com o lockfile                                                                                                                                                                                                     |
+| Segurança        | dependência direta (e a indireta do Python com `uv`): o Renovate acha a falha no OSV e abre o PR na rodada diária, fora do calendário e sem a idade mínima, todas num PR só por projeto. Dependência indireta do JavaScript: o `security-fix` do runner roda o `pnpm audit --fix` todo dia e abre o PR, que também faz merge sozinho com a CI verde. Os alertas do Dependabot estão desligados: uma ferramenta só |
+| Actions          | fixadas por SHA, com a versão num comentário                                                                                                                                                                                                                                                                                                                                                                      |
+| Fora do Renovate | os `overrides` do pnpm, que o `security-fix` cria e remove, e o `rustsec/audit-check`, preso no commit do `main` até sair release em Node 24                                                                                                                                                                                                                                                                      |
 
 Os gerenciadores do Renovate leem sozinhos `package.json` (inclusive `packageManager` e
 `devEngines`), o `catalog` do pnpm, `pyproject.toml` e `uv.lock`, `.python-version`, Dockerfiles,

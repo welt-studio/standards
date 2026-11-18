@@ -25,28 +25,6 @@
      (`eslint-plugin-jsx-a11y-x>minimatch: 11.0.5`), com o teste do pacote verde;
   3. publicar a `eslint-v6.0.1` e conferir no GitHub que o alerta fechou.
 
-### [Renovate] Alertas do Dependabot e Renovate: repensar quem avisa e quem corrige
-
-- [ ] **Severidade**: Baixa · `2026-11-16`
-- **Arquivos**: `renovate/default.json5` (`vulnerabilityAlerts`, `osvVulnerabilityAlerts`),
-  configuração de segurança dos repos no GitHub
-- **Descrição**: hoje são duas peças.
-  - **Alertas do Dependabot**, ligados nos repos: detectam a falha (inclusive em dependência
-    indireta) e o GitHub avisa no `git push`.
-  - **Renovate**: abre os PRs. As atualizações do Dependabot estão desligadas: sem
-    `dependabot.yml`, e `automated-security-fixes` desligado.
-
-  O Renovate lê os alertas do GitHub pelo `vulnerabilityAlerts`, mas não abriu PR para o `minimatch`
-  (débito acima): a correção é major numa dependência indireta, fora da faixa dos pacotes que a
-  pedem. O OSV do Renovate confere só dependência direta. A falha ficou visível só pelo aviso do
-  GitHub, e o PO quer repensar a divisão entre os dois (`2026-11-16`).
-
-- **Sugestão**: levantar com o PO:
-  - se os alertas do Dependabot ficam como a fonte de detecção;
-  - como uma falha indireta sem PR do Renovate vira trabalho: por exemplo, a auditoria semanal
-    (`pnpm audit`) também no standards, ou uma regra do Renovate para `overrides`;
-  - se alguma peça sobra.
-
 ### [pre-commit] Projetos sem o `gitleaks-history`: segredo com `--no-verify` chega à `main`
 
 - [ ] **Severidade**: Alta · `2026-11-18`
@@ -58,11 +36,18 @@
   (o mesmo `rev`, `entry: gitleaks git --redact --verbose --log-opts=HEAD`, `always_run: true`,
   `stages: [manual]`), que reprova esse commit. Achado pelo /code-review do shapeshifter-studio.
 
-  Os 6 projetos que ainda não têm o hook: comichub, welt-studio, flowbit, pg-studio, nebulai e
-  shapeshifter-studio. O shapeshifter dizia que o `pre-push` pegava o `--no-verify`, mas no push
-  também não há stage.
+  Situação em `2026-11-18`:
+  - **commitado**: comichub, welt-studio, flowbit, pg-studio e nebulai;
+  - em todos, o hook está verde no histórico do `HEAD`. O
+    comichub e o pg-studio ganharam um `.gitleaksignore` (decisão do PO): no comichub, 4 achados
+    antigos (chave do certificado de dev `CN=localhost` e a licença do lightGallery); no pg-studio,
+    653 `hashed_secret` do `.secrets.baseline` do detect-secrets;
+  - **shapeshifter-studio**: aplicado no working tree, fora do stage, porque os dois arquivos estão
+    em stage num commit grande de outra sessão (`_ci.yml` no lugar do `standards.yml`); histórico
+    limpo. Ele dizia que o `pre-push` pegava o `--no-verify`, mas no push também não há stage.
 
-- **Sugestão**: em cada projeto, como no standards:
+- **Sugestão**: commitar o shapeshifter depois do commit em aberto lá. O que cada projeto
+  recebeu, como no standards:
   1. copiar o bloco `gitleaks-history` do `.pre-commit-config.yaml` deste repo;
   2. no workflow, `fetch-depth: 0` no `actions/checkout` e o passo
      `uv run pre-commit run --hook-stage manual gitleaks-history`;
@@ -88,103 +73,62 @@
 
 ## Arquitetura / Design
 
-### [Python] Migração dos projetos para o `python-base` aplicada, sem commit
+### [Python] Migração para o `python-base`: falta o shapeshifter-studio e os docs de 3 projetos
 
 - [ ] **Severidade**: Média · `2026-11-07`
-- **Arquivos**: nos 6 projetos, `.pre-commit-config.yaml`, `.python-version`, Dockerfiles,
-  `pyproject.toml`, `uv.lock`, workflows e docs
+- **Arquivos**: shapeshifter-studio (`.pre-commit-config.yaml`, `.python-version`, Dockerfiles,
+  `pyproject.toml`, `uv.lock`, workflows e docs); `CLAUDE.md` do flowbit, do pg-studio e do nebulai,
+  e o `AGENTS.md` do nebulai
 - **Descrição**: a versão do Python mora só no `python/.python-version` deste repo (decisão do PO,
-  `2026-11-07`), com o hook `python-base` (`python-v1.0.0`), e o preset já não propõe Python fora
-  daqui. A migração foi aplicada no working tree de comichub, flowbit, nebulai, pg-studio,
-  shapeshifter-studio e welt-studio (`2026-11-08`), por cima de trabalho não commitado, e ainda não
-  foi commitada: até lá, a CI dos projetos roda o padrão antigo. Em comichub, pg-studio,
-  shapeshifter-studio e welt-studio o `.python-version` do pacote não é versionado, e os Dockerfiles
-  novos dependem dele.
-- **Sugestão**:
-  1. em cada projeto, commitar a migração **com** o `.python-version` do pacote (sem ele, o build do
-     deploy quebra e o `python-base` reprova na CI). O commit que muda `pyproject.toml`/`uv.lock` roda
-     o `ruff --fix` e o Pyright no pacote inteiro: separar o que for fila antiga;
-  2. corrigir os docs que ainda dizem que o projeto declara o Python ou não listam o `python-base`
-     (flowbit, nebulai e pg-studio: `CLAUDE.md`/`AGENTS.md`/`docs/INFRASTRUCTURE.md`);
-  3. pg-studio: a imagem da API instala pelo `requirements.txt`, fora do `uv.lock` (débito do
-     projeto);
-  4. subir o `rev` do `python-base` para `python-v1.1.0` e o do `pnpm-base` para `pnpm-v1.1.0`
-     (as tags das imagens do uv e do pnpm passam a ter trava). No comichub, tirar o passo
-     "Dockerfiles agree with packageManager" do `frontend.yml`, que o `pnpm-base` substitui;
-  5. ao fim, tirar o gerenciador regex do `uvx` do preset, se nenhum projeto o usar mais.
+  `2026-11-07`), copiada pelo hook `python-base`. Conferido no `HEAD` em `2026-11-18`: comichub,
+  welt-studio, flowbit, pg-studio e nebulai têm a migração commitada, com o `.python-version` do
+  pacote versionado e o `python-base` em `python-v1.1.0` e o `pnpm-base` em `pnpm-v1.1.0`. O
+  comichub já não tem o passo "Dockerfiles agree with packageManager". Falta:
+  - **shapeshifter-studio**: a migração inteira está no working tree, sem commit (o último commit é
+    de `2026-10-19`), junto com o trabalho de outra sessão. O `HEAD` não versiona o
+    `backend/.python-version`, e os Dockerfiles novos dependem dele;
+  - **docs**: o `CLAUDE.md` do pg-studio e o `AGENTS.md` do nebulai ainda põem o Python entre as
+    versões do próprio projeto, que o Renovate atualiza. O `CLAUDE.md` do flowbit e o do nebulai
+    apontam o `.python-version` do pacote como o lugar da versão, sem dizer que ele é cópia do
+    standards.
 
-### [ESLint] Projetos ainda no CSS da v4 (migração para a `eslint-v6.1.0`)
+  O gerenciador regex do `uvx` no preset fica: os 5 projetos rodam `uvx pip-audit@<versão>` no
+  `security-audit.yml`. A imagem da API do pg-studio, que instala pelo `requirements.txt`, é débito
+  do projeto.
+
+- **Sugestão**:
+  1. shapeshifter-studio: commitar a migração **com** o `backend/.python-version` (sem ele, o build
+     do deploy quebra e o `python-base` reprova na CI), depois do commit em aberto lá;
+  2. corrigir os docs listados: o Python vem do standards, pelo `python-base`, e o Renovate não o
+     propõe nos projetos.
+
+### [ESLint] shapeshifter-studio ainda no CSS da v4 (migração para a `eslint-v6.1.0`)
 
 - [ ] **Severidade**: Média · `2026-11-16`
-- **Arquivos**: nos projetos, `src/main.tsx` e `src/index.css` dos frontends
+- **Arquivos**: shapeshifter-studio, `frontend/package.json`, `frontend/src/main.tsx` e
+  `frontend/src/index.css`
 - **Descrição**: na v5 (decisão do PO, `2026-11-16`), todo CSS de pacote entra por `@import` no
-  `src/index.css`, e o `main.tsx` importa só o `./index.css`. O que a v4 aceitava reprova. A
-  v6.0.0 lintava o CSS e não serve. A v6.1.0 tira esse lint e tem as mesmas regras da v5; é para
-  ela que se sobe.
+  `src/index.css`, e o `main.tsx` importa só o `./index.css`. O que a v4 aceitava reprova. A v6.1.0
+  tem as mesmas regras da v5, sem o lint de CSS da v6.0.0. Conferido no `HEAD` em `2026-11-18`:
+  comichub, welt-studio, flowbit, pg-studio e nebulai estão na `eslint-v6.1.0`, commitada. O
+  shapeshifter-studio tem a subida só no working tree, sem commit.
+- **Sugestão**: commitar a subida do shapeshifter-studio depois do commit em aberto lá, com o CSS
+  de pacote fora do `main.tsx`, entrando por `@import` no `index.css` (com `layer(base)` no que
+  define classe).
 
-  Os 6 projetos que usam o pacote, com a tag de hoje:
-
-  | Projeto                           | Tag             |
-  | --------------------------------- | --------------- |
-  | comichub                          | `eslint-v4.7.1` |
-  | welt-studio (pelo `catalog`)      | `eslint-v4.7.1` |
-  | flowbit (`frontend/`)             | `eslint-v4.7.1` |
-  | pg-studio                         | `eslint-v4.6.0` |
-  | nebulai                           | `eslint-v4.6.0` |
-  | shapeshifter-studio (`frontend/`) | `eslint-v4.6.0` |
-
-  O que já se sabe de cada um:
-  - **welt-studio**: os apps importam o `@fontsource` no `main.tsx`. O Tailwind está declarado no
-    `packages/ui` e no `packages/vite-config`, não nos apps, então o Knip dos apps não lê o
-    `@import` do CSS.
-  - **ComicHub**: tem no working tree, sem commit, a migração para a v6.0.0, que é o débito do item 2
-    da Adequação.
-
-- **Sugestão**: em cada frontend, ao subir para a v6.1.0:
-  1. o CSS de pacote sai do `main.tsx` e entra por `@import` no `index.css`;
-  2. o que define classe entra com `layer(base)`.
-
-  O nosso CSS não muda.
-
-  Por projeto:
-  - **welt-studio**: os `@import` das fontes vão para o CSS do `packages/ui`, onde o Tailwind é
-    declarado.
-  - **ComicHub**: o `@import "material-symbols/outlined.css" layer(base)` fica, e o resto da
-    migração para a v6.0.0 volta atrás: a forma expandida do Tailwind, o nosso CSS em
-    `@layer base` e o `css` no `types_or`. As instruções foram mandadas à sessão do projeto.
-  - **flowbit, pg-studio, nebulai e shapeshifter-studio**: conferir se há CSS de pacote no
-    `main.tsx`.
-
-### [jscpd] Projetos ainda com o relatório semântico (migração para a `jscpd-v2.0.0`)
+### [jscpd] shapeshifter-studio ainda com o relatório semântico (migração para a `jscpd-v2.0.0`)
 
 - [ ] **Severidade**: Baixa · `2026-11-17`
-- **Arquivos**: nos projetos, `.pre-commit-config.yaml` (`rev` do `jscpd-base`), `.jscpd-semantic.json`
-  e o `package.json` que tem o script `duplication:semantic`
+- **Arquivos**: shapeshifter-studio, `.pre-commit-config.yaml` (`rev` do `jscpd-base`),
+  `.jscpd-semantic.json`, `frontend/package.json` (script `duplication:semantic`) e
+  `backend/tests/test_jscpd_config.py`
 - **Descrição**: decisão do PO (`2026-11-17`): sai o relatório semântico do jscpd, que rodava um
   modelo de embeddings sobre o código. A `jscpd-v2.0.0` deixa de gerar o `.jscpd-semantic.json`, mas
-  não apaga a cópia que já está no projeto (o PO decidiu sem código de limpeza no hook, que só
-  serviria uma vez): sem a limpeza, a cópia fica órfã, e o script `duplication:semantic`, que também
-  sai só a mão, continua lendo uma config que o hook não atualiza mais. A cópia só fica inofensiva
-  depois que o script sai; nada trava a limpeza além deste item. Os 6 projetos estão na
-  `jscpd-v1.0.3`:
-
-  | Projeto             | Onde está o script      |
-  | ------------------- | ----------------------- |
-  | comichub            | `package.json`          |
-  | welt-studio         | `package.json`          |
-  | flowbit             | `frontend/package.json` |
-  | pg-studio           | `package.json`          |
-  | nebulai             | `package.json`          |
-  | shapeshifter-studio | `frontend/package.json` |
-
-  O shapeshifter-studio também tem o `backend/tests/test_jscpd_config.py`, que compara as duas
-  configs.
-
-- **Sugestão**: em cada projeto, ao subir o `rev` do `jscpd-base` para a `jscpd-v2.0.0`:
-  1. apagar o `.jscpd-semantic.json`;
-  2. tirar o script `duplication:semantic`;
-  3. tirar a menção ao relatório no comentário do hook no `.pre-commit-config.yaml`;
-  4. no shapeshifter-studio, tirar do teste a comparação com o `.jscpd-semantic.json`.
+  não apaga a cópia que já está no projeto. Conferido no `HEAD` em `2026-11-18`: comichub,
+  welt-studio, flowbit, pg-studio e nebulai estão na `jscpd-v2.0.0`, sem a cópia e sem o script. No
+  shapeshifter-studio, o `HEAD` ainda tem os três, e a subida está só no working tree.
+- **Sugestão**: no commit da subida do shapeshifter-studio, apagar o `.jscpd-semantic.json`, tirar o
+  script `duplication:semantic` e tirar do teste a comparação com o `.jscpd-semantic.json`.
 
 ### [CSS] CSS de pacote sem `layer()` sem trava mecânica (risco aceito)
 

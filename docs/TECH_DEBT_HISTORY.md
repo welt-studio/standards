@@ -1,5 +1,34 @@
 # Débitos Técnicos — Histórico
 
+## Segurança
+
+### [Renovate] Alertas do Dependabot e Renovate: repensar quem avisa e quem corrige
+
+- [x] **Severidade**: Baixa · `2026-11-16`
+- **Arquivos**: `renovate/default.json5` (`vulnerabilityAlerts`, `osvVulnerabilityAlerts`),
+  configuração de segurança dos repos no GitHub
+- **Descrição**: hoje são duas peças.
+  - **Alertas do Dependabot**, ligados nos repos: detectam a falha (inclusive em dependência
+    indireta) e o GitHub avisa no `git push`.
+  - **Renovate**: abre os PRs. As atualizações do Dependabot estão desligadas: sem
+    `dependabot.yml`, e `automated-security-fixes` desligado.
+
+  O Renovate lê os alertas do GitHub pelo `vulnerabilityAlerts`, mas não abriu PR para o `minimatch`
+  (débito acima): a correção é major numa dependência indireta, fora da faixa dos pacotes que a
+  pedem. O OSV do Renovate confere só dependência direta. A falha ficou visível só pelo aviso do
+  GitHub, e o PO quer repensar a divisão entre os dois (`2026-11-16`).
+
+- **Sugestão**: levantar com o PO:
+  - se os alertas do Dependabot ficam como a fonte de detecção;
+  - como uma falha indireta sem PR do Renovate vira trabalho: por exemplo, a auditoria semanal
+    (`pnpm audit`) também no standards, ou uma regra do Renovate para `overrides`;
+  - se alguma peça sobra.
+- **Resolvido**: `2026-11-18` — decisão do PO: uma ferramenta só. Os alertas do Dependabot foram
+  desligados nos 8 repos (e o CodeQL também). A dependência direta fica com o OSV do Renovate,
+  com merge automático da correção com a CI verde. A indireta do JavaScript fica com o
+  `security-fix` do `welt-studio/renovate`, que roda o `pnpm audit --fix` todo dia, abre o PR e faz
+  o merge com a CI verde, e também tira os overrides que sobraram.
+
 ## Arquitetura / Design
 
 ### [Renovate] Regras de regex que existem só por causa do comichub e do nebulai

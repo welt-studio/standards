@@ -13,13 +13,17 @@
     "group:allNonMajor",
   ],
 
-  // Uma rodada por mês, na madrugada do dia 1. Correção de vulnerabilidade não espera o calendário:
-  // o `vulnerabilityAlerts` (abaixo) abre o PR na hora, sem a idade mínima.
+  // Uma rodada por semana, na madrugada de segunda (decisão do PO, 2026-11-18: a mensal deixava os
+  // projetos até 5 semanas atrás, e a diária custava cerca de 4x mais minutos de CI). O runner roda
+  // todo dia às 03:00, e só na segunda ele abre PR de atualização comum. Correção de vulnerabilidade
+  // não espera o calendário: o `vulnerabilityAlerts` (abaixo) abre o PR na rodada seguinte, sem a
+  // idade mínima, que é o padrão do Renovate para ela.
   timezone: "America/Sao_Paulo",
-  schedule: ["* 0-6 1 * *"],
+  schedule: ["* 0-6 * * 1"],
   lockFileMaintenance: {
     enabled: true,
-    schedule: ["* 0-6 1 * *"],
+    schedule: ["* 0-6 * * 1"],
+    automerge: true,
   },
 
   // A versão mais nova com pelo menos 7 dias de publicada. Versão sem data no registro fica retida.
@@ -28,28 +32,37 @@
 
   // Todas as correções de vulnerabilidade de um projeto num PR só: correções que dependem umas das
   // outras (pacote e dependência dele, ambos com alerta) só resolvem o lockfile juntas, e um PR por
-  // correção abriria dezenas de PRs de uma vez, cada um rodando a CI.
+  // correção abriria dezenas de PRs de uma vez, cada um rodando a CI. Merge automático com a CI
+  // verde (decisão do PO, 2026-11-18).
   vulnerabilityAlerts: {
     groupName: "security fixes",
+    automerge: true,
   },
   // A fonte das falhas é a base pública do osv.dev, que o Renovate baixa (release do
-  // `renovatebot/osv-offline`, no GitHub) e consulta localmente, além dos alertas do GitHub. Os
-  // alertas do GitHub vêm do grafo de dependências, que não lê o lockfile do pnpm 12 (o primeiro
-  // documento do arquivo só declara o próprio pnpm): sem isto, falha em pacote JavaScript não viraria
-  // PR na hora. Limite: o OSV do Renovate confere só dependência direta; a indireta fica com a
-  // auditoria semanal (`pnpm audit`/`pip-audit`) de cada projeto. Opção experimental do Renovate.
+  // `renovatebot/osv-offline`, no GitHub) e consulta localmente. Os alertas do Dependabot estão
+  // desligados nos repos (decisão do PO, 2026-11-18: uma ferramenta só). Limite: o OSV do Renovate
+  // confere só dependência direta (no Python com `uv`, também a indireta); a indireta do JavaScript
+  // fica com o `security-fix` do runner (`welt-studio/renovate`), que roda o `pnpm audit --fix` todo
+  // dia e abre o PR. Opção experimental do Renovate.
   osvVulnerabilityAlerts: true,
 
-  // Merge automático desligado (decisão do PO, 2026-10-23): a CI dos projetos ainda não monta as
-  // imagens Docker em PR, alguns arquivos (Dockerfile de produção, docker-compose) não disparam
-  // teste nenhum, e no nebulai o PR só roda Ruff nos arquivos alterados, Knip e audit. Todo PR
-  // espera a aprovação do PO. Quando a CI cobrir isso, religar com `automerge: true` numa regra
-  // para patch, minor e lockfile; o merge fica com o próprio Renovate, só com os checks verdes
-  // (sem proteção de branch, o merge nativo do GitHub não seria garantia). A regra cobre também o
-  // `rev` do `python-base`: patch do Python é minor da tag `python-v*`, e muda a imagem Docker.
+  // Merge automático de patch, minor, lockfile e correção de segurança (decisão do PO, 2026-11-18;
+  // desligado desde 2026-10-23). O merge é do próprio Renovate, não o nativo do GitHub: ele só junta
+  // com todos os checks verdes, sem depender de proteção de branch, e numa rodada do runner. Um
+  // check que não começou (cota de Actions esgotada) conta como falha, e o PR espera. O `rebaseWhen`
+  // fica no padrão (`auto`): com merge automático, o PR é refeito quando fica atrás da `main`, e dois
+  // PRs não entram um depois do outro sem terem sido testados juntos.
   platformAutomerge: false,
 
   packageRules: [
+    {
+      // A primeira regra: as de baixo (Python, Node e pnpm major, os pacotes deste repo) desligam o
+      // merge automático para o que pede revisão. Inclui o `rev` dos hooks deste repo, como o do
+      // `python-base` (patch do Python é minor da tag `python-v*` e muda a imagem Docker).
+      description: "Patch e minor fazem merge sozinhos com a CI verde; major espera o PO.",
+      matchUpdateTypes: ["patch", "minor", "pin", "digest"],
+      automerge: true,
+    },
     {
       description: "Minor do Python (3.14 → 3.15) é decisão do PO: depende de wheel das dependências pesadas (torch).",
       matchDepNames: ["python"],
@@ -168,8 +181,9 @@
     },
     {
       // Os `overrides` são correções de vulnerabilidade em dependência indireta, com faixa fechada de
-      // propósito; o Renovate as levaria para a major mais nova do pacote.
-      description: "Overrides do pnpm são mantidos à mão, junto com o advisory que os criou.",
+      // propósito; o Renovate as levaria para a major mais nova do pacote. Quem os cria e remove é o
+      // `security-fix` do runner (`welt-studio/renovate`), pelo `pnpm audit --fix`.
+      description: "Overrides do pnpm ficam com o security-fix, não com o Renovate.",
       matchDepTypes: ["pnpm.overrides", "pnpm-workspace.overrides"],
       enabled: false,
     },
