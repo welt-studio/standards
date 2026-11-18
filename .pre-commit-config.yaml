@@ -177,6 +177,20 @@ repos:
     hooks:
       - id: gitleaks
         name: Gitleaks (Detect secrets)
+      # O hook acima varre só o stage (`gitleaks git --pre-commit --staged`, `pass_filenames: false`):
+      # na CI o stage está vazio e o `--all-files` passa sem varrer nada, e um commit com
+      # `--no-verify` leva o segredo até a `main`. Este varre o histórico inteiro do `HEAD` (a CI faz
+      # checkout com `fetch-depth: 0`): o que chega à `main` ou, no PR, o merge com os commits dele.
+      # `--log-opts=HEAD` porque o padrão do gitleaks é `--all`, e branch de rascunho que nunca vira
+      # PR reprovaria a CI. Só roda quando chamado pelo estágio `manual`:
+      # `uv run pre-commit run --hook-stage manual gitleaks-history`. `always_run` porque sem
+      # arquivos no stage o pre-commit pularia o hook. Mesmo `rev`: uma declaração só da versão.
+      - id: gitleaks
+        alias: gitleaks-history
+        name: Gitleaks (histórico do git)
+        entry: gitleaks git --redact --verbose --log-opts=HEAD
+        always_run: true
+        stages: [manual]
 
   # Renovate - o preset é lido do `main` por todos os projetos, sem tag: config inválida (ou que o
   # Renovate só aceitaria migrando, `--strict`) reprova aqui, antes do merge. O `files` padrão do hook

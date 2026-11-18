@@ -47,6 +47,29 @@
     (`pnpm audit`) também no standards, ou uma regra do Renovate para `overrides`;
   - se alguma peça sobra.
 
+### [pre-commit] Projetos sem o `gitleaks-history`: segredo com `--no-verify` chega à `main`
+
+- [ ] **Severidade**: Alta · `2026-11-18`
+- **Arquivos**: nos projetos, `.pre-commit-config.yaml` e o workflow da CI
+- **Descrição**: o hook `gitleaks` varre só o stage (`gitleaks git --pre-commit --staged`,
+  `pass_filenames: false`). Na CI e no `pre-push` o stage está vazio, então o
+  `pre-commit run --all-files` passa sem varrer nada. Reproduzido em `2026-11-18`: um commit com um
+  token falso feito com `--no-verify` passou no `--all-files`. O padrão ganhou o `gitleaks-history`
+  (o mesmo `rev`, `entry: gitleaks git --redact --verbose --log-opts=HEAD`, `always_run: true`,
+  `stages: [manual]`), que reprova esse commit. Achado pelo /code-review do shapeshifter-studio.
+
+  Os 6 projetos que ainda não têm o hook: comichub, welt-studio, flowbit, pg-studio, nebulai e
+  shapeshifter-studio. O shapeshifter dizia que o `pre-push` pegava o `--no-verify`, mas no push
+  também não há stage.
+
+- **Sugestão**: em cada projeto, como no standards:
+  1. copiar o bloco `gitleaks-history` do `.pre-commit-config.yaml` deste repo;
+  2. no workflow, `fetch-depth: 0` no `actions/checkout` e o passo
+     `uv run pre-commit run --hook-stage manual gitleaks-history`;
+  3. rodar o hook localmente antes do PR. Se houver achado, segredo real é rotacionado; falso
+     positivo vai para o `.gitleaksignore` pelo fingerprint;
+  4. no shapeshifter, corrigir também a promessa sobre o `pre-push`.
+
 ## Produção / Infra
 
 ### [Renovate] `rustsec/audit-check` fora do Renovate, preso num commit do `main`

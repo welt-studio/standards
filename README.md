@@ -83,8 +83,16 @@ repos:
 - **Testes no `pre-push`**: pytest (com `--cov` no `addopts`, ver "Testes (pytest)") e vitest
   (`vitest run --coverage`). O commit fica rápido; o push não sobe teste vermelho.
 - **CI**: `uv run pre-commit run --all-files --show-diff-on-failure` (todo hook do commit no repo
-  inteiro) e os testes com cobertura (`uv run pytest`, `pnpm run test:coverage`), como o
-  `.github/workflows/test.yml` deste repo.
+  inteiro), `uv run pre-commit run --hook-stage manual gitleaks-history` e os testes com cobertura
+  (`uv run pytest`, `pnpm run test:coverage`), como o `.github/workflows/test.yml` deste repo.
+- **Segredo no histórico, na CI**: o hook `gitleaks` varre só o stage (`--staged`), que está vazio
+  na CI, então ali o `--all-files` passa sem olhar nada. Um commit feito com `--no-verify` (ou um
+  push, onde também não há stage) só é pego pelo `gitleaks-history`: o mesmo repo e `rev`, com
+  `entry: gitleaks git --redact --verbose --log-opts=HEAD`, `always_run: true` e `stages: [manual]` (o bloco está no
+  `.pre-commit-config.yaml` deste repo). Ele varre o histórico inteiro do `HEAD` (no PR, o merge com
+  os commits dele), e por isso o checkout da CI precisa de `fetch-depth: 0`. O `--log-opts=HEAD`
+  existe porque o padrão do gitleaks é `--all`: com ele, branch de rascunho que nunca vira PR reprovaria a CI. Achado legítimo (um segredo de teste, por exemplo) vai para o
+  `.gitleaksignore` pelo fingerprint; um segredo real é rotacionado antes.
 - **pre-commit no grupo `dev`** do pacote Python (`uv add --dev pre-commit`), rodado por
   `uv run pre-commit` (num monorepo, `uv run --project <pacote> pre-commit`). A versão dele é a do
   `uv.lock`, e o pre-commit roda no Python do `.python-version`. Os hooks `language: python` (o

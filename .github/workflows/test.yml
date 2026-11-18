@@ -27,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        # O histórico inteiro, que o `gitleaks-history` varre.
+        with:
+          fetch-depth: 0
       # O uv do `[tool.uv] required-version` do pyproject; o ambiente ativado põe no PATH o Python do
       # `.python-version`, o mesmo em que o `uv run pre-commit` (e os hooks) rodam.
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
@@ -48,6 +51,11 @@ jobs:
       - run: uv sync --locked
       - name: Hooks do padrão
         run: uv run pre-commit run --all-files --show-diff-on-failure
+      # O gitleaks dos hooks acima só varre o stage, vazio na CI: é este passo que pega o segredo de um
+      # commit feito com `--no-verify` (ver o hook no `.pre-commit-config.yaml`).
+      - name: Segredos no histórico do git (gitleaks)
+        if: ${{ !cancelled() }}
+        run: uv run pre-commit run --hook-stage manual gitleaks-history
       # A cobertura e o relatório vêm do `addopts` do `pyproject.toml`.
       - name: Testes dos hooks (pytest, com cobertura)
         if: ${{ !cancelled() }}
