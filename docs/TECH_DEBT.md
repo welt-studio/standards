@@ -21,9 +21,11 @@
 
 - **Sugestão**: a partir de `2026-11-23`, quando o `typescript-eslint` 8.73.0 completa 7 dias:
   1. subir `eslint`, `typescript-eslint` e `eslint-plugin-import-x`;
-  2. no `eslint-plugin-jsx-a11y-x`, `overrides` do pnpm com faixa fechada
-     (`eslint-plugin-jsx-a11y-x>minimatch: 11.0.5`), com o teste do pacote verde;
-  3. publicar a `eslint-v6.0.1` e conferir no GitHub que o alerta fechou.
+  2. o `eslint-plugin-jsx-a11y-x` não tem correção: o override do `minimatch` não é à mão. O
+     `security-fix` do `welt-studio/renovate` já abre o PR com ele todo dia (vermelho enquanto o
+     `import-x` 4.17.1 não aceita o `minimatch` 11), e com o passo 1 o PR fica verde e faz merge;
+  3. publicar a `eslint-v6.0.1` e conferir que o `pnpm audit` da CI passou. Os alertas do
+     Dependabot estão desligados: a verificação é a auditoria, não o GitHub.
 
 ### [pre-commit] Projetos sem o `gitleaks-history`: segredo com `--no-verify` chega à `main`
 
@@ -69,7 +71,23 @@
   sozinha.
 - **Sugestão**: quando sair release com Node 24, tirar a regra do preset; o Renovate passa a
   fixar a action pelo SHA da tag, como as outras (`helpers:pinGitHubActionDigests`). Até lá,
-  conferir a cada rodada mensal se a release saiu.
+  conferir a cada rodada semanal se a release saiu.
+
+### [Renovate] Merge automático sem a CI cobrir imagem Docker e docker-compose (risco aceito)
+
+- [ ] **Severidade**: Média · `2026-11-18`
+- **Arquivos**: `renovate/default.json5` (regra "Patch e minor fazem merge sozinhos"); nos projetos,
+  os workflows de CI
+- **Descrição**: o PO religou o merge automático de patch, minor e lockfile (`2026-11-18`) sabendo
+  que o motivo que o desligou em `2026-10-23` continua em parte: a CI de alguns projetos não monta a
+  imagem Docker em PR, Dockerfile de produção e docker-compose não disparam teste, e no nebulai o
+  PR roda só Ruff nos arquivos alterados, Knip e audit. Custo: um patch ou minor que só quebra o
+  build da imagem (o uv e o pnpm das imagens, pelos gerenciadores por regex, ou uma dependência que
+  muda o que o Dockerfile copia) entra na `main` com a CI verde e quebra o deploy seguinte.
+- **Sugestão**: na otimização geral da CI (combinada com o PO), cada projeto passa a montar a
+  imagem e validar o docker-compose em PR que mexe neles (o pg-studio já monta desde
+  `2026-11-16`), e o nebulai roda o padrão inteiro no PR. Enquanto isso não acontece, o deploy
+  quebrado aparece no próprio deploy, e o PR que o causou está no histórico do Renovate.
 
 ## Arquitetura / Design
 

@@ -14,7 +14,7 @@
     `dependabot.yml`, e `automated-security-fixes` desligado.
 
   O Renovate lê os alertas do GitHub pelo `vulnerabilityAlerts`, mas não abriu PR para o `minimatch`
-  (débito acima): a correção é major numa dependência indireta, fora da faixa dos pacotes que a
+  (débito do `minimatch` no `TECH_DEBT.md`): a correção é major numa dependência indireta, fora da faixa dos pacotes que a
   pedem. O OSV do Renovate confere só dependência direta. A falha ficou visível só pelo aviso do
   GitHub, e o PO quer repensar a divisão entre os dois (`2026-11-16`).
 

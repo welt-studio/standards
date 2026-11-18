@@ -32,11 +32,13 @@
 
   // Todas as correções de vulnerabilidade de um projeto num PR só: correções que dependem umas das
   // outras (pacote e dependência dele, ambos com alerta) só resolvem o lockfile juntas, e um PR por
-  // correção abriria dezenas de PRs de uma vez, cada um rodando a CI. Merge automático com a CI
-  // verde (decisão do PO, 2026-11-18).
+  // correção abriria dezenas de PRs de uma vez, cada um rodando a CI. Quem alimenta este bloco é o
+  // OSV (abaixo): os alertas do Dependabot estão desligados. Sem `automerge` aqui de propósito: o
+  // Renovate aplica este bloco como `force`, por cima de toda regra, e um `automerge: true` faria
+  // merge até de major. Sem ele, a correção segue as regras de baixo: patch e minor fazem merge
+  // sozinhos; major e o que pede revisão esperam o PO.
   vulnerabilityAlerts: {
     groupName: "security fixes",
-    automerge: true,
   },
   // A fonte das falhas é a base pública do osv.dev, que o Renovate baixa (release do
   // `renovatebot/osv-offline`, no GitHub) e consulta localmente. Os alertas do Dependabot estão
@@ -62,6 +64,14 @@
       description: "Patch e minor fazem merge sozinhos com a CI verde; major espera o PO.",
       matchUpdateTypes: ["patch", "minor", "pin", "digest"],
       automerge: true,
+    },
+    {
+      // Aqui, o que entra na `main` só chega aos projetos com uma tag nova (`python-v*`, `eslint-v*`
+      // etc.), que é decisão do PO: merge sozinho deixaria a `main` à frente da última tag sem
+      // ninguém ver.
+      description: "No standards, todo PR espera o PO, que corta a tag.",
+      matchRepositories: ["welt-studio/standards"],
+      automerge: false,
     },
     {
       description: "Minor do Python (3.14 → 3.15) é decisão do PO: depende de wheel das dependências pesadas (torch).",
