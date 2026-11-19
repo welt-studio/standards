@@ -30,11 +30,12 @@ jobs:
         # O histórico inteiro, que o `gitleaks-history` varre.
         with:
           fetch-depth: 0
-      # O uv do `[tool.uv] required-version` do pyproject; o ambiente ativado põe no PATH o Python do
+      # O uv exato da CI (o `[tool.uv] required-version` do pyproject é só a mínima, para o terminal);
+      # o Renovate sobe esta versão (`renovate.json`). O ambiente ativado põe no PATH o Python do
       # `.python-version`, o mesmo em que o `uv run pre-commit` (e os hooks) rodam.
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
-          version-file: pyproject.toml
+          version: "0.13.1"
           activate-environment: true
       # O pnpm do `packageManager` e o Node do `devEngines.runtime` do `package.json` da raiz (o pnpm o
       # baixa, `onFail: "download"`): a única declaração de cada versão.

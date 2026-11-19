@@ -17,9 +17,10 @@
     `^10.2.5`).
 
   Decisão do PO (`2026-11-16`): esperar as versões completarem os 7 dias da política, sem exceção de
-  idade.
+  idade. Substituída em `2026-11-18`: a política é "7 dias, exceto para segurança", e vale também
+  para o `security-fix`. As versões corrigidas não precisam mais esperar o `2026-11-23`.
 
-- **Sugestão**: a partir de `2026-11-23`, quando o `typescript-eslint` 8.73.0 completa 7 dias:
+- **Sugestão**:
   1. subir `eslint`, `typescript-eslint` e `eslint-plugin-import-x`;
   2. o `eslint-plugin-jsx-a11y-x` não tem correção: o override do `minimatch` não é à mão. O
      `security-fix` do `welt-studio/renovate` já abre o PR com ele todo dia (vermelho enquanto o

@@ -28,7 +28,10 @@ dev = [
 [tool.uv]
 # Sem `[build-system]`: o uv instala só as dependências, não o repo como pacote.
 package = false
-required-version = "==0.13.1"
+# Mínima, não exata: no terminal vale qualquer uv a partir desta. A CI fixa a exata no `setup-uv`
+# (`.github/workflows/test.yml`), que o Renovate sobe com a espera de 7 dias. Aqui ela só sobe
+# quando o padrão passar a depender de algo de uma versão mais nova.
+required-version = ">=0.13.1"
 # Versão nova só entra com 7 dias de publicada (política de versões; correção de segurança mais nova
 # entra em `exclude-newer-package`).
 exclude-newer = "7 days"
