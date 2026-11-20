@@ -212,15 +212,26 @@
   // Versões que os gerenciadores do Renovate não leem sozinhos.
   customManagers: [
     {
-      // As duas sobem no mesmo PR; o hook `python-base` reprova a tag que divergir do
-      // `required-version`.
-      description: "uv: `[tool.uv] required-version` e a imagem do GHCR.",
+      // O uv exato do projeto: o `version` de cada `astral-sh/setup-uv` dos workflows (o terminal
+      // usa a mínima, `[tool.uv] required-version = ">=X.Y.Z"`, que não sobe sozinha) e a tag da
+      // imagem do GHCR. Todas sobem no mesmo PR, e o hook `python-base` reprova a que divergir e o
+      // `setup-uv` que esta regex não lê: ele lê a versão com ela, daqui.
+      description: "uv: o `version` do `setup-uv` nos workflows.",
       customType: "regex",
-      managerFilePatterns: ["/(^|/)pyproject\\.toml$/", "/(^|/)[^/]*Dockerfile[^/]*$/"],
+      managerFilePatterns: ["/(^|/)\\.github/workflows/[^/]+\\.ya?ml$/"],
+      // O `with:` logo abaixo do `uses:`, e o `version:` como a primeira chave dele: entre eles só
+      // linha vazia, então a regex não sai do bloco (para um `env:` ou o step seguinte).
       matchStrings: [
-        'required-version\\s*=\\s*"==(?<currentValue>\\d+\\.\\d+\\.\\d+)"',
-        "ghcr\\.io/astral-sh/uv:(?<currentValue>\\d+\\.\\d+\\.\\d+)",
+        'uses: ["\']?astral-sh/setup-uv@[^\\n]+\\n\\s+with:\\n\\s+version: "(?<currentValue>\\d+\\.\\d+\\.\\d+)"',
       ],
+      depNameTemplate: "uv",
+      datasourceTemplate: "pypi",
+    },
+    {
+      description: "uv: a imagem do GHCR nos Dockerfiles.",
+      customType: "regex",
+      managerFilePatterns: ["/(^|/)[^/]*Dockerfile[^/]*$/"],
+      matchStrings: ["ghcr\\.io/astral-sh/uv:(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
       depNameTemplate: "uv",
       datasourceTemplate: "pypi",
     },

@@ -1,9 +1,10 @@
 """Os Dockerfiles versionados do projeto e as tags das imagens que eles usam, comum aos hooks que
 conferem uma versão repetida numa imagem (`python-base`: a do uv; `pnpm-base`: a do pnpm).
 
-A versão tem uma declaração (o `required-version` do uv, o `packageManager` do pnpm), e a tag da
-imagem é a cópia que o Renovate sobe no mesmo PR. O hook reprova a cópia que alguém escrever à mão
-diferente, a tag por variável (que nenhum dos dois lê) e a imagem sem tag (a `latest`, que muda
+A tag da imagem é cópia de uma versão que o Renovate sobe no mesmo PR: a do pnpm é o
+`packageManager`; a do uv é o `version` do `astral-sh/setup-uv` dos workflows (o `required-version`
+é só a mínima do terminal; ver `check_python.py`). O hook reprova a cópia que alguém escrever à mão
+diferente, a tag por variável (que o Renovate não lê) e a imagem sem tag (a `latest`, que muda
 sozinha). Python stdlib, sem dependências.
 """
 
@@ -50,20 +51,47 @@ def lines(path: str) -> list[tuple[int, str]]:
     ]
 
 
-def tag_problems(paths: list[str], image: str, version: str, source: str) -> list[str]:
-    """Cada uso de `image` (`FROM`, `COPY --from=`, `--mount=from=`) cuja tag não é `version` (com
-    sufixo de variante, como `-trixie-slim`, ou digest depois). `source` diz onde a versão mora."""
+def tags(paths: list[str], image: str) -> list[tuple[str, int, str | None]]:
+    """Cada uso de `image` (`FROM`, `COPY --from=`, `--mount=from=`): o Dockerfile, a linha e a tag
+    (`None` sem tag)."""
     usage = re.compile(rf"(?<![\w./-]){re.escape(image)}(?::(?P<tag>[^\s@]+))?")
+    return [
+        (path, number, match["tag"])
+        for path in paths
+        for number, line in lines(path)
+        for match in usage.finditer(line)
+    ]
+
+
+def tag_version(tag: str) -> str:
+    """A versão da tag, sem o sufixo de variante (`0.13.1-trixie-slim` → `0.13.1`)."""
+    return tag.split("-", 1)[0]
+
+
+def literal_tags(
+    paths: list[str], image: str, hint: str
+) -> tuple[list[tuple[str, str]], list[str]]:
+    """As tags escritas de `image`, com onde cada uma está (`Dockerfile:linha`), e os usos sem tag
+    ou com tag por variável, que o Renovate não sobe. `hint` diz que versão escrever."""
+    literal: list[tuple[str, str]] = []
     problems: list[str] = []
-    for path in paths:
-        for number, line in lines(path):
-            for match in usage.finditer(line):
-                tag = match["tag"]
-                where = f"{path}:{number}: `{image}`"
-                if tag is None:
-                    problems.append(f"{where} sem tag; use a `{version}` do {source}")
-                elif "$" in tag:
-                    problems.append(f"{where}:{tag} por variável; escreva `{version}` ({source})")
-                elif tag != version and not tag.startswith(f"{version}-"):
-                    problems.append(f"{where}:{tag} diverge da `{version}` do {source}")
-    return problems
+    for path, number, tag in tags(paths, image):
+        where = f"{path}:{number}"
+        if tag is None:
+            problems.append(f"{where}: `{image}` sem tag; escreva {hint}")
+        elif "$" in tag:
+            problems.append(f"{where}: `{image}`:{tag} por variável; escreva {hint}")
+        else:
+            literal.append((where, tag))
+    return literal, problems
+
+
+def tag_problems(paths: list[str], image: str, version: str, source: str) -> list[str]:
+    """Cada uso de `image` cuja tag não é `version` (com sufixo de variante, como `-trixie-slim`, ou
+    digest depois: `tag_version`). `source` diz onde a versão mora."""
+    literal, problems = literal_tags(paths, image, f"a `{version}` do {source}")
+    return problems + [
+        f"{where}: `{image}`:{tag} diverge da `{version}` do {source}"
+        for where, tag in literal
+        if tag_version(tag) != version
+    ]

@@ -110,7 +110,9 @@
 # aqui. E reprova a segunda declaração dela: `default_language_version.python` no
 # `.pre-commit-config.yaml` (os hooks usam o Python do `uv run pre-commit`), `requires-python` do
 # `pyproject.toml` do pacote fora do `==<minor>.*` e a imagem do Python num Dockerfile versionado.
-# Confere também a tag da imagem `ghcr.io/astral-sh/uv` contra o `[tool.uv] required-version`.
+# E o uv: o `[tool.uv] required-version` é a mínima (`>=X.Y.Z`), e a exata, o `version` de cada
+# `astral-sh/setup-uv` dos workflows e a tag da `ghcr.io/astral-sh/uv`, é igual em todos e não fica
+# abaixo da mínima.
 - id: python-base
   name: python-base (padrão Python da Welt Studio)
   entry: hooks/check_python.py

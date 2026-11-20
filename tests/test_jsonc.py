@@ -47,3 +47,16 @@ def test_the_standard_base_is_read() -> None:
 def test_invalid_jsonc_raises() -> None:
     with pytest.raises(json.JSONDecodeError):
         jsonc.loads('{"a": }')
+
+
+def test_json5_bare_keys_are_quoted() -> None:
+    text = '{\n  $schema: "a: b", // chave: valor\n  list: [{key: 1,},],\n  "quoted": true,\n}'
+    assert jsonc.loads_json5(text) == {"$schema": "a: b", "list": [{"key": 1}], "quoted": True}
+
+
+def test_json5_single_quoted_strings_become_json() -> None:
+    text = """{a: 'diz "oi" e it\\'s // não é comentário', b: ["x", 'y\\\\n',],}"""
+    assert jsonc.loads_json5(text) == {
+        "a": 'diz "oi" e it\'s // não é comentário',
+        "b": ["x", "y\\n"],
+    }

@@ -5,16 +5,27 @@ from pathlib import Path
 import pytest
 
 import check_python
+import workflows
 from gitrepo import git, write
 
 VERSION = check_python.standard_version()
 REQUIRES = f"=={check_python.minor(VERSION)}.*"
 UV = "0.13.1"
-PYPROJECT = (
-    f'[project]\nname = "api"\nrequires-python = "{REQUIRES}"\n'
-    f'\n[tool.uv]\nrequired-version = "=={UV}"\n'
-)
+HEAD = f'[project]\nname = "api"\nrequires-python = "{REQUIRES}"\n'
+PYPROJECT = f'{HEAD}\n[tool.uv]\nrequired-version = ">={UV}"\n'
 DOCKERFILE = f"FROM ghcr.io/astral-sh/uv:{UV}-trixie-slim\nRUN uv sync --locked\n"
+SETUP_UV = "      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0\n"
+
+
+def workflow(with_block: str) -> str:
+    """Workflow com um `setup-uv` e o `with:` dado (linhas já indentadas, ou vazio)."""
+    return (
+        "jobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n"
+        f"{SETUP_UV}{with_block}      - run: uv sync --locked\n"
+    )
+
+
+WORKFLOW = workflow(f'        with:\n          version: "{UV}"\n')
 
 
 @pytest.fixture
@@ -24,6 +35,7 @@ def project(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     write(tmp_path / "api/pyproject.toml", PYPROJECT)
     write(tmp_path / "api/.python-version", f"{VERSION}\n")
     write(tmp_path / "api/Dockerfile", DOCKERFILE)
+    write(tmp_path / ".github/workflows/backend.yml", WORKFLOW)
     git(tmp_path, "init", "-q")
     git(tmp_path, "add", ".")
     monkeypatch.chdir(tmp_path)
@@ -177,7 +189,7 @@ def test_every_problem_shows_with_an_unreadable_pyproject(
         "# FROM ghcr.io/astral-sh/uv:0.1.0",
     ],
 )
-def test_uv_image_on_the_required_version_passes(project: Path, line: str) -> None:
+def test_uv_image_on_the_setup_uv_version_passes(project: Path, line: str) -> None:
     write(project / "api/Dockerfile", f"{line}\nRUN uv sync --locked\n")
     assert check_python.main(["api"]) == 0
 
@@ -185,39 +197,160 @@ def test_uv_image_on_the_required_version_passes(project: Path, line: str) -> No
 @pytest.mark.parametrize(
     ("line", "found"),
     [
-        ("FROM ghcr.io/astral-sh/uv:0.13.2-trixie-slim", "diverge"),
-        ("FROM ghcr.io/astral-sh/uv:0.13.10", "diverge"),
-        ("COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /bin/uv", "por variável"),
-        ("FROM ghcr.io/astral-sh/uv AS base", "sem tag"),
+        ("FROM ghcr.io/astral-sh/uv:0.13.2-trixie-slim", "`0.13.2` em api/Dockerfile:1"),
+        ("FROM ghcr.io/astral-sh/uv:0.13.10", "`0.13.10` em api/Dockerfile:1"),
+        (
+            "COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /bin/uv",
+            "api/Dockerfile:1: `ghcr.io/astral-sh/uv`:${UV_VERSION} por variável",
+        ),
+        ("FROM ghcr.io/astral-sh/uv AS base", "api/Dockerfile:1: `ghcr.io/astral-sh/uv` sem tag"),
+        ("FROM ghcr.io/astral-sh/uv:latest", "api/Dockerfile:1: `ghcr.io/astral-sh/uv`:latest não"),
     ],
 )
-def test_uv_image_off_the_required_version_fails(
+def test_uv_image_off_the_setup_uv_version_fails(
     project: Path, line: str, found: str, capsys: pytest.CaptureFixture[str]
 ) -> None:
     write(project / "api/Dockerfile", f"{line}\nRUN uv sync --locked\n")
     assert check_python.main(["api"]) == 1
-    err = capsys.readouterr().err
-    assert "api/Dockerfile:1:" in err
-    assert found in err
+    assert found in capsys.readouterr().err
 
 
-@pytest.mark.parametrize("uv", ["", '\n[tool.uv]\nrequired-version = ">=0.13"\n'])
-def test_uv_image_without_an_exact_required_version_fails(
-    project: Path, uv: str, capsys: pytest.CaptureFixture[str]
+@pytest.mark.parametrize(
+    ("uv", "found"),
+    [
+        ("", "ausente"),
+        (f'\n[tool.uv]\nrequired-version = "=={UV}"\n', f"`=={UV}`"),
+        ('\n[tool.uv]\nrequired-version = ">=0.13"\n', "`>=0.13`"),
+    ],
+)
+def test_required_version_off_the_minimum_fails(
+    project: Path, uv: str, found: str, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    write(
-        project / "api/pyproject.toml",
-        f'[project]\nname = "api"\nrequires-python = "{REQUIRES}"\n{uv}',
-    )
+    write(project / "api/pyproject.toml", f"{HEAD}{uv}")
     assert check_python.main(["api"]) == 1
-    assert "`==<versão>` exata" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert f"required-version` é {found}" in err
+    assert "`>=<versão>`" in err
 
 
-def test_without_the_uv_image_the_required_version_is_free(project: Path) -> None:
-    write(project / "api/Dockerfile", "FROM debian:trixie-slim\n")
+def test_required_version_is_checked_without_uv_anywhere(
+    project: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (project / "api/Dockerfile").unlink()
+    (project / ".github/workflows/backend.yml").unlink()
+    write(project / "api/pyproject.toml", HEAD)
+    assert check_python.main(["api"]) == 1
+    assert "ausente" in capsys.readouterr().err
+
+
+def test_minimum_above_the_exact_fails(project: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    write(project / "api/pyproject.toml", f'{HEAD}\n[tool.uv]\nrequired-version = ">=0.13.2"\n')
+    assert check_python.main(["api"]) == 1
+    assert "`>=0.13.2` do `required-version` passa da `0.13.1` em" in capsys.readouterr().err
+
+
+def test_newer_exact_than_the_minimum_passes(project: Path) -> None:
+    write(project / "api/pyproject.toml", f'{HEAD}\n[tool.uv]\nrequired-version = ">=0.9.0"\n')
+    assert check_python.main(["api"]) == 0
+
+
+@pytest.mark.parametrize(
+    "with_block",
+    [
+        pytest.param('        with:\n\n          version: "0.13.1"\n', id="linha vazia antes"),
+        pytest.param(
+            '        with:\n          version: "0.13.1"\n          working-directory: api\n',
+            id="outras chaves depois",
+        ),
+    ],
+)
+def test_setup_uv_with_the_version_first_passes(project: Path, with_block: str) -> None:
+    write(project / ".github/workflows/backend.yml", workflow(with_block))
+    assert check_python.main(["api"]) == 0
+
+
+@pytest.mark.parametrize(
+    "with_block",
+    [
+        pytest.param("", id="sem with"),
+        pytest.param(
+            "        with:\n          version-file: api/pyproject.toml\n", id="version-file"
+        ),
+        pytest.param("        with:\n          version: ${{ env.UV }}\n", id="variável"),
+        pytest.param("        with:\n          version: 0.13.1\n", id="sem aspas"),
+        pytest.param('        with:\n          version: ">=0.13.1"\n', id="faixa"),
+        pytest.param(
+            '        name: uv\n        with:\n          version: "0.13.1"\n', id="with longe"
+        ),
+        pytest.param(
+            '        with:\n          working-directory: api\n          version: "0.13.1"\n',
+            id="version depois de outra chave",
+        ),
+        pytest.param(
+            '        with:\n          # o uv da CI\n          version: "0.13.1"\n',
+            id="comentário antes",
+        ),
+        pytest.param(
+            (
+                "        with:\n          enable-cache: true\n"
+                '        env:\n          version: "0.13.1"\n'
+            ),
+            id="version num env",
+        ),
+    ],
+)
+def test_setup_uv_the_renovate_cannot_read_fails(
+    project: Path, with_block: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    write(project / ".github/workflows/backend.yml", workflow(with_block))
+    assert check_python.main(["api"]) == 1
+    err = capsys.readouterr().err
+    assert ".github/workflows/backend.yml:5:" in err
+    assert "sem a versão que o Renovate lê" in err
+
+
+def test_diverging_copies_are_all_listed(project: Path, capsys: pytest.CaptureFixture[str]) -> None:
     write(
-        project / "api/pyproject.toml", f'[project]\nname = "api"\nrequires-python = "{REQUIRES}"\n'
+        project / ".github/workflows/security.yml",
+        workflow('        with:\n          version: "0.13.2"\n'),
     )
+    git(project, "add", ".")
+    assert check_python.main(["api"]) == 1
+    assert (
+        "as cópias divergem: `0.13.1` em .github/workflows/backend.yml:5, api/Dockerfile:1; "
+        "`0.13.2` em .github/workflows/security.yml:5"
+    ) in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    "path", [".github/workflows/old/backend.yml", ".github/backend.yml", "ci/backend.yml"]
+)
+def test_files_outside_the_workflows_folder_are_not_read(project: Path, path: str) -> None:
+    write(project / path, workflow("        with:\n          version-file: api/pyproject.toml\n"))
+    git(project, "add", ".")
+    assert check_python.main(["api"]) == 0
+
+
+def test_unversioned_workflow_is_not_read(project: Path) -> None:
+    write(project / ".github/workflows/scratch.yml", workflow(""))
+    assert check_python.main(["api"]) == 0
+
+
+def test_without_setup_uv_the_dockerfiles_agree_with_each_other(
+    project: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (project / ".github/workflows/backend.yml").unlink()
+    write(project / "api/Dockerfile.dev", "FROM ghcr.io/astral-sh/uv:0.13.2\n")
+    git(project, "add", ".")
+    assert check_python.main(["api"]) == 1
+    assert "`0.13.1` em api/Dockerfile:1; `0.13.2` em api/Dockerfile.dev:1" in (
+        capsys.readouterr().err
+    )
+
+
+def test_without_workflow_nor_dockerfile_passes(project: Path) -> None:
+    (project / "api/Dockerfile").unlink()
+    (project / ".github/workflows/backend.yml").unlink()
     assert check_python.main(["api"]) == 0
 
 
@@ -229,3 +362,47 @@ def test_missing_folder_fails(project: Path, capsys: pytest.CaptureFixture[str])
 @pytest.mark.parametrize("args", [[], ["api", "extra"]])
 def test_wrong_usage(args: list[str]) -> None:
     assert check_python.main(args) == 2
+
+
+def test_the_preset_pattern_is_the_renovate_one() -> None:
+    """A regex do hook é a do preset: o `setup-uv` que ela lê é o que o Renovate sobe."""
+    pattern = workflows.preset_pattern()
+    assert pattern.groupindex == {"currentValue": 1}
+    assert pattern.search(WORKFLOW) is not None
+
+
+def test_uses_after_a_name_key_reads_the_version(project: Path) -> None:
+    text = WORKFLOW.replace("      - uses:", "      - name: uv\n        uses:")
+    write(project / ".github/workflows/backend.yml", text)
+    assert check_python.main(["api"]) == 0
+
+
+@pytest.mark.parametrize(
+    "preset",
+    [
+        "{customManagers: [}",
+        '{customManagers: [{matchStrings: ["astral-sh/setup-uv@(?<a>", ]}]}',
+        '{customManagers: [{matchStrings: ["astral-sh/setup-uv@a", "astral-sh/setup-uv@b"]}]}',
+        "{}",
+    ],
+)
+def test_unreadable_preset_fails_with_a_message(
+    project: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    monkeypatch: pytest.MonkeyPatch,
+    preset: str,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    path = tmp_path_factory.mktemp("preset") / "default.json5"
+    write(path, preset)
+    monkeypatch.setattr(workflows, "PRESET", path)
+    assert check_python.main(["api"]) == 1
+    assert "a regex do `setup-uv` em" in capsys.readouterr().err
+
+
+def test_without_setup_uv_the_preset_is_not_read(
+    project: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(workflows, "PRESET", project / "missing.json5")
+    write(project / ".github/workflows/backend.yml", "jobs: {}\n")
+    assert check_python.main(["api"]) == 0

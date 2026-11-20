@@ -51,6 +51,7 @@ known_first_party = [
     "pyproject",
     "repo",
     "sync_base",
+    "workflows",
 ]
 
 [tool.pytest.ini_options]

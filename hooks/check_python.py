@@ -13,9 +13,12 @@ deste repo no `rev` declarado. Depois, o hook reprova a segunda declaração do 
 - a imagem do Python num Dockerfile versionado (fora gerado e terceiros): a oficial (`python`, de
   qualquer registro) e a do uv com Python embutido (`uv:<versão>-python3.14-…`). A imagem parte do
   uv sem Python, e o `uv sync` instala o da cópia;
-- a tag da imagem do uv (`ghcr.io/astral-sh/uv`) diferente do `[tool.uv] required-version` do
-  pacote (`==<versão>`, a declaração), por variável ou sem tag: o `uv sync` recusaria o uv da
-  imagem.
+- o uv exato fora do lugar: o `[tool.uv] required-version` do pacote é a mínima do terminal
+  (`>=<versão>`); a exata mora no `version` de cada `astral-sh/setup-uv` dos workflows e na tag da
+  imagem do uv (`ghcr.io/astral-sh/uv`), cópias que o Renovate sobe juntas. O hook reprova a
+  `==` (ou nenhuma) no `required-version`, o `setup-uv` que o Renovate não lê (`workflows.py`), a
+  imagem sem tag ou por variável, cópias em versões diferentes (todas listadas, sem eleger a certa)
+  e a exata menor que a mínima, que o `uv` recusaria.
 
 Python stdlib, sem dependências.
 
@@ -24,19 +27,23 @@ Uso: `check_python.py <pasta>`, com a pasta (relativa à raiz) do pacote Python 
 
 import re
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 import dockerfiles
 import pyproject
 import sync_base
+import workflows
 from parsed import Table, table
 
 TOOL = "python"
 HOOK = sync_base.hook_id(TOOL)
 PRE_COMMIT_CONFIG = Path(".pre-commit-config.yaml")
 UV_IMAGE = "ghcr.io/astral-sh/uv"
-# O `required-version` exato, a única forma que dá uma versão para a tag da imagem.
-EXACT_VERSION = re.compile(r"==(?P<version>\d+\.\d+\.\d+)")
+# O `required-version` é a mínima: no terminal vale qualquer uv a partir dela.
+MINIMUM = re.compile(r">=(?P<version>\d+\.\d+\.\d+)")
+# A versão literal, como o `setup-uv` e a tag a escrevem.
+LITERAL_VERSION = re.compile(r"\d+\.\d+\.\d+")
 # A chave de topo e o `python` dentro dela, em bloco ou na forma `{python: ...}`.
 LANGUAGE_VERSION_KEY = re.compile(r"^default_language_version\s*:(?P<inline>.*)$")
 PYTHON_KEY = re.compile(r"(^\s+|[{,]\s*)['\"]?python['\"]?\s*:")
@@ -99,20 +106,71 @@ def python_image_problems(paths: list[str]) -> list[str]:
     ]
 
 
-def uv_image_problems(paths: list[str], config: Table, config_path: Path) -> list[str]:
-    """A tag da imagem do uv contra o `required-version` do pacote, quando a imagem é usada."""
-    if not any(UV_IMAGE in line for path in paths for _, line in dockerfiles.lines(path)):
-        return []
+def version_key(version: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in version.split("."))
+
+
+def minimum_problems(config: Table, config_path: Path) -> tuple[str | None, list[str]]:
+    """A mínima do `required-version`; ou nenhuma, com o problema."""
     required = table(table(config.get("tool")).get("uv")).get("required-version")
-    match = EXACT_VERSION.fullmatch(required) if isinstance(required, str) else None
-    if match is None:
-        message = (
-            f"{config_path}: `[tool.uv] required-version` precisa ser `==<versão>` exata: os "
-            f"Dockerfiles usam a `{UV_IMAGE}`, e a tag dela é a cópia dessa versão"
+    match = MINIMUM.fullmatch(required) if isinstance(required, str) else None
+    if match is not None:
+        return match["version"], []
+    found = f"`{required}`" if isinstance(required, str) else "ausente"
+    message = (
+        f"{config_path}: `[tool.uv] required-version` é {found}, e o padrão pede a mínima "
+        "`>=<versão>`; a exata é a do `version` do `astral-sh/setup-uv` dos workflows"
+    )
+    return None, [message]
+
+
+def exact_copies(
+    pins: list[workflows.Pin], dockerfile_paths: list[str]
+) -> tuple[dict[str, list[str]], list[str]]:
+    """Cada versão exata do uv e onde ela está (os `setup-uv` lidos e as tags literais da imagem);
+    e os problemas de cada cópia que não dá uma versão."""
+    copies: dict[str, list[str]] = defaultdict(list)
+    found = [
+        f"{pin.path}:{pin.line}: `astral-sh/setup-uv` sem a versão que o Renovate lê; escreva "
+        '`version: "X.Y.Z"` como a primeira chave do `with:` logo abaixo do `uses:` (sem '
+        "`version-file` nem variável)"
+        for pin in pins
+        if pin.version is None
+    ]
+    for pin in pins:
+        if pin.version is not None:
+            copies[pin.version].append(f"{pin.path}:{pin.line}")
+    hint = "a versão exata do uv, a do `version` do `setup-uv`"
+    literal, problems = dockerfiles.literal_tags(dockerfile_paths, UV_IMAGE, hint)
+    for where, tag in literal:
+        version = dockerfiles.tag_version(tag)
+        if LITERAL_VERSION.fullmatch(version):
+            copies[version].append(where)
+        else:
+            problems.append(f"{where}: `{UV_IMAGE}`:{tag} não começa pela versão; escreva {hint}")
+    return copies, found + problems
+
+
+def uv_problems(
+    config: Table | None,
+    config_path: Path,
+    dockerfile_paths: list[str],
+    pins: list[workflows.Pin],
+) -> list[str]:
+    """O uv mínimo no `required-version` e o exato igual em todo `setup-uv` e imagem do uv."""
+    minimum, found = minimum_problems(config, config_path) if config is not None else (None, [])
+    copies, problems = exact_copies(pins, dockerfile_paths)
+    found += problems
+    versions = sorted(copies, key=version_key)
+    if len(versions) > 1:
+        listed = "; ".join(f"`{version}` em {', '.join(copies[version])}" for version in versions)
+        found.append(f"o uv exato precisa ser um só, e as cópias divergem: {listed}")
+    if minimum is not None and versions and version_key(versions[0]) < version_key(minimum):
+        found.append(
+            f"{config_path}: a mínima `>={minimum}` do `required-version` passa da `{versions[0]}` "
+            f"em {', '.join(copies[versions[0]])}, que o `uv` recusaria"
         )
-        return [message]
-    source = f"`required-version` de {config_path}"
-    return dockerfiles.tag_problems(paths, UV_IMAGE, match["version"], source)
+    return found
 
 
 def main(args: list[str]) -> int:
@@ -136,6 +194,7 @@ def main(args: list[str]) -> int:
     config_path = folder / "pyproject.toml"
     config = pyproject.load(config_path, HOOK)
     paths = dockerfiles.dockerfile_paths(HOOK)
+    pins = workflows.pins(HOOK)
     if config is not None:
         expected = f"=={minor(standard_version())}.*"
         problem = requires_python_problem(
@@ -145,9 +204,9 @@ def main(args: list[str]) -> int:
             found.append(problem)
     if paths is not None:
         found += python_image_problems(paths)
-        if config is not None:
-            found += uv_image_problems(paths, config, config_path)
-    unreadable = config is None or paths is None
+        if pins is not None:
+            found += uv_problems(config, config_path, paths, pins)
+    unreadable = config is None or paths is None or pins is None
     if found:
         sys.stderr.write(f"{HOOK}: fora do padrão Python da Welt Studio:\n")
         sys.stderr.writelines(f"  - {item}\n" for item in found)

@@ -299,18 +299,49 @@ mantém o `.python-version` da pasta do pacote Python igual a ele, como o `ruff-
 
 O hook também reprova cada segunda declaração do Python:
 
-| Onde                                                     | Por quê                                                                                               |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `default_language_version.python` no pre-commit          | os hooks já usam o Python do `uv run pre-commit`; a linha seria uma cópia que nem o Renovate atualiza |
-| `requires-python` diferente de `==<minor>.*`             | o uv recusaria o Python da cópia, ou resolveria o lock para outro. Depois de trocar, `uv lock`        |
-| `FROM python:` num Dockerfile versionado                 | a imagem parte do uv (`ghcr.io/astral-sh/uv`), e o `uv sync` instala o Python do `.python-version`    |
-| tag do `ghcr.io/astral-sh/uv` fora do `required-version` | o `uv sync` recusaria o uv da imagem. Tag por variável ou sem tag também reprova                      |
+| Onde                                            | Por quê                                                                                               |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `default_language_version.python` no pre-commit | os hooks já usam o Python do `uv run pre-commit`; a linha seria uma cópia que nem o Renovate atualiza |
+| `requires-python` diferente de `==<minor>.*`    | o uv recusaria o Python da cópia, ou resolveria o lock para outro. Depois de trocar, `uv lock`        |
+| `FROM python:` num Dockerfile versionado        | a imagem parte do uv (`ghcr.io/astral-sh/uv`), e o `uv sync` instala o Python do `.python-version`    |
+| uv exato fora do lugar (ver abaixo)             | o terminal, a CI e a imagem rodariam uvs diferentes sem ninguém ver                                   |
+
+**O uv: mínimo no terminal, exato na CI e na imagem.** O `[tool.uv] required-version` do pacote é
+a mínima (`>=X.Y.Z`): no terminal vale qualquer uv a partir dela, e ela só sobe quando o projeto
+passar a depender de algo de uma versão mais nova. A exata mora no `version` de cada
+`astral-sh/setup-uv` dos workflows e na tag da `ghcr.io/astral-sh/uv` dos Dockerfiles, cópias que o
+Renovate sobe juntas, no mesmo PR (preset). O hook reprova:
+
+- `required-version` com `==`, outra forma ou ausente;
+- `setup-uv` sem `version: "X.Y.Z"` como a primeira chave do `with:` logo abaixo do `uses:`:
+  `version-file`, versão por variável ou sem aspas, ou outra chave antes dela, o Renovate não lê. O
+  hook lê a versão com a regex do preset, então o que ele aceita é o que o Renovate sobe;
+- a imagem por variável ou sem tag, e cópias em versões diferentes (todas listadas, com onde cada
+  uma está);
+- a exata menor que a mínima, que o `uv` recusaria.
+
+Só os workflows da `.github/workflows/` são lidos: o `setup-uv` de uma action composta
+(`.github/actions/*/action.yml`) nem o hook nem o Renovate leem, e o projeto o deixa no workflow.
+
+**Migração (`python-v2.0.0`, que quebra de propósito).** Até a `python-v1.1.0` o `required-version`
+era a exata (`==X.Y.Z`); a partir da `python-v2.0.0` ele reprova, e o Renovate não o sobe mais. No
+PR que troca o `rev`, à mão: `required-version = "==X.Y.Z"` vira `">=X.Y.Z"` (o mesmo número), e
+cada `version-file` do `setup-uv` vira `version: "X.Y.Z"`, na primeira chave do `with:` (o
+`setup-uv` sem nenhum dos dois também ganha o `version`).
+
+```yaml
+- uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+  with:
+    version: "0.13.1"
+    working-directory: backend
+```
 
 **Como sobe.** O Renovate propõe o Python novo só aqui, no `python/.python-version` (a regra
 "Minor do Python" do preset vale: minor é decisão do PO). Mergeado, sai uma tag `python-v*`, e o
 Renovate abre em cada projeto o PR que sobe o `rev` do `python-base`. O hook reescreve o
 `.python-version`, e a CI do projeto testa no Python novo. A tag segue o Python: patch do Python
-(3.14.8 → 3.14.9) é minor da tag, e minor do Python (3.14 → 3.15) é major da tag. Assim, o PR dos
+(3.14.8 → 3.14.9) é minor da tag, e minor do Python (3.14 → 3.15) é major da tag, como a conferência
+nova que reprova o que passava (a `python-v2.0.0`, do uv mínimo). Assim, o PR dos
 projetos sai separado ("cada major no seu") e passa pela decisão do PO, que é o caso do `torch`.
 O PR de patch do Python (minor da tag) faz merge sozinho com a CI verde, como os outros patch e
 minor; o de minor do Python (major da tag) espera o PO.
@@ -434,7 +465,7 @@ Os gerenciadores do Renovate leem sozinhos `package.json` (inclusive `packageMan
 `devEngines`), o `catalog` do pnpm, `pyproject.toml` e `uv.lock`, `.python-version`, Dockerfiles,
 docker-compose, workflows e o `.pre-commit-config.yaml` (inclusive o `rev` fixado por SHA com
 `# frozen: vX.Y.Z`, que ele atualiza junto com o comentário). O preset acrescenta, por regex, o que
-eles não leem: o `[tool.uv] required-version`, as imagens `ghcr.io/astral-sh/uv` e
+eles não leem: o `version` do `astral-sh/setup-uv` nos workflows, as imagens `ghcr.io/astral-sh/uv` e
 `ghcr.io/pnpm/pnpm` (o GHCR não informa data, então andam pela versão do pacote no PyPI e no npm), o
 `uvx <ferramenta>@<versão>` dos workflows, do `.pre-commit-config.yaml` e do README, o
 `pnpm dlx --package <pacote>@<versão>` do README e os pacotes deste repo pela tag de cada um
@@ -444,8 +475,8 @@ eles não leem: o `[tool.uv] required-version`, as imagens `ghcr.io/astral-sh/uv
 
 Regra nova no preset vale para todos; versão escrita num lugar que só um projeto usa se corrige no
 projeto, não aqui. As tags das imagens do uv e do pnpm são cópias que o Renovate sobe junto da
-declaração (`required-version`, `packageManager`), e os hooks `python-base` e `pnpm-base` reprovam a
-que divergir.
+versão exata (o `version` do `setup-uv`, o `packageManager`), e os hooks `python-base` e `pnpm-base`
+reprovam a que divergir. O `[tool.uv] required-version` é a mínima do terminal e não sobe sozinho.
 
 Conferir uma mudança no preset antes do merge (pelo pnpm: o `devEngines` deste repo recusa o `npx`):
 `pnpm dlx --package renovate@44.176.0 renovate-config-validator --no-global renovate/default.json5`.
